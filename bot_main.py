@@ -1,12 +1,13 @@
 import telebot
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from utils import logger
 
 #глобали
-
+img_cache={}
 
 admin_id = 57713855
+tr_chat_username = "@asas_magov"
 
 
 class MyExceptionHandler(telebot.ExceptionHandler):
@@ -21,10 +22,23 @@ class MyExceptionHandler(telebot.ExceptionHandler):
 
 bot = telebot.TeleBot( "8559812575:AAFducMZ0rp9WKCbo_pv8yyhkMAG8Drz6m8", exception_handler=MyExceptionHandler())
 
+
+def check_subscribtion(user_id, country):
+    if country == 1: #tr
+
+        chat_member = bot.get_chat_member(tr_chat_username, user_id)
+
+        if chat_member.status in ("creator", "administrator", "member"):
+
+            return True
+        else:
+
+            return False
+
 @bot.message_handler(commands=['start'])
 def handle_start(message):
     keyboard = InlineKeyboardMarkup(row_width=2)
-    button1= InlineKeyboardButton( "🇹🇷 Турция", callback_data="turkey_menu")
+    button1= InlineKeyboardButton( "🇹🇷 Турция", callback_data="tr_menu")
     button2 = InlineKeyboardButton("🇹🇭 Тайланд", callback_data="thai_menu")
     keyboard.row(button1, button2)
 
@@ -33,6 +47,7 @@ def handle_start(message):
     keyboard.add(InlineKeyboardButton("💳 Зарубежная карта", callback_data="card_menu"))
     user_id = message.from_user.id
     first_name = message.from_user.first_name
+    video_path = "img/intro.mp4"
     msg = (f'Здравствуйте, <a href="tg://user?id={user_id}">👋 {first_name}</a>!\n'
               f'Я — Ботя, помощник сервиса 2Change — ваш надежный финансовый партнер в поездках за границу: Турция, Тайиланд, Корея, ОАЭ и др (20+ стран)\n\n'
                 f"Обмен, переводы, eSIM, зарубежные карты и поддержка — всё быстро, удобно и с заботой.\n\n"
@@ -45,7 +60,36 @@ def handle_start(message):
 
                 f"🕒 Пн–Сб 10:00-20:00 (по Мск)\n"
                 f"❗️@ALEXANDRA_2CHANGE - <i>единственный менеджер 2Change</i> — /manager")
-    with open("img/intro.mp4", "rb") as video:
-        bot.send_video(message.chat.id, video, caption=msg,reply_markup=keyboard, parse_mode="HTML")
+    if video_path in img_cache:
+        bot.send_video(message.chat.id, img_cache[video_path], caption=msg, reply_markup=keyboard, parse_mode="HTML")
 
+    else:
+        with open(video_path, "rb") as video:
+            sent = bot.send_video(message.chat.id, video, caption=msg,reply_markup=keyboard, parse_mode="HTML")
+            img_cache[video_path] = sent.video.file_id
 
+@bot.callback_query_handler(func=lambda call: True)
+def callback_query(call):
+    user_id = call.from_user.id
+    chat_id = call.message.chat.id
+    if call.data=="tr_menu":
+        if check_subscribtion(user_id, 1):
+            bot.send_message(chat_id, "салам армян")
+        else:
+            bot.send_message(chat_id,"<i>Для работы с ботом\n"
+                            "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
+                            parse_mode="HTML")
+    if call.data=="comment_menu":
+        msg = ('<b>Мы дорожим нашей репутацией, благодаря этому наш сервис работает уже 3 года.⭐️\n\n'
+               '✅Про нас писали в газете <a href=>«Один из популярных сервисов обмена Турции»</a>\n'
+               '✅Рекомендация сервиса <a href=>2Сhange в Тинькоф Журнале</a>\n'
+               '✅Рекомендация на <a href=>VC.RU</a>\n'
+               '✅Популярный <a href=>тревел-блоггер Илья Брижак о нас</a>\n'
+               '✅Бизнес-школа Бизнес Факт и бизнес-тренер №1 <a href=>Алексей Максимченков рекомендуют наш сервис</a>\n'
+               '✅Официальный партнер проекта <a href=>«Эмигрант 360»</a>\n'
+               '✅Про нас опубликовали видео <a href=>на популярном YouTube канале про Турцию</a>\n'
+               '✅Отзывы по обмену валют - @review_2change\n'
+               '✅Отзывы по оплате зарубежных сервисов и денежных переводов, открытия карт - @review_2pay\n\n</b>'
+               'Смотрите больше отзывов в группе или оставьте свой')
+        bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
+    bot.answer_callback_query(call.id)
