@@ -31,21 +31,28 @@ def get_from_queue():
     :return: None - если не осталось людей в очереди
     :return tuple with 4 values - Айди телеграм, Имя с фаамилией, причина заявления, и когда было отправлено"""
 
-    c.execute("SELECT * FROM queue ORDER BY id DESC LIMIT 1")
-    row = c.fetchone()
-    if row:
-        _, tg_id, name, reason, crated_at, = row
-        c.execute('DELETE FROM queue WHERE tg_id = ?', (tg_id,))
-        conn.commit()
-        return tg_id, name, reason, crated_at
-    else:
-        logger.info("Записей не осталось")
-        return None
+
+
+    queue_array=[]
+    while True:
+        c.execute("SELECT * FROM queue ORDER BY id DESC LIMIT 1")
+
+        row = c.fetchone()
+        if row:
+            _, tg_id, name, reason, crated_at, = row
+            c.execute('DELETE FROM queue WHERE tg_id = ?', (tg_id,))
+            conn.commit()
+            line=( tg_id, name, reason, crated_at)
+            queue_array.append(line)
+            logger.info(f"{tg_id} добавлен в очередь.")
+        else:
+            logger.info("Записей не осталось")
+            return queue_array
 
 
 
 if __name__ == '__main__':
-    # add_to_queue(23231213, "Игнат","арбакайте")
+    # add_to_queue(55, "ссан", "хочу помр")
     print(get_from_queue())
 
 

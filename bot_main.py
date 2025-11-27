@@ -1,13 +1,16 @@
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+import datetime
 
-from utils import logger
+from utils import logger,  day_off
+from database_main import add_to_queue, get_from_queue
 
 #глобали
 img_cache={}
+id_cache={}
 
 admin_id = 57713855
-manager_chat_id = ""
+manager_chat_id = -1003210623925
 tr_chat_username = "@asas_magov"
 
 
@@ -35,6 +38,8 @@ def check_subscribtion(user_id, country):
         else:
 
             return False
+def get_queue():
+    pass
 
 @bot.message_handler(commands=['start'])
 def handle_start(message, not_first:bool=None):
@@ -88,6 +93,8 @@ def handle_start(message, not_first:bool=None):
 def callback_query(call):
     user_id = call.from_user.id
     chat_id = call.message.chat.id
+    user_name= call.from_user.first_name + " " + call.from_user.last_name
+    message_id = call.message.message_id
     if call.data=="tr_menu":
         if check_subscribtion(user_id, 1):
             bot.send_message(chat_id, "салам армян")
@@ -143,10 +150,40 @@ def callback_query(call):
                             "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
                             parse_mode="HTML")
     if call.data == "tr_card_request":
-        msg = ("⚡️Менеджер свяжется с вами в ближайшее <b>рабочее</b> время\n"
+        msg = ("⚡️Позвали менеджера, скоро с вами свяжутся, ожидайте\n"
                "🕰<b>Наш график работы:</b>\n"
                "Пн-Сб: 10:00 - 20:00\n"
                "Вс и последняя суббота месяца:\n"
-               "<b>выходной</b>")
-        bot.send_message(chat_id, msg, parse_mode="HTML")
+               "<b>выходной</b>"
+               )
+        if day_off():
+            add_to_queue(user_id,user_name, "💳 заявка на зарубежную карту")
+
+            msg = ("🏄‍♂️<b>К СОЖАЛЕНИЮ, МЫ СЕЙЧАС НЕ РАБОТАЕМ</b>🏄‍♀️\n\n"
+                   "✅Добавили вашу заявку в очередь\n\n"
+                   "⚡️В <b>рабочее</b> время менеджер получит вашу заявку и свяжется с вами\n"
+                   "🕰<b>Наш график работы:</b>\n"
+                   "Пн-Сб: 10:00 - 20:00\n"
+                   "Вс и последняя суббота месяца:\n"
+                   "<b>выходной</b>"
+                   )
+            bot.send_message(chat_id, msg, parse_mode="HTML")
+
+
+        else:
+            keybord = InlineKeyboardMarkup()
+            keybord.add( InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client"))
+            msg_admin = f'''🇹🇷 Турция\n👤 Клиент: {user_name}\n\n💳 заявка на зарубежную карту\n
+🕘{datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")}'''
+            sent_msg= bot.send_message(manager_chat_id, msg_admin, parse_mode="HTML", reply_markup=keybord)
+            id_cache[sent_msg.message_id] = (user_name, user_id)
+            print(id_cache)
+            bot.send_message(chat_id, msg, parse_mode="HTML")
+
+
+    if call.data == "contact_client":
+
+        client_name, client_id = id_cache[message_id]
+        new_text = call.message.text + "\n" + f"\n✅<b>Взят в работу:</b>\n<i>{datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")}</i>\n\n💼Менеджер: {user_name} " + "\n" + f"\n➡️Cсылка на чат с клиентом:<a href='tg://user?id={client_id}'>➡️ {client_name}</a>"
+        bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=new_text, parse_mode="HTML", reply_markup=None)
     bot.answer_callback_query(call.id)

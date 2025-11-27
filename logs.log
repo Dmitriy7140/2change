@@ -1,0 +1,16 @@
+bot_main.py handle 2025-11-27 15:48:47,219 [ERROR] Ошибка в боте: SQLite objects created in a thread can only be used in that same thread. The object was created in thread id 11944 and this is thread id 4804.
+Traceback (most recent call last):
+  File "C:\Users\user\PycharmProjects\2change\.venv\Lib\site-packages\telebot\util.py", line 97, in run
+    task(*args, **kwargs)
+    ~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\user\PycharmProjects\2change\.venv\Lib\site-packages\telebot\__init__.py", line 10134, in _run_middlewares_and_handler
+    result = handler['function'](message)
+  File "C:\Users\user\PycharmProjects\2change\bot_main.py", line 160, in callback_query
+    add_to_queue(user_id,user_name, "💳 заявка на зарубежную карту")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\user\PycharmProjects\2change\database_main.py", line 18, in add_to_queue
+    c.execute('SELECT 1 FROM queue WHERE tg_id = ?', (tg_id,))
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.ProgrammingError: SQLite objects created in a thread can only be used in that same thread. The object was created in thread id 11944 and this is thread id 4804.
+__init__.py infinity_polling 2025-11-27 15:49:33,565 [ERROR] Infinity polling: polling exited
+__init__.py infinity_polling 2025-11-27 15:49:33,571 [ERROR] Break infinity polling
