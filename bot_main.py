@@ -3,7 +3,8 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import datetime
 
 from utils import logger,  day_off
-from database_main import add_to_queue, get_from_queue
+from database_main import QueueDB
+
 
 #глобали
 img_cache={}
@@ -24,6 +25,7 @@ class MyExceptionHandler(telebot.ExceptionHandler):
         bot.send_message(admin_id, message)
         return True
 
+qdb=QueueDB()
 bot = telebot.TeleBot( "8559812575:AAFducMZ0rp9WKCbo_pv8yyhkMAG8Drz6m8", exception_handler=MyExceptionHandler())
 
 
@@ -38,8 +40,7 @@ def check_subscribtion(user_id, country):
         else:
 
             return False
-def get_queue():
-    pass
+
 
 @bot.message_handler(commands=['start'])
 def handle_start(message, not_first:bool=None):
@@ -120,7 +121,6 @@ def callback_query(call):
         bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
     if call.data=="main_menu":
         handle_start(call.message, True)
-
     if call.data=="card_menu":
         if check_subscribtion(user_id, 1):
             photo_path = "img/card.jpg"
@@ -157,8 +157,7 @@ def callback_query(call):
                "<b>выходной</b>"
                )
         if day_off():
-            add_to_queue(user_id,user_name, "💳 заявка на зарубежную карту")
-
+            qdb.add_to_queue(tg_id=user_id,name=user_name, reason="💳 заявка на зарубежную карту")
             msg = ("🏄‍♂️<b>К СОЖАЛЕНИЮ, МЫ СЕЙЧАС НЕ РАБОТАЕМ</b>🏄‍♀️\n\n"
                    "✅Добавили вашу заявку в очередь\n\n"
                    "⚡️В <b>рабочее</b> время менеджер получит вашу заявку и свяжется с вами\n"
@@ -179,8 +178,6 @@ def callback_query(call):
             id_cache[sent_msg.message_id] = (user_name, user_id)
             print(id_cache)
             bot.send_message(chat_id, msg, parse_mode="HTML")
-
-
     if call.data == "contact_client":
 
         client_name, client_id = id_cache[message_id]
