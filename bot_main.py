@@ -24,6 +24,40 @@ class MyExceptionHandler(telebot.ExceptionHandler):
         # Здесь можно добавить логирование ошибки, например через logger
         bot.send_message(admin_id, message)
         return True
+class ApplicationCreator:
+    def __init__(self, country:int=None,client_name=None, reason:str=None, currency1=None, currency2=None,amount1=None, amount2="n", time=None ):#AMOUNT2 БУДЕТ ВЫСЧИТЫВАТЬСЯ ИСХОДЯ ИЗ ФУНКЦИИ ИНВЕСТИНГА
+        self.country = country
+        self.client_name = client_name
+        self.reason = reason
+        self.currency1 = currency1
+        self.currency2 = currency2
+        self.amount1 = amount1
+        self.amount2 = amount2
+        if time is None:
+            self.time = datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        else:
+            self.time = time
+    def create(self):
+        msg = ""
+        country_names = {1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇰🇷Корея"}
+        intro = country_names.get(self.country, "Неизвестная страна") +"\n"+f"👤Клиент: {self.client_name}"
+        if self.amount1:
+            main_body=""
+            if self.currency1 and self.currency2:
+                main_body =f"<b>🫵Отдаст: {self.amount1}</b> {self.currency1}" +'\n\n'+f"👉<b>Получит: {self.amount2}</b> {self.currency2}"
+            elif self.currency1 and not self.currency2:
+                main_body =f"<b>🫵Отдаст:{self.amount1}</b> {self.currency1}"+"\n\n"+f"<b>👉Получит:</b> 🤔Иную валюту."
+            elif not self.currency1 and self.currency2:
+                main_body=f"<b>🫵Отдаст: {self.amount1}</b> 🤔Иной валюты" +"\n\n"+f"<b>👉Получит:</b> {self.currency2}"
+            elif not self.currency1 and not self.currency2:
+                main_body=f"<b>🫵Отдаст: {self.amount1}</b> 🤔Иной валюты" +"\n\n"+f"<b>👉Получит:</b> 🤔Иную валюту."
+            msg+= intro+"\n\n"+main_body+"\n\n"+f"🕘<i>{self.time}</i>"
+            return msg
+        else:
+
+            msg += intro +"\n\n"+ f"\nПричина: {self.reason if self.reason else "осталась в тайне"}"+"\n\n"+f"🕘{self.time}"
+            return msg
+
 
 qdb=QueueDB()
 bot = telebot.TeleBot( "8559812575:AAFducMZ0rp9WKCbo_pv8yyhkMAG8Drz6m8", exception_handler=MyExceptionHandler())
@@ -40,6 +74,7 @@ def check_subscribtion(user_id, country):
         else:
 
             return False
+    return None
 
 
 @bot.message_handler(commands=['start'])
@@ -90,15 +125,33 @@ def handle_start(message, not_first:bool=None):
             sent = bot.send_video(message.chat.id, video, caption=msg,reply_markup=keyboard, parse_mode="HTML")
             img_cache[video_path] = sent.video.file_id
 
+@bot.message_handler(commands=['manager'], func=lambda message: check_subscribtion(message.chat.id, message.from_user.id))
+def handle_manager(message):
+    pass
+
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
     user_id = call.from_user.id
     chat_id = call.message.chat.id
     user_name= call.from_user.first_name + " " + call.from_user.last_name
     message_id = call.message.message_id
+
     if call.data=="tr_menu":
         if check_subscribtion(user_id, 1):
-            bot.send_message(chat_id, "салам армян")
+            keyboard = InlineKeyboardMarkup(row_width=2)
+            keyboard.add(InlineKeyboardButton("✏️Калькулятор | Оставить заявку", callback_data="calc"))
+            keyboard.add(InlineKeyboardButton("📈Актуальный курс", callback_data="currency_menu"))
+            keyboard.add(InlineKeyboardButton("🎁Получить бесплатно eSim", callback_data="esim_menu"))
+            keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="card_menu"))
+            keyboard.add(InlineKeyboardButton("👤Менеджер", callback_data="call_mama"))
+            button1= InlineKeyboardButton("💼Другие услуги", callback_data="other_menu")
+            button2= InlineKeyboardButton("📋Главное меню", callback_data="main_menu")
+            keyboard.row(button1, button2)
+            bot.send_message(chat_id, '''🇹🇷 2Change — услуги в Турции\n\n
+
+                                            🕒 График работы:\n
+                                            Пн-Сб: 10:00 - 20:00 (Вс - выходной)\n
+                                            Офис по записи''')
         else:
             bot.send_message(chat_id,"<i>Для работы с ботом\n"
                             "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
@@ -172,8 +225,13 @@ def callback_query(call):
         else:
             keybord = InlineKeyboardMarkup()
             keybord.add( InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client"))
-            msg_admin = f'''🇹🇷 Турция\n👤 Клиент: {user_name}\n\n💳 заявка на зарубежную карту\n
-🕘{datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")}'''
+            apmake=ApplicationCreator(country=1,
+                                      client_name=user_name,
+                                      reason="💳заявка на зарубежную карту",
+
+                                      )
+
+            msg_admin = apmake.create()
             sent_msg= bot.send_message(manager_chat_id, msg_admin, parse_mode="HTML", reply_markup=keybord)
             id_cache[sent_msg.message_id] = (user_name, user_id)
             print(id_cache)

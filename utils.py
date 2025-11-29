@@ -27,7 +27,7 @@ def day_off():
         next_saturday = date_time + timedelta(days=7)
         if next_saturday.month != date_time.month:
             return True
-    return False
+    return False#if not day off
 
 
 
