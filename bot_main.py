@@ -10,7 +10,7 @@ from database_main import QueueDB
 img_cache={}
 id_cache={}
 
-admin_id = 57713855
+admin_id = (57713855, 22231230)
 manager_chat_id = -1003210623925
 tr_chat_username = "@asas_magov"
 
@@ -38,9 +38,10 @@ class ApplicationCreator:
         else:
             self.time = time
     def create(self):
+        """country_names = {1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇰🇷Корея"}"""
         msg = ""
         country_names = {1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇰🇷Корея"}
-        intro = country_names.get(self.country, "Неизвестная страна") +"\n"+f"👤Клиент: {self.client_name}"
+        intro = country_names.get(self.country, "Страна не указана") +"\n"+f"👤Клиент: {self.client_name}"
         if self.amount1:
             main_body=""
             if self.currency1 and self.currency2:
@@ -75,6 +76,56 @@ def check_subscribtion(user_id, country):
 
             return False
     return None
+
+
+def send_media(path, chat_id, caption=None, reply_markup=None, parse_mode="HTML"):
+    if path in img_cache:
+        file_id = img_cache[path]
+        if path.lower().endswith('.gif'):
+            bot.send_animation(chat_id, file_id, caption=caption, reply_markup=reply_markup, parse_mode=parse_mode)
+        elif path.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
+            bot.send_photo(chat_id, file_id, caption=caption, reply_markup=reply_markup, parse_mode=parse_mode)
+        else:  # mp4, avi и т.д.
+            bot.send_video(chat_id, file_id, caption=caption, reply_markup=reply_markup, parse_mode=parse_mode)
+    else:
+        with open(path, "rb") as media:
+            if path.lower().endswith('.gif'):
+                sent = bot.send_animation(chat_id, media, caption=caption, reply_markup=reply_markup, parse_mode=parse_mode)
+                img_cache[path] = sent.animation.file_id
+            elif path.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
+                sent = bot.send_photo(chat_id, media, caption=caption, reply_markup=reply_markup, parse_mode=parse_mode)
+                img_cache[path] = sent.photo[-1].file_id
+            else:  # видео
+                sent = bot.send_video(chat_id, media, caption=caption, reply_markup=reply_markup, parse_mode=parse_mode)
+                img_cache[path] = sent.video.file_id
+def send_application(user_id,user_name,chat_id,reason=None,country=None,amount1=None,currency1=None,currency2=None):
+    msg = ("⚡️Позвали менеджера, скоро с вами свяжутся, ожидайте\n"
+           "🕰<b>Наш график работы:</b>\n"
+           "Пн-Сб: 10:00 - 20:00\n"
+           "Вс и последняя суббота месяца:\n"
+           "<b>выходной</b>"
+           )
+    if day_off():
+        qdb.add_to_queue(country=country, tg_id=user_id,name=user_name, reason=reason,amount=amount1,currency1=currency1,currency2=currency2)
+        msg = ("🏄‍♂️<b>К СОЖАЛЕНИЮ, МЫ СЕЙЧАС НЕ РАБОТАЕМ</b>🏄‍♀️\n\n"
+               "✅Добавили вашу заявку в очередь\n\n"
+               "⚡️В <b>рабочее</b> время менеджер получит вашу заявку и свяжется с вами\n"
+               "🕰<b>Наш график работы:</b>\n"
+               "Пн-Сб: 10:00 - 20:00\n"
+               "Вс и последняя суббота месяца:\n"
+               "<b>выходной</b>"
+               )
+        bot.send_message(chat_id, msg, parse_mode="HTML")
+    else:
+        keybord = InlineKeyboardMarkup()
+        keybord.add( InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client"))
+        apmake=ApplicationCreator(country=country, client_name=user_name, reason=reason,amount1=amount1,currency1=currency1,currency2=currency2)
+
+        msg_admin = apmake.create()
+        sent_msg= bot.send_message(manager_chat_id, msg_admin, parse_mode="HTML", reply_markup=keybord)
+        id_cache[sent_msg.message_id] = (user_name, user_id)
+
+        bot.send_message(chat_id, msg, parse_mode="HTML")
 
 
 @bot.message_handler(commands=['start'])
@@ -117,23 +168,60 @@ def handle_start(message, not_first:bool=None):
 
                 f"🕒 Пн–Сб 10:00-20:00 (по Мск)\n"
                 f"❗️@ALEXANDRA_2CHANGE - <i>единственный менеджер 2Change</i> — /manager")
-    if video_path in img_cache:
-        bot.send_video(message.chat.id, img_cache[video_path], caption=msg, reply_markup=keyboard, parse_mode="HTML")
 
-    else:
-        with open(video_path, "rb") as video:
-            sent = bot.send_video(message.chat.id, video, caption=msg,reply_markup=keyboard, parse_mode="HTML")
-            img_cache[video_path] = sent.video.file_id
+    send_media(path=video_path,chat_id=message.chat.id,reply_markup=keyboard,caption=msg)
 
-@bot.message_handler(commands=['manager'], func=lambda message: check_subscribtion(message.chat.id, message.from_user.id))
+@bot.message_handler(commands=['manager'])
 def handle_manager(message):
-    pass
+    user_name = message.from_user.first_name + " " + message.from_user.last_name
+    user_id = message.from_user.id
+    if check_subscribtion(user_id,1):
+        if day_off():
+            qdb.add_to_queue(tg_id=user_id, name=user_name, reason="🔔вызов менеджера")
+            msg = ("🏄‍♂️<b>К СОЖАЛЕНИЮ, МЫ СЕЙЧАС НЕ РАБОТАЕМ</b>🏄‍♀️\n\n"
+                   "✅Добавили вашу заявку в очередь\n\n"
+                   "⚡️В <b>рабочее</b> время менеджер получит вашу заявку и свяжется с вами\n"
+                   "🕰<b>Наш график работы:</b>\n"
+                   "Пн-Сб: 10:00 - 20:00\n"
+                   "Вс и последняя суббота месяца:\n"
+                   "<b>выходной</b>"
+                   )
+            bot.send_message(message.chat.id, msg, parse_mode="HTML")
+        else:
+            apmake = ApplicationCreator(client_name=user_name, reason="🔔вызов менеджера")
+            msg = apmake.create()
+            keyboard = InlineKeyboardMarkup()
+            keyboard.add(InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client"))
+            sent_msg = bot.send_message(manager_chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
+            id_cache[sent_msg.message_id] = (user_name, user_id)
+            bot.send_message(message.chat.id, "⚡️Позвали менеджера, скоро с вами свяжутся, ожидайте\n"
+                       "🕰<b>Наш график работы:</b>\n"
+                       "Пн-Сб: 10:00 - 20:00\n"
+                       "Вс и последняя суббота месяца:\n"
+                       "<b>выходной</b>", parse_mode="HTML")
+    else:
+        bot.send_message(message.chat.id,"<i>Для работы с ботом\n"
+                            "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>", parse_mode="HTML")
+
+@bot.message_handler(commands=['queue'], func=lambda message: message.from_user.id in admin_id)
+def handle_queue(message):
+
+    lines= qdb.get_from_queue()
+    print(lines)
+    _, tg_id, country, client_name, amount, currency1, currency2, reason, created_at = lines
+    bot.send_message(message.chat.id, lines, parse_mode="HTML")
+
+    #ДОБАВИТЬ ОТРАБОТКУ ЗАЯВОК
+
+
+
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
     user_id = call.from_user.id
     chat_id = call.message.chat.id
-    user_name= call.from_user.first_name + " " + call.from_user.last_name
+    last_name = call.from_user.last_name or ""
+    user_name = (call.from_user.first_name or "") + (" " + last_name if last_name else "")
     message_id = call.message.message_id
 
     if call.data=="tr_menu":
@@ -147,15 +235,37 @@ def callback_query(call):
             button1= InlineKeyboardButton("💼Другие услуги", callback_data="other_menu")
             button2= InlineKeyboardButton("📋Главное меню", callback_data="main_menu")
             keyboard.row(button1, button2)
-            bot.send_message(chat_id, '''🇹🇷 2Change — услуги в Турции\n\n
-
-                                            🕒 График работы:\n
-                                            Пн-Сб: 10:00 - 20:00 (Вс - выходной)\n
-                                            Офис по записи''')
+            send_media(path="img/turkey.jpg", chat_id=chat_id, caption='''🇹🇷<b>2Change — услуги в Турции\n\n🕒 График работы:</b>\nПн-Сб: 10:00 - 20:00 (Вс - выходной)\nОфис по записи''', parse_mode="HTML", reply_markup=keyboard)
         else:
             bot.send_message(chat_id,"<i>Для работы с ботом\n"
                             "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
                             parse_mode="HTML")
+    if call.data=="esim_menu":
+        if check_subscribtion(user_id, 1):
+            keyboard = InlineKeyboardMarkup()
+            keyboard.add(InlineKeyboardButton("Оставить заявку✅",callback_data="tr_esim_request"))
+            keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+            msg = (
+                "🎁 <b>Дарим электронную симкарту eSIM</b> — без условий и скрытых платежей!\n\n"
+                "Хотите оставаться на связи в Турции без переплат? \n"
+                "Ловите подарок — eSIM с интернетом <b>абсолютно бесплатно!</b>\n\n"
+                "💡 <b>Что вы получите?</b>\n"
+                "✔️ Бесплатное подключение\n"
+                "✔️ 1 ГБ интернета\n"
+                "✔️ Выгодное пополнение при необходимости\n"
+                "🇹🇷 <b>5 ГБ — 1900₽</b>\n"
+                "🇹🇷 <b>10 ГБ — 2500₽</b>\n"
+                "🇹🇷 <b>20 ГБ — 3300₽</b>\n\n"
+                "🎁 <b>Бонус +10 ГБ трафика в подарок</b>, при обмене от 20 000 лир через QR!\n\n"
+                "👇 <b>Оставьте заявку</b> или напишите менеджеру\n "
+                "@ALEXANDRA_2CHANGE 👩🏻‍💼"
+            )
+            send_media("img/esim.jpg",chat_id,msg,reply_markup=keyboard)
+        else:
+            bot.send_message(chat_id,"<i>Для работы с ботом\n"
+                            "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
+                            parse_mode="HTML")
+
     if call.data=="comment_menu":
         msg = ('<b>Мы дорожим нашей репутацией, благодаря этому наш сервис работает уже 3 года.⭐️\n\n'
                '✅Про нас писали в газете <a href="https://t.me/review_2change/394">«Один из популярных сервисов обмена Турции»</a>\n'
@@ -190,55 +300,24 @@ def callback_query(call):
             keyboard = InlineKeyboardMarkup()
             keyboard.add(InlineKeyboardButton("Оставить заявку✅", callback_data="tr_card_request"))
             keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-            if photo_path in img_cache:
-                bot.send_photo(chat_id, img_cache[photo_path], caption=msg, reply_markup=keyboard,
-                               parse_mode="HTML")
-
-            else:
-                with open(photo_path, "rb") as photo:
-                    sent = bot.send_photo(chat_id, photo, caption=msg, reply_markup=keyboard, parse_mode="HTML")
-                    img_cache[photo_path] = sent.photo[-1].file_id
+            send_media(photo_path, chat_id, msg, keyboard)
         else:
             bot.send_message(chat_id,"<i>Для работы с ботом\n"
                             "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
                             parse_mode="HTML")
     if call.data == "tr_card_request":
-        msg = ("⚡️Позвали менеджера, скоро с вами свяжутся, ожидайте\n"
-               "🕰<b>Наш график работы:</b>\n"
-               "Пн-Сб: 10:00 - 20:00\n"
-               "Вс и последняя суббота месяца:\n"
-               "<b>выходной</b>"
-               )
-        if day_off():
-            qdb.add_to_queue(tg_id=user_id,name=user_name, reason="💳 заявка на зарубежную карту")
-            msg = ("🏄‍♂️<b>К СОЖАЛЕНИЮ, МЫ СЕЙЧАС НЕ РАБОТАЕМ</b>🏄‍♀️\n\n"
-                   "✅Добавили вашу заявку в очередь\n\n"
-                   "⚡️В <b>рабочее</b> время менеджер получит вашу заявку и свяжется с вами\n"
-                   "🕰<b>Наш график работы:</b>\n"
-                   "Пн-Сб: 10:00 - 20:00\n"
-                   "Вс и последняя суббота месяца:\n"
-                   "<b>выходной</b>"
-                   )
-            bot.send_message(chat_id, msg, parse_mode="HTML")
+        send_application(user_id, user_name, chat_id,country=1,reason= "💳зарубежная карта")
 
 
-        else:
-            keybord = InlineKeyboardMarkup()
-            keybord.add( InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client"))
-            apmake=ApplicationCreator(country=1,
-                                      client_name=user_name,
-                                      reason="💳заявка на зарубежную карту",
 
-                                      )
-
-            msg_admin = apmake.create()
-            sent_msg= bot.send_message(manager_chat_id, msg_admin, parse_mode="HTML", reply_markup=keybord)
-            id_cache[sent_msg.message_id] = (user_name, user_id)
-            print(id_cache)
-            bot.send_message(chat_id, msg, parse_mode="HTML")
+    if call.data=="tr_esim_request":
+       send_application(user_id,user_name,chat_id, country=1,reason="🎁 бесплатная eSIM на 1ГБ")
+    if call.data=="call_mama":
+        bot.send_message(chat_id,"💼Для вызова менеджера нажмите /manager")
     if call.data == "contact_client":
 
         client_name, client_id = id_cache[message_id]
+        del id_cache[message_id]
         new_text = call.message.text + "\n" + f"\n✅<b>Взят в работу:</b>\n<i>{datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")}</i>\n\n💼Менеджер: {user_name} " + "\n" + f"\n➡️Cсылка на чат с клиентом:<a href='tg://user?id={client_id}'>➡️ {client_name}</a>"
         bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=new_text, parse_mode="HTML", reply_markup=None)
     bot.answer_callback_query(call.id)

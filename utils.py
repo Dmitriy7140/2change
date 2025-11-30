@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 def day_off():
     """:returns True if it is day off  """
+
     date_time = datetime.now()
     current_time = date_time.time()
     if (time(20, 1) <= current_time <= time(23, 59)) or (time(0, 0) <= current_time <= time(9, 59)):
