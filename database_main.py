@@ -92,4 +92,11 @@ class QueueDB:
             print(row)
             return row  # кортеж со всеми полями, None сохраняются как есть
 
+    def count_rows(self):
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute("SELECT COUNT(*) FROM queue")
+            count = c.fetchone()[0]
+        return count
+
 

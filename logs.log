@@ -1,3 +1,11 @@
-database_main.py get_from_queue 2025-11-30 20:04:03,200 [INFO] Извлечена и удалена запись с id=3
-__init__.py infinity_polling 2025-11-30 20:04:49,230 [ERROR] Infinity polling: polling exited
-__init__.py infinity_polling 2025-11-30 20:04:49,231 [ERROR] Break infinity polling
+database_main.py add_to_queue 2025-12-01 20:04:42,402 [INFO] Dmitriy V. (ID 57713855) добавлен в очередь.
+database_main.py add_to_queue 2025-12-01 20:05:15,591 [WARNING] Игнорировано: tg_id=57713855 уже существует
+database_main.py get_from_queue 2025-12-01 20:05:56,296 [INFO] Извлечена и удалена запись с id=11
+database_main.py get_from_queue 2025-12-01 20:06:12,634 [INFO] Записей не осталось
+database_main.py add_to_queue 2025-12-01 20:09:21,901 [INFO] Dmitriy V. (ID 57713855) добавлен в очередь.
+database_main.py get_from_queue 2025-12-01 20:09:50,300 [INFO] Извлечена и удалена запись с id=12
+database_main.py add_to_queue 2025-12-01 20:12:03,467 [INFO] Dmitriy V. (ID 57713855) добавлен в очередь.
+database_main.py get_from_queue 2025-12-01 20:12:28,182 [INFO] Извлечена и удалена запись с id=13
+database_main.py get_from_queue 2025-12-01 20:12:39,081 [INFO] Записей не осталось
+__init__.py infinity_polling 2025-12-01 20:15:23,363 [ERROR] Infinity polling: polling exited
+__init__.py infinity_polling 2025-12-01 20:15:23,364 [ERROR] Break infinity polling

@@ -116,6 +116,8 @@ def send_application(user_id,user_name,chat_id,reason=None,country=None,amount1=
                "<b>выходной</b>"
                )
         bot.send_message(chat_id, msg, parse_mode="HTML")
+        bot.send_message(manager_chat_id, f"🛑Новая заявка в очереди. Всего заявок: {qdb.count_rows()}\n\n"
+                                          f"Нажмите /queue для отработки.", disable_notification=True)
     else:
         keybord = InlineKeyboardMarkup()
         keybord.add( InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client"))
@@ -205,11 +207,25 @@ def handle_manager(message):
 
 @bot.message_handler(commands=['queue'], func=lambda message: message.from_user.id in admin_id)
 def handle_queue(message):
+    last_name = message.from_user.last_name or ""
+    user_name = (message.from_user.first_name or "") + (" " + last_name if last_name else "")
+
+    amount2= None
 
     lines= qdb.get_from_queue()
-    print(lines)
-    _, tg_id, country, client_name, amount, currency1, currency2, reason, created_at = lines
-    bot.send_message(message.chat.id, lines, parse_mode="HTML")
+    if lines:
+
+        _, tg_id, country, client_name, amount, currency1, currency2, reason, created_at = lines
+        if amount and currency1 and currency2:
+
+            amount2= "formula"
+        apmake = ApplicationCreator(country=country, client_name=client_name, amount1=amount, amount2=amount2,currency1=currency1, currency2=currency2, reason=reason, time=created_at)
+        msg = apmake.create()
+        msg += "\n" + f"\n✅<b>Взят в работу:</b>\n<i>{datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")}</i>\n\n💼Менеджер: {user_name} " + "\n" + f"\n➡️Cсылка на чат с клиентом:<a href='tg://user?id={tg_id}'>➡️ {client_name}</a>"
+        msg += "\n" + f"\n⚡️Заявок в очереди: {qdb.count_rows()}"
+        bot.send_message(message.chat.id, msg, parse_mode="HTML")
+    else:
+        bot.send_message(message.chat.id, "Заявок в очереди не осталось.")
 
     #ДОБАВИТЬ ОТРАБОТКУ ЗАЯВОК
 
