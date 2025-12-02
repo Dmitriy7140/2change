@@ -22,7 +22,7 @@ class MyExceptionHandler(telebot.ExceptionHandler):
         message = f"Ошибка в боте: {exception}"
         logger.error(message, exc_info=True)
         # Здесь можно добавить логирование ошибки, например через logger
-        bot.send_message(admin_id, message)
+        bot.send_message(admin_id[0], message)
         return True
 class ApplicationCreator:
     def __init__(self, country:int=None,client_name=None, reason:str=None, currency1=None, currency2=None,amount1=None, amount2="n", time=None ):#AMOUNT2 БУДЕТ ВЫСЧИТЫВАТЬСЯ ИСХОДЯ ИЗ ФУНКЦИИ ИНВЕСТИНГА
@@ -227,7 +227,6 @@ def handle_queue(message):
     else:
         bot.send_message(message.chat.id, "Заявок в очереди не осталось.")
 
-    #ДОБАВИТЬ ОТРАБОТКУ ЗАЯВОК
 
 
 
@@ -323,6 +322,21 @@ def callback_query(call):
                             parse_mode="HTML")
     if call.data == "tr_card_request":
         send_application(user_id, user_name, chat_id,country=1,reason= "💳зарубежная карта")
+    if call.data == "other_menu":
+        msg=("👋 <b>Добро пожаловать!</b>\n"
+             "Здесь вы можете ознакомиться со всеми видами услуг сервиса <b>2Change</b>.\n\n"
+             "<i>Мы помогаем с 💸 переводами, расчётами, оплатами и 📦 сопроводительными услугами для работы с разными странами 🌍 и платформами.</i>\n\n"
+             "<b>👇 Нажмите, чтобы узнать подробности</b>")
+        keyboard = InlineKeyboardMarkup()
+        keyboard.add(InlineKeyboardButton("Наличные через банкомат (QR-код)"))
+        button1, button2= InlineKeyboardButton("Перевод по IBAN"), InlineKeyboardButton("Наличные в офисе")
+        keyboard.row(button1, button2)
+        keyboard.add(InlineKeyboardButton("Симкарта eSim📲"))
+        keyboard.add(InlineKeyboardButton("Денежные переводы💸"))
+        keyboard.add(InlineKeyboardButton("Открытие счета в турецком банке🇹🇷"))
+        keyboard.add(InlineKeyboardButton("Онлайн-сервисы и букинги💻"))
+        bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
+
 
 
 

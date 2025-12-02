@@ -1,4 +1,4 @@
-
+import investpy
 import datetime
 import sqlite3
 from contextlib import contextmanager
