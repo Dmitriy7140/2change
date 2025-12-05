@@ -4,6 +4,12 @@ import sqlite3
 from contextlib import contextmanager
 from utils import logger
 
+class BiznesMolodost:
+    @staticmethod
+    def get_currency( currency1, currency2):
+        data = investpy.get_currency_cross_recent_data(currency_cross=f'{currency1}/{currency2}', as_json=False)
+        latest_price = data['Close'].iloc[-1]
+        print(f"Текущий курс TRL/RUB: {latest_price}")
 
 class QueueDB:
     def __init__(self, path_to_db="database.db"):
@@ -100,3 +106,5 @@ class QueueDB:
         return count
 
 
+if __name__ == "__main__":
+    BiznesMolodost.get_currency("gbp", "rub")
