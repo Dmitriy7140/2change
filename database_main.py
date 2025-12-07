@@ -1,15 +1,11 @@
-import investpy
+import coinoxr
 import datetime
 import sqlite3
 from contextlib import contextmanager
 from utils import logger
 
-class BiznesMolodost:
-    @staticmethod
-    def get_currency( currency1, currency2):
-        data = investpy.get_currency_cross_recent_data(currency_cross=f'{currency1}/{currency2}', as_json=False)
-        latest_price = data['Close'].iloc[-1]
-        print(f"Текущий курс TRL/RUB: {latest_price}")
+
+
 
 class QueueDB:
     def __init__(self, path_to_db="database.db"):
@@ -18,7 +14,9 @@ class QueueDB:
 
     def _init_db(self):
         with self.get_connection() as conn:
-            c = conn.cursor()  # ✅ Добавлены ()
+            c = conn.cursor()
+
+            # Таблица queue
             c.execute('''CREATE TABLE IF NOT EXISTS queue (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         tg_id INTEGER UNIQUE,
@@ -28,7 +26,16 @@ class QueueDB:
                         currency1 TEXT,
                         currency2 TEXT,
                         reason TEXT,
-                        created_at TEXT)''')
+                        created_at TEXT)''')  # ✅ Убрана запятая
+
+            # Таблица currency (отдельно)
+            c.execute('''CREATE TABLE IF NOT EXISTS currency (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                usd_rub REAL,    
+                usd_thb REAL,
+                usd_try REAL,
+                updated_at TEXT)''')
+
             conn.commit()
 
     @contextmanager
@@ -105,6 +112,37 @@ class QueueDB:
             count = c.fetchone()[0]
         return count
 
+    def update_currency(self):
+        try:
+            coinoxr.app_id = "159d37183d104e2cb66f4ca45a9cadb4"
+
+            all_courses = coinoxr.Latest().get(base=f"USD", show_alternative=True)
+            usd_try = all_courses.body["rates"]["TRY"]
+            usd_rub = all_courses.body["rates"]["RUB"]
+            usd_thb = all_courses.body["rates"]["THB"]
+
+        except Exception as e:
+            logger.error(f"Ошибка с добавлением курса:{e}")
+            return None
+        self.set_currency(usd_rub, usd_try, usd_thb)
+        return True
+
+    def set_currency(self, usd_rub, usd_try, usd_thb, time=datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")):
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute('''INSERT INTO currency (usd_rub, usd_thb, usd_try, updated_at) VALUES (?, ?, ?, ?)''', (usd_rub, usd_try, usd_thb, time))
+            conn.commit()
+
+    def get_currencies(self):
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute("SELECT * FROM currency ORDER BY id DESC LIMIT 1")
+            row = c.fetchone()
+            return row
+
 
 if __name__ == "__main__":
-    BiznesMolodost.get_currency("gbp", "rub")
+    qdb=QueueDB()
+
+    row=qdb.get_currencies()
+    print(row)
