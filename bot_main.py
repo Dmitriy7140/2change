@@ -468,6 +468,8 @@ def callback_query(call):
             InlineKeyboardButton("✅Узнать у менеджера", callback_data="request/Онлайн-сервисы  💻/1"))
         keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
         bot.send_message(chat_id, msg, reply_markup=keyboard, parse_mode="HTML")
+    if call.data in ("calc", "rf_menu", "thai_menu"):
+        bot.send_message(chat_id, "Функция в разработке. Свяжитесь с менеджером /manager")
 
 
 
