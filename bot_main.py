@@ -11,7 +11,7 @@ img_cache={}
 id_cache={}
 
 admin_id = (57713855, 22231230)
-manager_chat_id = -1003210623925
+manager_chat_id = -1003210623925 #НЕ ЗАБУДЬ ПОМЕНЯТЬ ПРОВЕРКИ НА ПОДПИСКУ ДЛЯ РФ И ТАЙ
 tr_chat_username = "@asas_magov"
 
 
@@ -39,6 +39,7 @@ class ApplicationCreator:
             self.time = time
     def create(self):
         """country_names = {1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇰🇷Корея"}"""
+
         msg = ""
         country_names = {0:"Страна не указана", 1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇰🇷Корея"}
         intro = country_names.get(self.country, "Страна не указана") +"\n"+f"👤Клиент: {self.client_name}"
@@ -66,16 +67,19 @@ bot = telebot.TeleBot( "8559812575:AAFducMZ0rp9WKCbo_pv8yyhkMAG8Drz6m8", excepti
 
 def check_subscribtion(user_id, country):
     if country == 1: #tr
+        logger.info(f"Проверяем подписку id={user_id} на Турецкий чат...")
 
         chat_member = bot.get_chat_member(tr_chat_username, user_id)
 
         if chat_member.status in ("creator", "administrator", "member"):
-
+            logger.info("Чел подписан!")
             return True
         else:
-
+            logger.info("Чел не подписан!")
             return False
+    logger.error("Не проверили, возвращаем None!!!")
     return None
+
 
 
 def send_media(path, chat_id, caption=None, reply_markup=None, parse_mode="HTML"):
@@ -128,6 +132,13 @@ def send_application(user_id,user_name,chat_id,reason=None,country=None,amount1=
         id_cache[sent_msg.message_id] = (user_name, user_id)
 
         bot.send_message(chat_id, msg, parse_mode="HTML")
+def send_indev(chat_id):
+    msg =("<b>⚠️Мы пока дорабатываем эту функцию⚠️</b>\n\n"
+          ""
+          "💛Приносим свои извинения за неудобства, стараемся сделать ваш опыт использования бота комфортнее и лучше💛\n\n"
+          ""
+          "🔔Но наш менеджер всегда на связи, чтобы его позвать нажмите /manager")
+    send_media("img/401.mp4", chat_id, caption=msg)
 
 
 @bot.message_handler(commands=['start'])
@@ -257,8 +268,11 @@ def callback_query(call):
                             parse_mode="HTML")
     if call.data=="currency_menu":
         finstr = FinInstr()
-        msg = finstr.show_currency()
-        bot.send_message(chat_id, msg, parse_mode="HTML")
+        msg = finstr.show_currency(country=1)
+        keyboard = InlineKeyboardMarkup()
+        keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc"))
+        keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/1"))
+        bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
     if call.data=="tr_esim_menu":
         if check_subscribtion(user_id, 1):
             keyboard = InlineKeyboardMarkup()
@@ -468,8 +482,33 @@ def callback_query(call):
             InlineKeyboardButton("✅Узнать у менеджера", callback_data="request/Онлайн-сервисы  💻/1"))
         keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
         bot.send_message(chat_id, msg, reply_markup=keyboard, parse_mode="HTML")
-    if call.data in ("calc", "rf_menu", "thai_menu"):
-        bot.send_message(chat_id, "Функция в разработке. Свяжитесь с менеджером /manager")
+    if call.data =="rf_menu":
+        if check_subscribtion(user_id, 1):
+            finstr = FinInstr()
+            msg = finstr.show_currency(country=2)
+            keyboard = InlineKeyboardMarkup()
+            keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc"))
+            keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/1"))
+            bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
+        else:
+            bot.send_message(chat_id,"<i>Для работы с ботом\n"
+                            "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
+                            parse_mode="HTML")
+    if call.data == "thai_menu":
+        if check_subscribtion(user_id, 1):
+            finstr = FinInstr()
+            msg = finstr.show_currency(country=3)
+            keyboard = InlineKeyboardMarkup()
+            keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc"))
+            keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/1"))
+            bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
+        else:
+            bot.send_message(chat_id,"<i>Для работы с ботом\n"
+                            "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
+                            parse_mode="HTML")
+    if call.data == "calc":
+        send_indev(chat_id)
+
 
 
 
@@ -485,4 +524,5 @@ def callback_query(call):
         del id_cache[message_id]
         new_text = call.message.text + "\n" + f"\n✅<b>Взят в работу:</b>\n<i>{datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")}</i>\n\n💼Менеджер: {user_name} " + "\n" + f"\n➡️Cсылка на чат с клиентом:<a href='tg://user?id={client_id}'>➡️ {client_name}</a>"
         bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=new_text, parse_mode="HTML", reply_markup=None)
+        logger.info(f"[ЗАЯВКА ВЗЯТА] Менеджер {user_name} взял заявку клиента {client_name} (id={client_id}) в {datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")} ")
     bot.answer_callback_query(call.id)

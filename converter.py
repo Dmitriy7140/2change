@@ -1,44 +1,102 @@
 from database_main import QueueDB
 from datetime import datetime
-
+from utils import logger
 qdb = QueueDB()
 
 
 class FinInstr:
     def __init__(self,row=qdb.get_currencies()):
 
-        self._, self.usd_rub, self.usd_thb, self.usd_try, self.self.updated_at_str = row
+        if not row:
+            logger.error("Финансист курсы не принял, колонка пустая!!!")
+            qdb.update_currency()
+            row=qdb.get_currencies()
+            if row:
+                logger.info("Финансист все порешал!")
+
+        print(row)
+
+        self._, self.usd_rub, self.usd_thb, self.usd_try, self.try_rub, self.thb_rub, self.thb_try, self.updated_at_str = row
+        logger.info("Финансист курсы принял...")
 
         updated_at = datetime.strptime(self.updated_at_str, "%d-%m-%Y %H:%M:%S")
+        logger.info("Конвертируем время...")
 
         # Текущее время
         now = datetime.now()
+        logger.info(f"Сейчас {now}...")
 
         # Разница во времени
         time_diff = now - updated_at
+        logger.info(f"С последнего обновления курсов прошло {time_diff.total_seconds()} секунд...")
         if time_diff.total_seconds() > 7200:
+            logger.info("Обновляем курсы...")
             row = qdb.update_currency()
-            self._, self.usd_rub, self.usd_thb, self.usd_try, self.updated_at_str = row
-        self.rub_try=self.usd_rub/self.usd_try
-        self.rub_thb=self.usd_rub/self.usd_thb
+            self._, self.usd_rub, self.usd_thb, self.usd_try, self.try_rub, self.thb_rub, self.thb_try, self.updated_at_str = row
+            logger.info("Курсы обновили! Успех!")
 
-    def show_currency(self):
-        msg=(f"💱<b> Курсы на {self.updated_at_str} </b>\n\n"
-             f"Вы отдаете = Вы получаете(без наценки)\n\n"
-             
-             # f"{self.rub_try:.2f} RUB = 1 TRY (наличными)\n"
-             # f"{self.rub_try:.2f} RUB = 1 TRY (переводом Iban)\n"
-             # f"1 TRY = {self.rub_try:.2f} RUB\n\n"
-             f"1 USDT = {self.usd_try:.2f} TRY\n"
-             f"1 USDT = {self.usd_thb:.2f} THB\n"
-             f"1 USDT = {self.usd_rub:.2f} RUB (курс апи)\n"
-             f"Вы отдаете = Вы получаете(С наценкой)\n\n"
 
-             # f"{self.rub_try+(self.rub_try*0.04):.2f} RUB = 1 TRY (наличными)+3%\n"
-             # f"{self.rub_try+(self.rub_try*0.03):.2f} RUB = 1 TRY (переводом Iban)+3%\n"
-             # f"1 TRY = {self.rub_try-(self.rub_try*0.03):.2f} RUB-3%\n\n"
-             f"1 USDT = {self.usd_try+(self.usd_try*0.03):.2f} TRY+3%\n"
-             f"1 USDT = {self.usd_thb+(self.usd_thb*0.03):.2f} THB+3%\n"
-             f"1 USDT = {self.usd_rub+(self.usd_rub*0.03):.2f} RUB+3%\n"
-             )
-        return msg
+    def show_currency(self, country=1):
+
+        if country == 1:
+            msg=(f"💱<b> Курсы на {self.updated_at_str} </b>\n\n"
+                 f"БЕЗ НАЦЕНКИ\n\n"
+                 f""
+                 f"Отдаете:🇷🇺{self.try_rub:.2f} RUB\n"
+                 f"Получаете:🇹🇷1 TRY (переводом IBAN)\n\n"
+                 f""
+                 f"Отдаете:🇷🇺{self.try_rub:.2f} RUB\n"
+                 f"Получаете:🇹🇷1 TRY (наличными лирами)\n\n"
+                 f""
+                 f"Отдаете:🇹🇷1 TRY\n"
+                 f"Получаете:🇷🇺{self.try_rub:.2f} RUB\n\n"
+                 f""
+                 f"Отдаете:🪙1 USDT\n"
+                 f"Получаете:🇹🇷{self.usd_try:.2f} TRY\n\n"
+                 f""
+                 f"Отдаете:🪙USDT\n"
+                 f"Получаете: Другую валюту (по запросу)\n\n"
+                 f""
+                 f"<i>⭐️ Акция! При обмене от 20 000 лир через QR — симкарта eSIM на 10ГБ в подарок!</i>\n\n"
+                 f"<b>Рассчитайте сумму или оставьте заявку 👇</b>")
+            logger.info("Сделали сообщение для Турции, выслали!")
+            return msg
+        elif country == 2:
+            msg=(f"💱<b> Курсы на {self.updated_at_str} </b>\n\n"
+                 f""
+                 f"Отдаете:🇷🇺{self.usd_rub:.2f} RUB\n"
+                 f"Получаете:🪙1 USDT\n\n"
+                 f""
+                 f"Отдаете:🪙1 USDT\n"
+                 f"Получаете:🇷🇺{self.usd_rub:.2f} RUB\n\n"
+                 f""
+                 f"Отдаете:🪙USDT\n"
+                 f"Получаете:Другую валюту (по запросу)\n\n"
+                 f""
+                 f"Отдаете:🇷🇺RUB\n"
+                 f"Получаете:Другую валюту (по запросу)"
+                 )
+            logger.info("Сделали сообщение для РФ, выслали!")
+            return msg
+
+        elif country == 3:
+            msg=(f"💱<b> Курсы на {self.updated_at_str} </b>\n\n"
+                 f""
+                 f"Отдаете:🇷🇺{self.thb_rub:.2f} RUB\n"
+                 f"Получаете:🇹🇭1 THB (на счет)\n\n"
+                 f""
+                 f"Отдаете:🇷🇺{self.thb_rub:.2f} RUB\n"
+                 f"Получаете:🇹🇭1 THB (наличными)\n\n"
+                 f""
+                 f"Отдаете:🪙1 USDT\n"
+                 f"Получаете:🇹🇭{self.usd_thb:.2f} THB (на счет)\n\n"
+                 f""
+                 f"Отдаете:🪙1 USDT\n"
+                 f"Получаете:🇹🇭{self.usd_thb:.2f} THB (наличными)"
+                 )
+            logger.info("Сделали сообщение для Тайланда, выслали!")
+            return msg
+        logger.error("Что-то поломалось с отправкой сообщения с курсами!!!")
+        return "Что-то пошло не так, попробуйте еще раз..."
+
+
