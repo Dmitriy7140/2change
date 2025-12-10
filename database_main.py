@@ -34,6 +34,10 @@ class QueueDB:
                 usd_rub REAL,    
                 usd_thb REAL,
                 usd_try REAL,
+                try_rub REAL, 
+                
+                thb_rub REAL,
+                thb_try REAL,
                 updated_at TEXT)''')
 
             conn.commit()
@@ -120,17 +124,24 @@ class QueueDB:
             usd_try = all_courses.body["rates"]["TRY"]
             usd_rub = all_courses.body["rates"]["RUB"]
             usd_thb = all_courses.body["rates"]["THB"]
+            all_courses = coinoxr.Latest().get(base=f"TRY", show_alternative=True)
+            try_rub = all_courses.body["rates"]["RUB"]
+
+            all_courses = coinoxr.Latest().get(base=f"THB", show_alternative=True)
+            thb_rub = all_courses.body["rates"]["RUB"]
+            thb_try=all_courses.body["rates"]["TRY"]
+
 
         except Exception as e:
             logger.error(f"Ошибка с добавлением курса:{e}")
             return None
-        self.set_currency(usd_rub, usd_try, usd_thb)
+        self.set_currency(usd_rub, usd_try, usd_thb, try_rub,thb_rub, thb_try)
         return True
 
-    def set_currency(self, usd_rub, usd_try, usd_thb, time=datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")):
+    def set_currency(self, usd_rub, usd_try, usd_thb, try_rub, thb_rub, thb_try, time=datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")):
         with self.get_connection() as conn:
             c = conn.cursor()
-            c.execute('''INSERT INTO currency (usd_rub, usd_thb, usd_try, updated_at) VALUES (?, ?, ?, ?)''', (usd_rub, usd_try, usd_thb, time))
+            c.execute('''INSERT INTO currency (usd_rub, usd_try, usd_thb, try_rub, thb_rub, thb_try, updated_at) VALUES (?,?,?,?,?, ?, ?)''', (usd_rub, usd_try, usd_thb, try_rub, thb_rub, thb_try, time))
             conn.commit()
 
     def get_currencies(self):
@@ -142,7 +153,11 @@ class QueueDB:
 
 
 if __name__ == "__main__":
-    qdb=QueueDB()
+    qdb = QueueDB()
+    qdb.update_currency()
+    raw=qdb.get_currencies()
+    print(raw)
 
-    row=qdb.get_currencies()
-    print(row)
+
+
+

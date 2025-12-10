@@ -7,7 +7,7 @@ qdb = QueueDB()
 class FinInstr:
     def __init__(self,row=qdb.get_currencies()):
 
-        self._, self.usd_rub, self.usd_thb, self.usd_try, self.updated_at_str = row
+        self._, self.usd_rub, self.usd_thb, self.usd_try, self.self.updated_at_str = row
 
         updated_at = datetime.strptime(self.updated_at_str, "%d-%m-%Y %H:%M:%S")
 
@@ -31,7 +31,7 @@ class FinInstr:
              # f"1 TRY = {self.rub_try:.2f} RUB\n\n"
              f"1 USDT = {self.usd_try:.2f} TRY\n"
              f"1 USDT = {self.usd_thb:.2f} THB\n"
-             f"1 USDT = {self.usd_rub:.2f} RUB\n"
+             f"1 USDT = {self.usd_rub:.2f} RUB (курс апи)\n"
              f"Вы отдаете = Вы получаете(С наценкой)\n\n"
 
              # f"{self.rub_try+(self.rub_try*0.04):.2f} RUB = 1 TRY (наличными)+3%\n"
