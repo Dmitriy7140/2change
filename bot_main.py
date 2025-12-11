@@ -66,7 +66,10 @@ bot = telebot.TeleBot( "8559812575:AAFducMZ0rp9WKCbo_pv8yyhkMAG8Drz6m8", excepti
 
 
 def check_subscribtion(user_id, country):
-    if country == 1: #tr
+    if user_id == 300423184:
+        logger.info("Тестировщик!")
+        return True
+    elif country == 1: #tr
         logger.info(f"Проверяем подписку id={user_id} на Турецкий чат...")
 
         chat_member = bot.get_chat_member(tr_chat_username, user_id)
@@ -77,6 +80,7 @@ def check_subscribtion(user_id, country):
         else:
             logger.info("Чел не подписан!")
             return False
+
     logger.error("Не проверили, возвращаем None!!!")
     return None
 
