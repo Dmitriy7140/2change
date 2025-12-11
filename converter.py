@@ -5,18 +5,17 @@ qdb = QueueDB()
 
 
 class FinInstr:
-    def __init__(self,row=qdb.get_currencies()):
+    def __init__(self,raw=qdb.get_currencies()):
 
-        if not row:
+        if not raw:
             logger.error("Финансист курсы не принял, колонка пустая!!!")
             qdb.update_currency()
-            row=qdb.get_currencies()
-            if row:
+            raw=qdb.get_currencies()
+            if raw:
                 logger.info("Финансист все порешал!")
 
-        print(row)
 
-        self._, self.usd_rub, self.usd_thb, self.usd_try, self.try_rub, self.thb_rub, self.thb_try, self.updated_at_str = row
+        self._, self.usd_rub, self.usd_thb, self.usd_try, self.try_rub, self.thb_rub, self.thb_try, self.updated_at_str = raw
         logger.info("Финансист курсы принял...")
 
         updated_at = datetime.strptime(self.updated_at_str, "%d-%m-%Y %H:%M:%S")
@@ -31,8 +30,10 @@ class FinInstr:
         logger.info(f"С последнего обновления курсов прошло {time_diff.total_seconds()} секунд...")
         if time_diff.total_seconds() > 7200:
             logger.info("Обновляем курсы...")
-            row = qdb.update_currency()
-            self._, self.usd_rub, self.usd_thb, self.usd_try, self.try_rub, self.thb_rub, self.thb_try, self.updated_at_str = row
+            qdb.update_currency()
+            raw = qdb.get_currencies()
+
+            self._, self.usd_rub, self.usd_thb, self.usd_try, self.try_rub, self.thb_rub, self.thb_try, self.updated_at_str = raw
             logger.info("Курсы обновили! Успех!")
 
 

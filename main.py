@@ -13,8 +13,8 @@ if __name__ == '__main__':
 
         qdb.update_currency()
         logger.info("Курсики подтянули, запускаемся...")
-        bot.send_message(manager_chat_id, text="Калькулятор 2change на связи🤙\n\n"
-                                                f"версия: {bot_version}\n\n" + changes, disable_notification=True)
+        # bot.send_message(manager_chat_id, text="Калькулятор 2change на связи🤙\n\n"
+        #                                         f"версия: {bot_version}\n\n" + changes, disable_notification=True)
 
         bot.infinity_polling()
     except KeyboardInterrupt:
