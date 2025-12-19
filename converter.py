@@ -23,7 +23,7 @@ class FinInstr:
 
         # Текущее время
         now = datetime.now()
-        logger.info(f"Сейчас {now}...")
+        logger.info(f"Сейчас {now}, последнее обновление было {self.updated_at_str}...")
 
         # Разница во времени
         time_diff = now - updated_at
@@ -40,7 +40,7 @@ class FinInstr:
     def show_currency(self, country=1):
 
         if country == 1:
-            msg=(f"💱<b> Курсы на {self.updated_at_str} </b>\n\n"
+            msg=(f"💱<b> Актуальный курс на сегодняшний день: </b>\n\n"
                  f"БЕЗ НАЦЕНКИ\n\n"
                  f""
                  f"Отдаете:🇷🇺{self.try_rub:.2f} RUB\n"
@@ -63,7 +63,7 @@ class FinInstr:
             logger.info("Сделали сообщение для Турции, выслали!")
             return msg
         elif country == 2:
-            msg=(f"💱<b> Курсы на {self.updated_at_str} </b>\n\n"
+            msg=(f"💱<b> Актуальный курс на сегодняшний день: </b>\n\n"
                  f""
                  f"Отдаете:🇷🇺{self.usd_rub:.2f} RUB\n"
                  f"Получаете:🪙1 USDT\n\n"
@@ -81,7 +81,7 @@ class FinInstr:
             return msg
 
         elif country == 3:
-            msg=(f"💱<b> Курсы на {self.updated_at_str} </b>\n\n"
+            msg=(f"💱<b> Актуальный курс на сегодняшний день: </b>\n\n"
                  f""
                  f"Отдаете:🇷🇺{self.thb_rub:.2f} RUB\n"
                  f"Получаете:🇹🇭1 THB (на счет)\n\n"
@@ -99,5 +99,41 @@ class FinInstr:
             return msg
         logger.error("Что-то поломалось с отправкой сообщения с курсами!!!")
         return "Что-то пошло не так, попробуйте еще раз..."
+    def convert_currencies(self, amount, currency1, currency2):
+        """Указываем одну из валют:
+        try,
+        usd,
+        thb,
+        rub,"""
+        amount = amount
+        currency1 = currency1
+        currency2 = currency2
+        rows = qdb.get_coef()
+
+        we_sell= rows[0]
+        we_buy = rows[1]
+        if currency1.lower()=="usd":
+            if currency2.lower()=="thb":
+                total = amount * self.usd_thb * (1+ we_sell[2])
+                return total
+            if currency2.lower()=="try":
+                total = amount* self.usd_try (1+ we_sell[3])
+                return total
+            if currency2.lower()=="rub":
+                total = amount * self.usd_rub + (1 + we_sell[1])
+                return total
+        if currency1.lower()=="thb":
+            pass
+        if currency1.lower()=="try":
+            pass
+        if currency1.lower()=="rub":
+            pass
+        return None
+
+if __name__ == '__main__':
+    fistr = FinInstr()
+    print(fistr.convert_currencies(200, "usd", "thb"))
+
+
 
 

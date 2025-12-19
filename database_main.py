@@ -41,6 +41,28 @@ class QueueDB:
                 thb_try REAL,
                 updated_at TEXT)''')
             logger.info("Таблица с курсами загружена...")
+            c.execute('''CREATE TABLE IF NOT EXISTS coef (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            usd_rub_c REAL,    
+                            usd_thb_c REAL,
+                            usd_try_c REAL,
+                            try_rub_c REAL, 
+
+                            thb_rub_c REAL,
+                            thb_try_c REAL,
+                            updated_at TEXT)''')
+            logger.info("Таблица с наценкой загружена...")
+            c.execute("SELECT COUNT(*) FROM coef")
+            count = c.fetchone()[0]
+
+            if count == 0:  # Только если таблица пустая
+                c.execute('''INSERT INTO coef (usd_rub_c, usd_thb_c, usd_try_c, try_rub_c, thb_rub_c, thb_try_c, updated_at) 
+                                    VALUES (0.03, 0.03, 0.03, 0.03, 0.03, 0.03, ?)''', ("default",))
+                c.execute('''INSERT INTO coef (usd_rub_c, usd_thb_c, usd_try_c, try_rub_c, thb_rub_c, thb_try_c, updated_at) 
+                                                    VALUES (0.01, 0.01, 0.01, 0.01, 0.01, 0.01, ?)''', ("default",))
+                logger.info("Начальные коэффициенты добавлены")
+            else:
+                logger.info(f"Таблица coef уже содержит {count} записей, пропуск INSERT")
 
 
             conn.commit()
@@ -181,12 +203,19 @@ class QueueDB:
             logger.info("Подтянули курсы, даем!")
             return row
 
+    def get_coef(self):
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            logger.info("Подтягиваем наценку из таблицы...")
+            c.execute("SELECT * FROM coef")
+
+            rows = c.fetchall()
+            logger.info("Подтянули наценку, даем!")
+            return rows
+
 
 if __name__ == "__main__":
-    qdb = QueueDB()
-    qdb.update_currency()
-    raw=qdb.get_currencies()
-    print(raw)
+   pass
 
 
 
