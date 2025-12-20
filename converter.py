@@ -101,33 +101,43 @@ class FinInstr:
         return "Что-то пошло не так, попробуйте еще раз..."
     def convert_currencies(self, amount, currency1, currency2):
         """Указываем одну из валют:
-        try,
+        try,try_cash
         usd,
-        thb,
+        thb,thb_cash
         rub,"""
         amount = amount
         currency1 = currency1
         currency2 = currency2
-        rows = qdb.get_coef()
 
-        we_sell= rows[0]
-        we_buy = rows[1]
         if currency1.lower()=="usd":
             if currency2.lower()=="thb":
-                total = amount * self.usd_thb * (1+ we_sell[2])
-                return total
+
+                return amount *
+            if currency2.lower()=="thb_cash":
+                return amount*self.usd_thb * (1+ we_sell["cash_usd_thb_c"])
             if currency2.lower()=="try":
-                total = amount* self.usd_try (1+ we_sell[3])
-                return total
+
+                return amount* self.usd_try *(1+ we_sell["usd_try_c"])
             if currency2.lower()=="rub":
-                total = amount * self.usd_rub + (1 + we_sell[1])
-                return total
-        if currency1.lower()=="thb":
-            pass
-        if currency1.lower()=="try":
-            pass
+
+                return amount * self.usd_rub * (1 + we_sell["usd_rub_c"])
+        #
+
+
         if currency1.lower()=="rub":
-            pass
+            if currency2.lower()=="try":#ибан
+                return amount * self.try_rub * (1 + we_sell["try_rub_c"])
+            if currency2.lower()=="try_cash":
+                return amount * self.try_rub * (1 + we_sell["cash_try_rub_c"])
+            if currency2.lower()=="thb":
+                return amount * self.thb_rub * (1 + we_sell["thb_rub_c"])
+            if currency2.lower()=="thb_cash":
+                return amount* self.thb_rub * (1 + we_sell["cash_thb_rub_c"])
+            if currency2.lower()=="usd":
+                return amount*self.usd_rub * (1+ we_buy["usd_rub_c"])
+
+
+
         return None
 
 if __name__ == '__main__':
