@@ -1,20 +1,20 @@
-from bot_main import bot, qdb, manager_chat_id, send_media
+
+from bot_main import bot,manager_chat_id, send_media, send_updated_cur
+
 from utils import logger
 
 bot_version="pre-release 0.9"
-changes=("✅добавили подробные логи\n"
-         "✅починили курсы валют\n"
-         "✅интегрировали апи\n"
-         "✅добавили сообщение, возникающее когда функция в разработке\n"
-         "✅починили все что сломалось, сломали то что работало")
+changes=""
 if __name__ == '__main__':
     try:
         logger.info("2change стартует...")
 
-        qdb.update_currency()
+
+
         logger.info("Курсики подтянули, запускаемся...")
-        # bot.send_message(manager_chat_id, text="Калькулятор 2change на связи🤙\n\n"
-        #                                         f"версия: {bot_version}\n\n" + changes, disable_notification=True)
+        bot.send_message(manager_chat_id, text="Калькулятор 2change на связи🤙\n\n"
+                                                f"версия: {bot_version}\n\n" + changes, disable_notification=True)
+        send_updated_cur()
 
         bot.infinity_polling()
     except KeyboardInterrupt:

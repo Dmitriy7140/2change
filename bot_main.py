@@ -145,6 +145,7 @@ def send_indev(chat_id):
     send_media("img/401.mp4", chat_id, caption=msg)
 
 
+
 @bot.message_handler(commands=['start'])
 def handle_start(message, not_first:bool=None):
     keyboard = InlineKeyboardMarkup(row_width=2)
@@ -219,6 +220,18 @@ def handle_manager(message):
     else:
         bot.send_message(message.chat.id,"<i>Для работы с ботом\n"
                             "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>", parse_mode="HTML")
+
+
+def send_updated_cur():
+    rates = qdb.update_currency()
+    changes = ("Коллеги, обновились курсы от биржи:\n\n"
+               f"Лир за доллар:{rates["usd_try"]:.2f}\n"
+               f"Рублей за доллар:{rates["usd_rub"]:.2f}\n"
+               f"Бат за доллар:{rates["usd_thb"]:.2f}\n"
+               f"Рублей за лиру:{rates["try_rub"]:.2f}\n"
+               f"Рублей за бат:{rates["thb_rub"]:.2f}\n")
+    bot.send_message(manager_chat_id, changes)
+
 
 @bot.message_handler(commands=['queue'], func=lambda message: message.from_user.id in admin_id)
 def handle_queue(message):

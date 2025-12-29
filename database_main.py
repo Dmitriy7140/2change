@@ -68,7 +68,7 @@ class QueueDB:
 
             if count == 0:  # Только если таблица пустая
                 c.execute('''INSERT INTO coef (usd_rub_c, rub_usd_c, usd_try_c, rub_try_c, cash_rub_try_c, try_rub_c, usd_thb_c, cash_usd_thb_c, rub_thb_c, cash_rub_thb_c, updated_at) 
-                                             VALUES (0.03,    0.03,         0.03,      0.03,        0.05,         0.03,      0.05,        0.03,         0.03,      0.05,          ?)''', ("default",))
+                                             VALUES (0.03,    0.03,         0.03,      0.03,        0.05,         0.03,      0.03,        0.05,         0.03,      0.05,          ?)''', ("default",))
 
                 logger.info("Начальные коэффициенты добавлены")
             else:
@@ -190,7 +190,11 @@ class QueueDB:
             rows_list= self.get_coef()
             rows = rows_list[0]
 
-
+            api_courses= {"usd_try":api_usd_try,
+                          "usd_rub":api_usd_rub,
+                          "usd_thb":api_usd_thb,
+                          "try_rub":api_try_rub,
+                          "thb_rub":api_thb_rub}
             we_sell = {"id": rows[0],
                        "usd_rub_c": rows[1],
                        "rub_usd_c": rows[2],
@@ -230,7 +234,7 @@ class QueueDB:
             logger.error(f"Ошибка с добавлением курса:{e}!!!")
             return None
         self.set_currency(rates)
-        return True
+        return api_courses
 
     def set_currency(self, rates:tuple, time=datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")):
         with self.get_connection() as conn:
