@@ -9,6 +9,7 @@ from converter import FinInstr
 #глобали
 img_cache={}
 id_cache={}
+user_calc_states={}
 
 admin_id = (57713855, 22231230)
 manager_chat_id = -1003210623925 #НЕ ЗАБУДЬ ПОМЕНЯТЬ ПРОВЕРКИ НА ПОДПИСКУ ДЛЯ РФ И ТАЙ
@@ -318,7 +319,6 @@ def callback_query(call):
             bot.send_message(chat_id,"<i>Для работы с ботом\n"
                             "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
                             parse_mode="HTML")
-
     if call.data=="comment_menu":
         msg = ('<b>Мы дорожим нашей репутацией, благодаря этому наш сервис работает уже 3 года.⭐️\n\n'
                '✅Про нас писали в газете <a href="https://t.me/review_2change/394">«Один из популярных сервисов обмена Турции»</a>\n'
@@ -524,7 +524,30 @@ def callback_query(call):
                             "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
                             parse_mode="HTML")
     if call.data == "calc":
-        send_indev(chat_id)
+        msg = "Выберите валюту для обмена:"
+        keybord = InlineKeyboardMarkup(row_width=2)
+        keybord.row(InlineKeyboardButton("🪙USDT→🇷🇺", callback_data="exchange/usd/rub"),
+                    InlineKeyboardButton("🇷🇺→🪙USDT", callback_data="exchange/rub/usd"))
+
+
+        keybord.row(InlineKeyboardButton("🇷🇺→🇹🇷 (IBAN)", callback_data="exchange/rub/try"),
+                    InlineKeyboardButton("🇷🇺→🇹🇷 (Наличные)", callback_data="exchange/rub/try_cash"))
+
+        keybord.row(InlineKeyboardButton("🪙USDT→🇹🇷 (IBAN)", callback_data="exchange/usd/try"),
+                          InlineKeyboardButton("🪙USDT→🇹🇷 (Наличные)", callback_data="exchange/usd/try_cash"))
+
+        keybord.add(InlineKeyboardButton("🇹🇷→🇷🇺 (Переводом)", callback_data="exchange/try/rub"))
+
+        keybord.row(InlineKeyboardButton("🪙USDT→🇹🇭 (Переводом)", callback_data="exchange/usd/thb"),
+                InlineKeyboardButton("🪙USDT→🇹🇭 (Наличные)", callback_data="exchange/usd/thb_cash"))
+
+        keybord.row(InlineKeyboardButton("🇷🇺→🇹🇭 (Переводом)", callback_data="exchange/rub/thb"),
+        InlineKeyboardButton("🇷🇺→🇹🇭 (Наличные)", callback_data="exchange/rub/thb_cash"))
+
+
+        keybord.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/1"),
+                    InlineKeyboardButton("◀️Назад", callback_data="tr_menu"))
+        bot.send_message(chat_id, msg, reply_markup=keybord)
 
 
 
@@ -535,7 +558,9 @@ def callback_query(call):
 
 
 
-    if call.data == "contact_client":
+
+
+    if call.data == "contact_client": #ВОТ ЭТУ ХУЙНЮ НАДО ЗАСУНУТЬ В БАЗУ ДАННЫХ А ТО ПИЗДЕЦ
 
         client_name, client_id = id_cache[message_id]
         del id_cache[message_id]

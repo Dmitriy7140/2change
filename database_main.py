@@ -37,6 +37,7 @@ class QueueDB:
                     
                 
                 usd_try REAL,
+                cash_usd_try REAL,
                 rub_try REAL,
                 cash_rub_try REAL,
                 try_rub REAL, 
@@ -47,12 +48,20 @@ class QueueDB:
                 cash_rub_thb REAL,
                 updated_at TEXT)''')
             logger.info("Таблица с курсами загружена...")
+            # c.execute('''CREATE TABLE IF NOT EXISTS calc_states (
+            #                 chat_id INTEGER PRIMARY KEY,
+            #                 country INTEGER,
+            #                 currency1 INTEGER,
+            #                 currency2 INTEGER,
+            #                 created_at TEXT)''')
+            # logger.info("Таблица с состояниями загружена...")
             c.execute('''CREATE TABLE IF NOT EXISTS coef (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             usd_rub_c REAL, 
                             rub_usd_c REAL,
                             
                             usd_try_c REAL,
+                            cash_usd_try_c REAL,
                             rub_try_c REAL,
                             cash_rub_try_c REAL,
                             try_rub_c REAL,
@@ -67,12 +76,12 @@ class QueueDB:
             count = c.fetchone()[0]
 
             if count == 0:  # Только если таблица пустая
-                c.execute('''INSERT INTO coef (usd_rub_c, rub_usd_c, usd_try_c, rub_try_c, cash_rub_try_c, try_rub_c, usd_thb_c, cash_usd_thb_c, rub_thb_c, cash_rub_thb_c, updated_at) 
-                                             VALUES (0.03,    0.03,         0.03,      0.03,        0.05,         0.03,      0.03,        0.05,         0.03,      0.05,          ?)''', ("default",))
+                c.execute('''INSERT INTO coef (usd_rub_c, rub_usd_c, usd_try_c, cash_usd_try_c, rub_try_c, cash_rub_try_c, try_rub_c, usd_thb_c, cash_usd_thb_c, rub_thb_c, cash_rub_thb_c, updated_at) 
+                                             VALUES (0.03,    0.03,         0.03, 0.05,     0.03,        0.05,         0.03,      0.03,        0.05,         0.03,      0.05,          ?)''', ("default",))
 
                 logger.info("Начальные коэффициенты добавлены")
             else:
-                logger.info(f"Таблица coef уже содержит {count} записей, пропуск INSERT")
+                logger.info(f"Таблица с наценкой уже содержит {count} записей, пропуск INSERT")
 
 
             conn.commit()
@@ -200,14 +209,15 @@ class QueueDB:
                        "rub_usd_c": rows[2],
 
                        "usd_try_c": rows[3],
-                       "rub_try_c": rows[4],
-                       "cash_rub_try_c": rows[5],
-                       "try_rub_c": rows[6],
+                       "cash_usd_try_c":rows[4],
+                       "rub_try_c": rows[5],
+                       "cash_rub_try_c": rows[6],
+                       "try_rub_c": rows[7],
 
-                       "usd_thb_c": rows[7],
-                       "cash_usd_thb_c": rows[8],
-                       "rub_thb_c": rows[9],
-                       "cash_rub_thb_c": rows[10],
+                       "usd_thb_c": rows[8],
+                       "cash_usd_thb_c": rows[9],
+                       "rub_thb_c": rows[10],
+                       "cash_rub_thb_c": rows[11],
                        }
 
 
@@ -219,6 +229,7 @@ class QueueDB:
 
             #ЛИРЫ
             usd_try = api_usd_try-(api_usd_try* we_sell["usd_try_c"])
+            cash_usd_try = api_usd_try - (api_usd_try*we_sell["cash_usd_try_c"])
             rub_try = api_try_rub * (1 + we_sell["rub_try_c"])
             cash_rub_try = api_try_rub * (1 + we_sell["cash_rub_try_c"])
             try_rub=api_try_rub-(api_try_rub*we_sell["try_rub_c"]) #ЧЕЛ ДАЕТ ЛИРУ, ПОЛУЧАЕТ РУБЛЬ. НАША ВЫГОДА ОСТАВИТЬ БОЛЬШЕ РУБЛЕЙ
@@ -229,7 +240,7 @@ class QueueDB:
             rub_thb= api_thb_rub *(1 + we_sell["rub_thb_c"])
             cash_rub_thb= api_thb_rub *(1 + we_sell["cash_rub_thb_c"])
 
-            rates = (usd_rub,rub_usd,usd_try,rub_try,cash_rub_try,try_rub,usd_thb,cash_usd_thb,rub_thb,cash_rub_thb)
+            rates = (usd_rub,rub_usd,usd_try,cash_usd_try, rub_try, cash_rub_try,try_rub,usd_thb,cash_usd_thb,rub_thb,cash_rub_thb)
         except Exception as e:
             logger.error(f"Ошибка с добавлением курса:{e}!!!")
             return None
@@ -240,9 +251,9 @@ class QueueDB:
         with self.get_connection() as conn:
             c = conn.cursor()
             logger.info("Вставляем курсы в таблицу...")
-            c.execute('''INSERT INTO currency (usd_rub, rub_usd, usd_try, rub_try, cash_rub_try, try_rub, 
+            c.execute('''INSERT INTO currency (usd_rub, rub_usd, usd_try,cash_usd_try, rub_try, cash_rub_try, try_rub, 
              usd_thb, cash_usd_thb, rub_thb, cash_rub_thb, updated_at) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', (*rates, time))
+             VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', (*rates, time))
             logger.info("Вставили!")
             conn.commit()
             logger.info("Коммит!")
@@ -266,6 +277,24 @@ class QueueDB:
             rows = c.fetchall()
             logger.info("Подтянули наценку, даем!")
             return rows
+
+    # def set_converter_state(self, chat_id, country, currency1, currency2):
+    #     with self.get_connection as conn:
+    #         c = conn.cursor()
+    #
+    #         c.execute('''INSERT OR REPLACE INTO calc_states (chat_id, country, currency1, currency2, created_at) VALUES (?, ?, ?, ?, ?)''',
+    #                (chat_id, country, currency1, currency2, datetime.datetime.now()))
+    # def get_converter_state(self, chat_id):
+    #     with self.get_connection as conn:
+    #         c = conn.cursor()
+    #         row = c.execute('''SELECT * FROM calc_states WHERE chat_id=?''', (chat_id,)).fetchone()
+    #         self.clear_converter_state(chat_id)
+    #         return row
+    #
+    # def clear_converter_state(self, chat_id):
+    #     with self.get_connection as conn:
+    #         c = conn.cursor()
+    #         c.execute("DELETE FROM calc_states WHERE chat_id=?", (chat_id,))
 
 
 if __name__ == "__main__":

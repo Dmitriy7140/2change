@@ -18,6 +18,7 @@ class FinInstr:
          self.usd_rub,
          self.rub_usd,
          self.usd_try,
+         self.cash_usd_try,
          self.rub_try,
          self.cash_rub_try,
          self.try_rub,
@@ -47,6 +48,7 @@ class FinInstr:
              self.usd_rub,
              self.rub_usd,
              self.usd_try,
+             self.cash_usd_try,
              self.rub_try,
              self.cash_rub_try,
              self.try_rub,
@@ -73,7 +75,10 @@ class FinInstr:
                  f"Получаете:🇷🇺{self.try_rub:.2f} RUB\n\n"
                  f""
                  f"Отдаете:🪙1 USDT\n"
-                 f"Получаете:🇹🇷{self.usd_try:.2f} TRY\n\n"
+                 f"Получаете:🇹🇷{self.usd_try:.2f} TRY (Переводом IBAN)\n\n"
+                 f""
+                 f"Отдаете:🪙1 USDT\n"
+                 f"Получаете:🇹🇷{self.cash_usd_try:.2f} TRY (Наличными лирами)\n\n"
                  f""
                  f"Отдаете:🪙USDT\n"
                  f"Получаете: Другую валюту (по запросу)\n\n"
@@ -125,10 +130,11 @@ class FinInstr:
                 return amount* self.usd_rub
             elif currency2 == "try":
                 return amount * self.usd_try
-            elif currency2 == "cash_thb":
-                return amount* self.cash_usd_thb
+
             elif currency2 == "thb":
                 return amount * self.usd_thb
+            elif currency2 == "thb_cash":
+                return amount* self.cash_usd_thb
 
         if currency1 == "rub":
             if currency2 == "usd":
