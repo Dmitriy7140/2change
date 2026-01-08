@@ -669,11 +669,11 @@ def process_amount(message):
         keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
         bot.send_message(chat_id, "❌Введите, пожалуйста, только целое число.", reply_markup=keyboard)
         bot.register_next_step_handler(message, process_amount)
-
+        return
     if int(message.text) < min_exchange:
         keyboard = InlineKeyboardMarkup()
         keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
-        bot.send_message(chat_id, f"❌Число не должно превышать <b>{min_exchange} {currency_names[currency1]}</b>", reply_markup=keyboard)
+        bot.send_message(chat_id, f"❌Число не должно быть меньше <b>{min_exchange} {currency_names[currency1]}</b>",parse_mode="HTML", reply_markup=keyboard)
         bot.register_next_step_handler(message, process_amount)
         return
     converted= fistr.convert_currencies(int(message.text), currency1, currency2)
