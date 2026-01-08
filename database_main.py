@@ -23,7 +23,8 @@ class QueueDB:
                         tg_id INTEGER UNIQUE,
                         country INTEGER,
                         name TEXT,
-                        amount INTEGER,
+                        amount1 INTEGER,
+                        amount2 REAL,
                         currency1 TEXT,
                         currency2 TEXT,
                         reason TEXT,
@@ -99,7 +100,7 @@ class QueueDB:
             logger.info("Закрыли БД...")
             conn.close()
 
-    def add_to_queue(self,  tg_id, name, country=1,reason=None, amount=None, currency1=None,
+    def add_to_queue(self,  tg_id, name, country=1,reason=None, amount1=None, amount2=None, currency1=None,
                      currency2=None, time=datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")):
         with self.get_connection() as conn:
             c = conn.cursor()  # ✅ Исправлено
@@ -112,26 +113,26 @@ class QueueDB:
                 c.execute('INSERT INTO queue (country, tg_id, name, reason, created_at) VALUES (?, ?, ?, ?, ?)',
                           (country, tg_id, name, reason, time))
                 logger.info("В очередь добавлена заявка общего характера!")
-            elif amount:
+            elif amount1:
                 if currency1 and currency2:
                     c.execute(
-                        'INSERT INTO queue (country,tg_id, name, amount, currency1, currency2, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                        (country, tg_id, name, amount, currency1, currency2, time))
+                        'INSERT INTO queue (country,tg_id, name, amount, currency1, currency2, created_at) VALUES (?, ?, ?,?, ?, ?, ?, ?)',
+                        (country, tg_id, name, amount1, amount2, currency1, currency2, time))
                     logger.info("В очередь добавлена заявка на обмен, обе валюты известны!")
                 elif currency1:
-                    c.execute('INSERT INTO queue (country, tg_id, name, amount, currency1, created_at) VALUES (?,?, ?, ?, ?, ?)',
-                              (country, tg_id, name, amount, currency1, time))
+                    c.execute('INSERT INTO queue (country, tg_id, name, amount, currency1, created_at) VALUES (?,?, ?,?, ?, ?, ?)',
+                              (country, tg_id, name, amount1,amount2, currency1, time))
                     logger.info("В очередь добавлена заявка на обмен, известна только первая валюта!")
                 elif currency2:
-                    c.execute('INSERT INTO queue (country, tg_id, name, amount, currency2, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-                              (country,tg_id, name, amount, currency2, time))
+                    c.execute('INSERT INTO queue (country, tg_id, name, amount, currency2, created_at) VALUES (?,?, ?, ?, ?, ?, ?)',
+                              (country,tg_id, name, amount1,amount2, currency2, time))
                     logger.info("В очередь добавлена заявка на обмен, известна только вторая валюта!")
                 else:
-                    c.execute('INSERT INTO queue (country, tg_id, name, amount, created_at) VALUES (?, ?, ?, ?, ?)',
-                              (country,tg_id, name, amount, time))
+                    c.execute('INSERT INTO queue (country, tg_id, name, amount, created_at) VALUES (?,?, ?, ?, ?, ?)',
+                              (country,tg_id, name, amount1,amount2, time))
                     logger.info("В очередь добавлена заявка на обмен, известна только сумма!")
             else:
-                logger.info("Что-то пошло не так при добавлении валюты!!!")
+                logger.info("Что-то пошло не так при добавлении пользователя в очередь!!!")
                 return False
 
             conn.commit()
@@ -278,23 +279,7 @@ class QueueDB:
             logger.info("Подтянули наценку, даем!")
             return rows
 
-    # def set_converter_state(self, chat_id, country, currency1, currency2):
-    #     with self.get_connection as conn:
-    #         c = conn.cursor()
-    #
-    #         c.execute('''INSERT OR REPLACE INTO calc_states (chat_id, country, currency1, currency2, created_at) VALUES (?, ?, ?, ?, ?)''',
-    #                (chat_id, country, currency1, currency2, datetime.datetime.now()))
-    # def get_converter_state(self, chat_id):
-    #     with self.get_connection as conn:
-    #         c = conn.cursor()
-    #         row = c.execute('''SELECT * FROM calc_states WHERE chat_id=?''', (chat_id,)).fetchone()
-    #         self.clear_converter_state(chat_id)
-    #         return row
-    #
-    # def clear_converter_state(self, chat_id):
-    #     with self.get_connection as conn:
-    #         c = conn.cursor()
-    #         c.execute("DELETE FROM calc_states WHERE chat_id=?", (chat_id,))
+
 
 
 if __name__ == "__main__":

@@ -10,6 +10,12 @@ from converter import FinInstr
 img_cache={}
 id_cache={}
 user_calc_states={}
+currency_names = {"rub":"<b>RUB🇷🇺</b>",
+                  "usd":"<b>USDT🪙</b>",
+                  "try":"<b>TRY🇹🇷</b>",
+                  "try_cash":"<b>TRY🇹🇷</b>",
+                  "thb":"<b>THB🇹🇭</b>",
+                  "thb_cash":"<b>THB🇹🇭</b>"}
 
 admin_id = (57713855, 22231230)
 manager_chat_id = -1003210623925 #НЕ ЗАБУДЬ ПОМЕНЯТЬ ПРОВЕРКИ НА ПОДПИСКУ ДЛЯ РФ И ТАЙ
@@ -26,7 +32,7 @@ class MyExceptionHandler(telebot.ExceptionHandler):
         bot.send_message(admin_id[0], message)
         return True
 class ApplicationCreator:
-    def __init__(self, country:int=None,client_name=None, reason:str=None, currency1=None, currency2=None,amount1=None, amount2="n", time=None ):#AMOUNT2 БУДЕТ ВЫСЧИТЫВАТЬСЯ ИСХОДЯ ИЗ ФУНКЦИИ ИНВЕСТИНГА
+    def __init__(self, country:int=None,client_name=None, reason:str=None, currency1=None, currency2=None,amount1=None, amount2=None, time=None ):#AMOUNT2 БУДЕТ ВЫСЧИТЫВАТЬСЯ ИСХОДЯ ИЗ ФУНКЦИИ ИНВЕСТИНГА
         self.country = country
         self.client_name = client_name
         self.reason = reason
@@ -107,7 +113,7 @@ def send_media(path, chat_id, caption=None, reply_markup=None, parse_mode="HTML"
             else:  # видео
                 sent = bot.send_video(chat_id, media, caption=caption, reply_markup=reply_markup, parse_mode=parse_mode)
                 img_cache[path] = sent.video.file_id
-def send_application(user_id,user_name,chat_id,reason=None,country=None,amount1=None,currency1=None,currency2=None):
+def send_application(user_id,user_name,chat_id,reason=None,country=None,amount1=None,amount2=None,currency1=None,currency2=None):
     msg = ("⚡️Позвали менеджера, скоро с вами свяжутся, ожидайте\n"
            "🕰<b>Наш график работы:</b>\n"
            "Пн-Сб: 10:00 - 20:00\n"
@@ -115,7 +121,7 @@ def send_application(user_id,user_name,chat_id,reason=None,country=None,amount1=
            "<b>выходной</b>"
            )
     if day_off():
-        qdb.add_to_queue(country=country, tg_id=user_id,name=user_name, reason=reason,amount=amount1,currency1=currency1,currency2=currency2)
+        qdb.add_to_queue(country=country, tg_id=user_id,name=user_name, reason=reason,amount1=amount1,amount2=amount2,currency1=currency1,currency2=currency2)
         msg = ("🏄‍♂️<b>К СОЖАЛЕНИЮ, МЫ СЕЙЧАС НЕ РАБОТАЕМ</b>🏄‍♀️\n\n"
                "✅Добавили вашу заявку в очередь\n\n"
                "⚡️В <b>рабочее</b> время менеджер получит вашу заявку и свяжется с вами\n"
@@ -130,7 +136,7 @@ def send_application(user_id,user_name,chat_id,reason=None,country=None,amount1=
     else:
         keybord = InlineKeyboardMarkup()
         keybord.add( InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client"))
-        apmake=ApplicationCreator(country=country, client_name=user_name, reason=reason,amount1=amount1,currency1=currency1,currency2=currency2)
+        apmake=ApplicationCreator(country=country, client_name=user_name, reason=reason,amount1=amount1,amount2=amount2, currency1=currency1,currency2=currency2)
 
         msg_admin = apmake.create()
         sent_msg= bot.send_message(manager_chat_id, msg_admin, parse_mode="HTML", reply_markup=keybord)
@@ -149,6 +155,8 @@ def send_indev(chat_id):
 
 @bot.message_handler(commands=['start'])
 def handle_start(message, not_first:bool=None):
+    if message.chat.id in user_calc_states:
+        del user_calc_states[message.chat.id]
     keyboard = InlineKeyboardMarkup(row_width=2)
     button1= InlineKeyboardButton( "🇹🇷 Турция", callback_data="tr_menu")
     button2 = InlineKeyboardButton("🇹🇭 Тайланд", callback_data="thai_menu")
@@ -261,13 +269,33 @@ def handle_queue(message):
 
 
 @bot.callback_query_handler(func=lambda call: True)
+
+
+
+
+
+
+
+
+
+
+
+
 def callback_query(call):
+    global user_calc_states
     user_id = call.from_user.id
     chat_id = call.message.chat.id
     last_name = call.from_user.last_name or ""
     user_name = (call.from_user.first_name or "") + (" " + last_name if last_name else "")
     message_id = call.message.message_id
+    if call.data == "convert":
+        app_state= user_calc_states.get(chat_id, {})
+        currency1, currency2,country, amount1, amount2 = app_state["currency1"],app_state["currency2"],app_state["country"],app_state["amount1"],app_state["amount2"]
 
+
+        send_application(user_id, user_name, chat_id,amount1=amount1,amount2=amount2, country=country, currency1=currency_names[currency1], currency2=currency_names[currency2])
+        del user_calc_states[chat_id]
+        logger.info(f"Удалено состояние чата {chat_id}!!!")
     if call.data=="tr_menu":
         if check_subscribtion(user_id, 1):
             keyboard = InlineKeyboardMarkup(row_width=2)
@@ -361,6 +389,43 @@ def callback_query(call):
     if call.data.startswith("request/"):
         _, request, country= call.data.split("/")
         send_application(user_id, user_name, chat_id,country=int(country),reason=request)
+    if call.data.startswith("exchange/"):
+
+        _, currency1, currency2, country = call.data.split("/")
+        if chat_id in user_calc_states:
+            del user_calc_states[chat_id]
+        user_calc_states= {
+            chat_id: {
+
+            'currency1': currency1,
+            'currency2': currency2,
+            'country': country,
+            "amount1": None,
+            "amount2": None}
+        }
+        logger.info(f"Добавлено состояние чата {chat_id}")
+        min_sum = {"rub/try_cash":"\n• Через банкомат: от <b>10750₽</b>\n"
+                                  "• В офисе: от <b>100 000 рублей</b>",
+                   "rub/try":"<b>5000₽ (~2500 ₺)</b>",
+                   "usd/try_cash":"<b>132 USDT</b>",
+                   "usd/try":"<b>70 USDT (~2500₺)</b>",
+                   "try/rub":"<b>2000 ₺</b>",
+                   "rub/thb_cash":"<b>19390 ₽ (~ 7 000 бат)</b>",
+                   "rub/thb":"<b>19390 ₽ (~ 7 000 бат)</b>",
+                   "usd/thb_cash":"<b>250 USDT</b>",
+                   "usd/thb":"<b>250 USDT</b>",
+                   "rub/usd":"<b>30 000₽</b>",
+                   "usd/rub":"<b>500 USDT</b>"}
+
+        countries_menu = {"1":"tr_menu", "2":"rf_menu", "3":"thai_menu"}
+        keybord = InlineKeyboardMarkup()
+        keybord.add(InlineKeyboardButton("◀️Назад", callback_data=countries_menu[country]))
+        msg = (f"✏️ Введите сумму в {currency_names[currency1]}\n"
+               f"<i>Только цифры - без пробелов, точек и символов</i>\n\n"
+               f""
+               f"📌 Минимальная сумма: {min_sum[f'{currency1}/{currency2}']}")
+        bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keybord)
+        bot.register_next_step_handler(call.message, process_amount)
     if call.data == "other_menu":
         msg=("👋 <b>Добро пожаловать!</b>\n"
              "Здесь вы можете ознакомиться со всеми видами услуг сервиса <b>2Change</b>.\n\n"
@@ -526,23 +591,23 @@ def callback_query(call):
     if call.data == "calc":
         msg = "Выберите валюту для обмена:"
         keybord = InlineKeyboardMarkup(row_width=2)
-        keybord.row(InlineKeyboardButton("🪙USDT→🇷🇺", callback_data="exchange/usd/rub"),
-                    InlineKeyboardButton("🇷🇺→🪙USDT", callback_data="exchange/rub/usd"))
+        keybord.row(InlineKeyboardButton("🪙USDT→🇷🇺", callback_data="exchange/usd/rub/2"),
+                    InlineKeyboardButton("🇷🇺→🪙USDT", callback_data="exchange/rub/usd/2"))
 
 
-        keybord.row(InlineKeyboardButton("🇷🇺→🇹🇷 (IBAN)", callback_data="exchange/rub/try"),
-                    InlineKeyboardButton("🇷🇺→🇹🇷 (Наличные)", callback_data="exchange/rub/try_cash"))
+        keybord.row(InlineKeyboardButton("🇷🇺→🇹🇷 (IBAN)", callback_data="exchange/rub/try/1"),
+                    InlineKeyboardButton("🇷🇺→🇹🇷 (Наличные)", callback_data="exchange/rub/try_cash/1"))
 
-        keybord.row(InlineKeyboardButton("🪙USDT→🇹🇷 (IBAN)", callback_data="exchange/usd/try"),
-                          InlineKeyboardButton("🪙USDT→🇹🇷 (Наличные)", callback_data="exchange/usd/try_cash"))
+        keybord.row(InlineKeyboardButton("🪙USDT→🇹🇷 (IBAN)", callback_data="exchange/usd/try/1"),
+                          InlineKeyboardButton("🪙USDT→🇹🇷 (Наличные)", callback_data="exchange/usd/try_cash/1"))
 
-        keybord.add(InlineKeyboardButton("🇹🇷→🇷🇺 (Переводом)", callback_data="exchange/try/rub"))
+        keybord.add(InlineKeyboardButton("🇹🇷→🇷🇺 (Переводом)", callback_data="exchange/try/rub/1"))
 
-        keybord.row(InlineKeyboardButton("🪙USDT→🇹🇭 (Переводом)", callback_data="exchange/usd/thb"),
-                InlineKeyboardButton("🪙USDT→🇹🇭 (Наличные)", callback_data="exchange/usd/thb_cash"))
+        keybord.row(InlineKeyboardButton("🪙USDT→🇹🇭 (Переводом)", callback_data="exchange/usd/thb/3"),
+                InlineKeyboardButton("🪙USDT→🇹🇭 (Наличные)", callback_data="exchange/usd/thb_cash/3"))
 
-        keybord.row(InlineKeyboardButton("🇷🇺→🇹🇭 (Переводом)", callback_data="exchange/rub/thb"),
-        InlineKeyboardButton("🇷🇺→🇹🇭 (Наличные)", callback_data="exchange/rub/thb_cash"))
+        keybord.row(InlineKeyboardButton("🇷🇺→🇹🇭 (Переводом)", callback_data="exchange/rub/thb/3"),
+        InlineKeyboardButton("🇷🇺→🇹🇭 (Наличные)", callback_data="exchange/rub/thb_cash/3"))
 
 
         keybord.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/1"),
@@ -568,3 +633,60 @@ def callback_query(call):
         bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=new_text, parse_mode="HTML", reply_markup=None)
         logger.info(f"[ЗАЯВКА ВЗЯТА] Менеджер {user_name} взял заявку клиента {client_name} (id={client_id}) в {datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")} ")
     bot.answer_callback_query(call.id)
+
+def process_amount(message):
+    global user_calc_states
+    min_amount = {"rub/try_cash": 10750,
+                  "rub/try": 5000,
+                  "usd/try_cash": 132,
+                  "usd/try": 70,
+                  "try/rub": 2000,
+                  "rub/thb_cash": 19390,
+                  "rub/thb": 19390,
+                  "usd/thb_cash": 250,
+                  "usd/thb": 250,
+                  "rub/usd": 30000,
+                  "usd/rub": 500}
+    fistr = FinInstr()
+    chat_id = message.chat.id
+    if chat_id not in user_calc_states:
+
+        keyboard = InlineKeyboardMarkup()
+        keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
+        bot.send_message(chat_id, "🕘Сессия истекла, попробуйте еще раз.", reply_markup=keyboard)
+        return
+    state = user_calc_states.get(chat_id, {})
+
+
+
+    currency1 = state["currency1"]
+    currency2= state["currency2"]
+    min_exchange=min_amount[f"{currency1}/{currency2}"]
+
+
+    if not message.text.isdigit():
+        keyboard = InlineKeyboardMarkup()
+        keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
+        bot.send_message(chat_id, "❌Введите, пожалуйста, только целое число.", reply_markup=keyboard)
+        bot.register_next_step_handler(message, process_amount)
+
+    if int(message.text) < min_exchange:
+        keyboard = InlineKeyboardMarkup()
+        keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
+        bot.send_message(chat_id, f"❌Число не должно превышать <b>{min_exchange} {currency_names[currency1]}</b>", reply_markup=keyboard)
+        bot.register_next_step_handler(message, process_amount)
+        return
+    converted= fistr.convert_currencies(int(message.text), currency1, currency2)
+    msg = (f"<b>Обмен:</b> {currency_names[currency1]} → {currency_names[currency2]}\n\n"
+           f"<b>Вы отдаете:</b> {int(message.text)} {currency_names[currency1]}\n\n"
+           f"<b>Вы получаете:</b> {converted} {currency_names[currency2]}\n\n"
+           f""
+           f"<b>Отправить заявку на обмен?</b>")
+    user_calc_states[chat_id]["amount1"]=int(message.text)
+    user_calc_states[chat_id]["amount2"]=converted
+    print(user_calc_states)
+    keybord = InlineKeyboardMarkup(row_width=2)
+    keybord.row(InlineKeyboardButton("✅Обменять", callback_data=f"convert"),
+                InlineKeyboardButton("❌Отмена", callback_data="main_menu"))
+    bot.send_message(chat_id, msg, reply_markup=keybord, parse_mode="HTML")
+
