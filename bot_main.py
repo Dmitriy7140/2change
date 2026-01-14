@@ -315,7 +315,7 @@ def change_coef(message):
            f"(БИРЖА) THB/RUB : {rates["thb_rub"]:.2f}\n"
           f"(НАШ КУРС) THB/RUB 💳: {rub_thb:.2f} ({c_rub_thb*100}%)\n"
           f"(НАШ КУРС) THB/RUB 💵: {cash_rub_thb:.2f} ({c_cash_rub_thb*100}%)")
-    bot.send_message(msg, chat_id)
+    bot.send_message(chat_id=chat_id, text=msg)
 
 
 
