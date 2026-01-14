@@ -17,7 +17,7 @@ currency_names = {"rub":"<b>RUB🇷🇺</b>",
                   "thb":"<b>THB🇹🇭</b>",
                   "thb_cash":"<b>THB🇹🇭</b>"}
 
-admin_id = (57713855, 22231230)
+admin_id = (57713855, 22231230, 5777995768)
 manager_chat_id = -1003210623925 #НЕ ЗАБУДЬ ПОМЕНЯТЬ ПРОВЕРКИ НА ПОДПИСКУ ДЛЯ РФ И ТАЙ
 tr_chat_username = "@asas_magov"
 
@@ -151,6 +151,16 @@ def send_indev(chat_id):
           "🔔Но наш менеджер всегда на связи, чтобы его позвать нажмите /manager")
     send_media("img/401.mp4", chat_id, caption=msg)
 
+def send_updated_cur():
+    rates = qdb.update_currency()
+    changes = ("Коллеги, обновились курсы от биржи:\n\n"
+               f"Лир за доллар:{rates["usd_try"]:.2f}\n"
+               f"Рублей за доллар:{rates["usd_rub"]:.2f}\n"
+               f"Бат за доллар:{rates["usd_thb"]:.2f}\n"
+               f"Рублей за лиру:{rates["try_rub"]:.2f}\n"
+               f"Рублей за бат:{rates["thb_rub"]:.2f}\n")
+    bot.send_message(manager_chat_id, changes)
+
 
 
 @bot.message_handler(commands=['start'])
@@ -231,15 +241,7 @@ def handle_manager(message):
                             "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>", parse_mode="HTML")
 
 
-def send_updated_cur():
-    rates = qdb.update_currency()
-    changes = ("Коллеги, обновились курсы от биржи:\n\n"
-               f"Лир за доллар:{rates["usd_try"]:.2f}\n"
-               f"Рублей за доллар:{rates["usd_rub"]:.2f}\n"
-               f"Бат за доллар:{rates["usd_thb"]:.2f}\n"
-               f"Рублей за лиру:{rates["try_rub"]:.2f}\n"
-               f"Рублей за бат:{rates["thb_rub"]:.2f}\n")
-    bot.send_message(manager_chat_id, changes)
+
 
 
 @bot.message_handler(commands=['queue'], func=lambda message: message.from_user.id in admin_id)
@@ -263,24 +265,62 @@ def handle_queue(message):
         bot.send_message(message.chat.id, msg, parse_mode="HTML")
     else:
         bot.send_message(message.chat.id, "Заявок в очереди не осталось.")
+@bot.message_handler(commands=['change_coef'], func=lambda message: message.from_user.id in admin_id)
+def change_coef(message):
+    chat_id = message.chat.id
+    rates=qdb.update_currency()
+    (_, usd_rub,
+     rub_usd,
+     usd_try,
+     cash_usd_try,
+     rub_try,
+     cash_rub_try,
+     try_rub,
+     usd_thb,
+     cash_usd_thb,
+     rub_thb,
+     cash_rub_thb,
+     updated_at)=qdb.get_currencies()
+    (_,c_usd_rub,
+     c_rub_usd,
+     c_usd_try,
+     c_cash_usd_try,
+     c_rub_try,
+     c_cash_rub_try,
+     c_try_rub,
+     c_usd_thb,
+     c_cash_usd_thb,
+     c_rub_thb,
+     c_cash_rub_thb,
+     updated_at)=qdb.get_coef()
+
+    msg =(f"(БИРЖА) USDT/TRY : {rates["usd_try"]:.2f}\n" # ЛИРЫ ЗА 1 ДОЛЛАР
+          f"(НАШ КУРС) USDT/TRY💵 : {cash_usd_try:.2f}| ({c_cash_usd_try*100}%)\n" #НАЛИЧНЫЕ ЛИРЫ ЗА 1 ДОЛЛАР
+          f"(НАШ КУРС) USDT/TRY💳 : {usd_try:.2f}| ({c_usd_try*100}%)\n" #ПЕРЕВОДОМ ЛИРЫ ЗА 1 ДОЛЛАР
+          f"(БИРЖА) TRY/RUB : {rates["try_rub"]:.2f}\n" #РУБЛЕЙ ЗА 1 ЛИРУ 
+          f"(НАШ КУРС) TRY/RUB продажа💳 : {rub_try:.2f} ({c_rub_try*100}%)"
+          f"(НАШ КУРС) TRY/RUB продажа💵 : {cash_rub_try:.2f} ({c_cash_rub_try*100})"
+          f"(НАШ КУРС) TRY/RUB покупка💳 : {try_rub:.2f} ({c_try_rub*100}%)\n\n"
+          f""
+          f"(БИРЖА) USDT/RUB : {rates["usd_rub"]:.2f}\n"
+          f"(НАШ КУРС) USDT/RUB покупка: {usd_rub:.2f} ({c_usd_rub*100}%)\n"
+          f"(НАШ КУРС) USDT/RUB продажа : {rub_usd:.2f} ({c_rub_usd*100}%)\n\n"
+          
+           f"(БИРЖА) USDT/THB : {rates["usd_thb"]:.2f}\n"
+          f"(НАШ КУРС) USDT/THB 💳: {usd_thb:.2f} ({c_usd_thb*100}%)"
+          f"(НАШ КУРС) USDT/THB 💵: {cash_usd_thb:.2f} ({c_cash_usd_thb*100}%)\n\n"
+           
+           f"(БИРЖА) THB/RUB : {rates["thb_rub"]:.2f}\n"
+          f"(НАШ КУРС) THB/RUB 💳: {rub_thb:.2f} ({c_rub_thb*100}%)\n"
+          f"(НАШ КУРС) THB/RUB 💵: {cash_rub_thb:.2f} ({c_cash_rub_thb*100}%)")
+    bot.send_message(msg, chat_id)
+
 
 
 
 
 
 @bot.callback_query_handler(func=lambda call: True)
-
-
-
-
-
-
-
-
-
-
-
-
 def callback_query(call):
     global user_calc_states
     user_id = call.from_user.id
@@ -633,7 +673,6 @@ def callback_query(call):
         bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=new_text, parse_mode="HTML", reply_markup=None)
         logger.info(f"[ЗАЯВКА ВЗЯТА] Менеджер {user_name} взял заявку клиента {client_name} (id={client_id}) в {datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")} ")
     bot.answer_callback_query(call.id)
-
 def process_amount(message):
     global user_calc_states
     min_amount = {"rub/try_cash": 10750,

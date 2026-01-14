@@ -127,30 +127,30 @@ class FinInstr:
     def convert_currencies(self, amount, currency1, currency2):
         if currency1 == 'usd':
             if currency2 == "rub":
-                return amount* self.usd_rub
+                return f"{amount* self.usd_rub}"
             elif currency2 == "try":
-                return amount * self.usd_try
+                return f"{amount * self.usd_try:.2f}"
 
             elif currency2 == "thb":
-                return amount * self.usd_thb
+                return f"{amount * self.usd_thb:.2f}"
             elif currency2 == "thb_cash":
-                return amount* self.cash_usd_thb
+                return f"{amount* self.cash_usd_thb:.2f}"
 
         if currency1 == "rub":
             if currency2 == "usd":
-                return amount / self.rub_usd
+                return f"{amount / self.rub_usd:.2f}"
             elif currency2 == "try_cash":
-                return amount / self.cash_rub_try
+                return f"{amount / self.cash_rub_try:.2f}"
             elif currency2 == "try":
-                return amount / self.rub_try
+                return f"{amount / self.rub_try:.2f}"
             elif currency2 == 'thb_cash':
-                return amount/ self.cash_rub_thb
+                return f"{amount/ self.cash_rub_thb:.2f}"
             elif currency2 == "thb":
-                return amount / self.rub_thb
+                return f"{amount / self.rub_thb:.2f}"
 
         if currency1 == "try":
             if currency2 == "rub":
-                return amount * self.try_rub
+                return f"{amount * self.try_rub:.2f}"
 if __name__ == '__main__':
     fistr = FinInstr()
     print(fistr.convert_currencies(200, "try", "rub"))

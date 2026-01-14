@@ -116,19 +116,19 @@ class QueueDB:
             elif amount1:
                 if currency1 and currency2:
                     c.execute(
-                        'INSERT INTO queue (country,tg_id, name, amount, currency1, currency2, created_at) VALUES (?, ?, ?,?, ?, ?, ?, ?)',
+                        'INSERT INTO queue (country,tg_id, name, amount1, amount2, currency1, currency2, created_at) VALUES (?, ?, ?,?, ?, ?, ?, ?)',
                         (country, tg_id, name, amount1, amount2, currency1, currency2, time))
                     logger.info("В очередь добавлена заявка на обмен, обе валюты известны!")
                 elif currency1:
-                    c.execute('INSERT INTO queue (country, tg_id, name, amount, currency1, created_at) VALUES (?,?, ?,?, ?, ?, ?)',
+                    c.execute('INSERT INTO queue (country, tg_id, name, amount1,amount2, currency1, created_at) VALUES (?,?, ?,?, ?, ?, ?)',
                               (country, tg_id, name, amount1,amount2, currency1, time))
                     logger.info("В очередь добавлена заявка на обмен, известна только первая валюта!")
                 elif currency2:
-                    c.execute('INSERT INTO queue (country, tg_id, name, amount, currency2, created_at) VALUES (?,?, ?, ?, ?, ?, ?)',
+                    c.execute('INSERT INTO queue (country, tg_id, name, amount1,amount2, currency2, created_at) VALUES (?,?, ?, ?, ?, ?, ?)',
                               (country,tg_id, name, amount1,amount2, currency2, time))
                     logger.info("В очередь добавлена заявка на обмен, известна только вторая валюта!")
                 else:
-                    c.execute('INSERT INTO queue (country, tg_id, name, amount, created_at) VALUES (?,?, ?, ?, ?, ?)',
+                    c.execute('INSERT INTO queue (country, tg_id, name, amount1,amount2, created_at) VALUES (?,?, ?, ?, ?, ?)',
                               (country,tg_id, name, amount1,amount2, time))
                     logger.info("В очередь добавлена заявка на обмен, известна только сумма!")
             else:
@@ -180,6 +180,11 @@ class QueueDB:
         return count
 
     def update_currency(self):
+        """:return api_courses= {"usd_try":api_usd_try,
+                          "usd_rub":api_usd_rub,
+                          "usd_thb":api_usd_thb,
+                          "try_rub":api_try_rub,
+                          "thb_rub":api_thb_rub} """
         try:
             coinoxr.app_id = "159d37183d104e2cb66f4ca45a9cadb4"
             logger.info("Подсосались к апи...")
@@ -194,7 +199,7 @@ class QueueDB:
             logger.info("Подтянули лиры...")
             all_courses = coinoxr.Latest().get(base=f"THB", show_alternative=True)
             api_thb_rub = all_courses.body["rates"]["RUB"]
-
+            print(api_thb_rub)
             logger.info("Подтянули баты!")
 
             rows_list= self.get_coef()
@@ -205,6 +210,7 @@ class QueueDB:
                           "usd_thb":api_usd_thb,
                           "try_rub":api_try_rub,
                           "thb_rub":api_thb_rub}
+
             we_sell = {"id": rows[0],
                        "usd_rub_c": rows[1],
                        "rub_usd_c": rows[2],
@@ -246,6 +252,7 @@ class QueueDB:
             logger.error(f"Ошибка с добавлением курса:{e}!!!")
             return None
         self.set_currency(rates)
+
         return api_courses
 
     def set_currency(self, rates:tuple, time=datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")):
@@ -285,7 +292,7 @@ class QueueDB:
 if __name__ == "__main__":
    qdb=QueueDB()
    qdb.update_currency()
-   print(qdb.get_currencies())
+   
 
 
 
