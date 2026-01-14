@@ -296,25 +296,25 @@ def change_coef(message):
      c_cash_rub_thb,
      updated_at)=row1[0]
 
-    msg =(f"(БИРЖА) USDT/TRY : {rates["usd_try"]:.2f}\n" # ЛИРЫ ЗА 1 ДОЛЛАР
-          f"(НАШ КУРС) USDT/TRY💵 : {cash_usd_try:.2f}| ({c_cash_usd_try*100}%)\n" #НАЛИЧНЫЕ ЛИРЫ ЗА 1 ДОЛЛАР
-          f"(НАШ КУРС) USDT/TRY💳 : {usd_try:.2f}| ({c_usd_try*100}%)\n" #ПЕРЕВОДОМ ЛИРЫ ЗА 1 ДОЛЛАР
-          f"(БИРЖА) TRY/RUB : {rates["try_rub"]:.2f}\n" #РУБЛЕЙ ЗА 1 ЛИРУ 
-          f"(НАШ КУРС) TRY/RUB продажа💳 : {rub_try:.2f} ({c_rub_try*100}%)"
-          f"(НАШ КУРС) TRY/RUB продажа💵 : {cash_rub_try:.2f} ({c_cash_rub_try*100})"
-          f"(НАШ КУРС) TRY/RUB покупка💳 : {try_rub:.2f} ({c_try_rub*100}%)\n\n"
+    msg =(f"(БИРЖА) USDT/TRY : {rates["usd_try"]:.2f} TRY\n" # ЛИРЫ ЗА 1 ДОЛЛАР
+          f"(НАШ КУРС) USDT/TRY💵 : {cash_usd_try:.2f} TRY | ({c_cash_usd_try*100}%)\n" #НАЛИЧНЫЕ ЛИРЫ ЗА 1 ДОЛЛАР
+          f"(НАШ КУРС) USDT/TRY💳 : {usd_try:.2f} TRY | ({c_usd_try*100}%)\n" #ПЕРЕВОДОМ ЛИРЫ ЗА 1 ДОЛЛАР
+          f"(БИРЖА) TRY/RUB : {rates["try_rub"]:.2f} RUB\n" #РУБЛЕЙ ЗА 1 ЛИРУ 
+          f"(НАШ КУРС) TRY/RUB продажа💳 : {rub_try:.2f} RUB ({c_rub_try*100}%)\n"
+          f"(НАШ КУРС) TRY/RUB продажа💵 : {cash_rub_try:.2f} RUB ({c_cash_rub_try*100}%)\n"
+          f"(НАШ КУРС) TRY/RUB покупка💳 : {try_rub:.2f} RUB ({c_try_rub*100}%)\n\n"
           f""
-          f"(БИРЖА) USDT/RUB : {rates["usd_rub"]:.2f}\n"
-          f"(НАШ КУРС) USDT/RUB покупка: {usd_rub:.2f} ({c_usd_rub*100}%)\n"
-          f"(НАШ КУРС) USDT/RUB продажа : {rub_usd:.2f} ({c_rub_usd*100}%)\n\n"
+          f"(БИРЖА) USDT/RUB : {rates["usd_rub"]:.2f} RUB\n"
+          f"(НАШ КУРС) USDT/RUB покупка: {usd_rub:.2f} RUB ({c_usd_rub*100}%)\n"
+          f"(НАШ КУРС) USDT/RUB продажа : {rub_usd:.2f} RUB ({c_rub_usd*100}%)\n\n"
           
-           f"(БИРЖА) USDT/THB : {rates["usd_thb"]:.2f}\n"
-          f"(НАШ КУРС) USDT/THB 💳: {usd_thb:.2f} ({c_usd_thb*100}%)"
-          f"(НАШ КУРС) USDT/THB 💵: {cash_usd_thb:.2f} ({c_cash_usd_thb*100}%)\n\n"
+           f"(БИРЖА) USDT/THB : {rates["usd_thb"]:.2f} THB\n"
+          f"(НАШ КУРС) USDT/THB 💳: {usd_thb:.2f} THB ({c_usd_thb*100}%)\n"
+          f"(НАШ КУРС) USDT/THB 💵: {cash_usd_thb:.2f} THB ({c_cash_usd_thb*100}%)\n\n"
            
-           f"(БИРЖА) THB/RUB : {rates["thb_rub"]:.2f}\n"
-          f"(НАШ КУРС) THB/RUB 💳: {rub_thb:.2f} ({c_rub_thb*100}%)\n"
-          f"(НАШ КУРС) THB/RUB 💵: {cash_rub_thb:.2f} ({c_cash_rub_thb*100}%)")
+           f"(БИРЖА) THB/RUB : {rates["thb_rub"]:.2f} RUB\n"
+          f"(НАШ КУРС) THB/RUB 💳: {rub_thb:.2f} RUB ({c_rub_thb*100}%)\n"
+          f"(НАШ КУРС) THB/RUB 💵: {cash_rub_thb:.2f} RUB ({c_cash_rub_thb*100}%)")
     bot.send_message(chat_id=chat_id, text=msg)
 
 

@@ -3,8 +3,8 @@ from bot_main import bot,manager_chat_id, send_media, send_updated_cur
 
 from utils import logger
 
-bot_version="beta 1.0"
-changes="Добавлен конвертер!"
+bot_version="beta 1.1"
+changes="Добавлен вывод наценок!"
 if __name__ == '__main__':
     try:
         logger.info("2change стартует...")
