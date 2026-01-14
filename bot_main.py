@@ -267,6 +267,8 @@ def handle_queue(message):
 def change_coef(message):
     chat_id = message.chat.id
     rates=qdb.update_currency()
+    row = qdb.get_currencies()
+
     (_, usd_rub,
      rub_usd,
      usd_try,
@@ -278,7 +280,9 @@ def change_coef(message):
      cash_usd_thb,
      rub_thb,
      cash_rub_thb,
-     updated_at)=qdb.get_currencies()
+     updated_at)=row
+    row1 = qdb.get_coef()
+
     (_,c_usd_rub,
      c_rub_usd,
      c_usd_try,
@@ -290,7 +294,7 @@ def change_coef(message):
      c_cash_usd_thb,
      c_rub_thb,
      c_cash_rub_thb,
-     updated_at)=qdb.get_coef()
+     updated_at)=row1[0]
 
     msg =(f"(БИРЖА) USDT/TRY : {rates["usd_try"]:.2f}\n" # ЛИРЫ ЗА 1 ДОЛЛАР
           f"(НАШ КУРС) USDT/TRY💵 : {cash_usd_try:.2f}| ({c_cash_usd_try*100}%)\n" #НАЛИЧНЫЕ ЛИРЫ ЗА 1 ДОЛЛАР
