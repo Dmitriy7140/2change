@@ -16,6 +16,7 @@ currency_names = {"rub":"<b>RUB🇷🇺</b>",
                   "try_cash":"<b>TRY🇹🇷</b>",
                   "thb":"<b>THB🇹🇭</b>",
                   "thb_cash":"<b>THB🇹🇭</b>"}
+admin_change_coef_states= {}
 
 admin_id = (57713855, 22231230, 5777995768)
 manager_chat_id = -1003210623925 #НЕ ЗАБУДЬ ПОМЕНЯТЬ ПРОВЕРКИ НА ПОДПИСКУ ДЛЯ РФ И ТАЙ
@@ -151,15 +152,7 @@ def send_indev(chat_id):
           "🔔Но наш менеджер всегда на связи, чтобы его позвать нажмите /manager")
     send_media("img/401.mp4", chat_id, caption=msg)
 
-def send_updated_cur():
-    rates = qdb.update_currency()
-    changes = ("Коллеги, обновились курсы от биржи:\n\n"
-               f"Лир за доллар:{rates["usd_try"]:.2f}\n"
-               f"Рублей за доллар:{rates["usd_rub"]:.2f}\n"
-               f"Бат за доллар:{rates["usd_thb"]:.2f}\n"
-               f"Рублей за лиру:{rates["try_rub"]:.2f}\n"
-               f"Рублей за бат:{rates["thb_rub"]:.2f}\n")
-    bot.send_message(manager_chat_id, changes)
+
 
 
 
@@ -167,6 +160,7 @@ def send_updated_cur():
 def handle_start(message, not_first:bool=None):
     if message.chat.id in user_calc_states:
         del user_calc_states[message.chat.id]
+
     keyboard = InlineKeyboardMarkup(row_width=2)
     button1= InlineKeyboardButton( "🇹🇷 Турция", callback_data="tr_menu")
     button2 = InlineKeyboardButton("🇹🇭 Тайланд", callback_data="thai_menu")
@@ -265,9 +259,14 @@ def handle_queue(message):
         bot.send_message(message.chat.id, "Заявок в очереди не осталось.")
 @bot.message_handler(commands=['change_coef'], func=lambda message: message.from_user.id in admin_id)
 def change_coef(message):
+    global admin_change_coef_states
     chat_id = message.chat.id
-    rates=qdb.update_currency()
+
     row = qdb.get_currencies()
+    rates = qdb.update_currency()
+    if chat_id in admin_change_coef_states:
+        del admin_change_coef_states[message.chat.id]
+
 
     (_, usd_rub,
      rub_usd,
@@ -296,26 +295,50 @@ def change_coef(message):
      c_cash_rub_thb,
      updated_at)=row1[0]
 
-    msg =(f"(БИРЖА) USDT/TRY : {rates["usd_try"]:.2f} TRY\n" # ЛИРЫ ЗА 1 ДОЛЛАР
-          f"(НАШ КУРС) USDT/TRY💵 : {cash_usd_try:.2f} TRY | ({c_cash_usd_try*100}%)\n" #НАЛИЧНЫЕ ЛИРЫ ЗА 1 ДОЛЛАР
-          f"(НАШ КУРС) USDT/TRY💳 : {usd_try:.2f} TRY | ({c_usd_try*100}%)\n" #ПЕРЕВОДОМ ЛИРЫ ЗА 1 ДОЛЛАР
-          f"(БИРЖА) TRY/RUB : {rates["try_rub"]:.2f} RUB\n" #РУБЛЕЙ ЗА 1 ЛИРУ 
-          f"(НАШ КУРС) TRY/RUB продажа💳 : {rub_try:.2f} RUB ({c_rub_try*100}%)\n"
-          f"(НАШ КУРС) TRY/RUB продажа💵 : {cash_rub_try:.2f} RUB ({c_cash_rub_try*100}%)\n"
-          f"(НАШ КУРС) TRY/RUB покупка💳 : {try_rub:.2f} RUB ({c_try_rub*100}%)\n\n"
-          f""
-          f"(БИРЖА) USDT/RUB : {rates["usd_rub"]:.2f} RUB\n"
-          f"(НАШ КУРС) USDT/RUB покупка: {usd_rub:.2f} RUB ({c_usd_rub*100}%)\n"
-          f"(НАШ КУРС) USDT/RUB продажа : {rub_usd:.2f} RUB ({c_rub_usd*100}%)\n\n"
+    msg =(f"(🏛) USDT/RUB : {rates["usd_rub"]:.2f} RUB\n"
+          f"Покупаем 1 USDT за {usd_rub:.2f} RUB ({c_usd_rub*100}%)\n"
+          f"Продаем 1 USDT за {rub_usd:.2f} RUB ({c_rub_usd*100}%)\n\n"
           
-           f"(БИРЖА) USDT/THB : {rates["usd_thb"]:.2f} THB\n"
-          f"(НАШ КУРС) USDT/THB 💳: {usd_thb:.2f} THB ({c_usd_thb*100}%)\n"
-          f"(НАШ КУРС) USDT/THB 💵: {cash_usd_thb:.2f} THB ({c_cash_usd_thb*100}%)\n\n"
+        f"(🏛) USDT/TRY : {rates["usd_try"]:.2f} TRY\n" # ЛИРЫ ЗА 1 ДОЛЛАР
+          f"Продаем {usd_try:.2f} TRY💳 за 1 USDT ({c_usd_try*100}%)\n" #ПЕРЕВОДОМ ЛИРЫ ЗА 1 ДОЛЛАР
+          f"Продаем {cash_usd_try:.2f}💵 TRY за 1 USDT ({c_cash_usd_try*100}%)\n\n" #НАЛИЧНЫЕ ЛИРЫ ЗА 1 ДОЛЛАР
+          
+          f"(🏛) TRY/RUB : {rates["try_rub"]:.2f} RUB\n" #РУБЛЕЙ ЗА 1 ЛИРУ 
+          f"Продаем 1 TRY💳  за {rub_try:.2f} RUB ({c_rub_try*100}%)\n"
+          f"Продаем 1 TRY💵 за {cash_rub_try:.2f} RUB ({c_cash_rub_try*100}%)\n"
+          f"Покупаем 1 TRY💳 за {try_rub:.2f} RUB ({c_try_rub*100}%)\n\n"
+          f""
+          
+          
+           f"(🏛) USDT/THB : {rates["usd_thb"]:.2f} THB\n"
+          f"Продаем {usd_thb:.2f} THB💳 за 1 USDT ({c_usd_thb*100}%)\n"
+          f"Продаем {cash_usd_thb:.2f} THB💵 за 1 USDT ({c_cash_usd_thb*100}%)\n\n"
            
-           f"(БИРЖА) THB/RUB : {rates["thb_rub"]:.2f} RUB\n"
-          f"(НАШ КУРС) THB/RUB 💳: {rub_thb:.2f} RUB ({c_rub_thb*100}%)\n"
-          f"(НАШ КУРС) THB/RUB 💵: {cash_rub_thb:.2f} RUB ({c_cash_rub_thb*100}%)")
-    bot.send_message(chat_id=chat_id, text=msg)
+           f"(🏛) THB/RUB : {rates["thb_rub"]:.2f} RUB\n"
+          f"Продаем 1 THB💳 за {rub_thb:.2f} RUB ({c_rub_thb*100}%)\n"
+          f"Продаем 1 THB 💵 за {cash_rub_thb:.2f} RUB ({c_cash_rub_thb*100}%)")
+    bot.send_message(chat_id=chat_id, text=msg, parse_mode="HTML")
+
+    msg1 = "Выберите курс для изменения наценки:"
+    keybord = InlineKeyboardMarkup(row_width=2)
+    keybord.row(InlineKeyboardButton("🪙USDT→🇷🇺", callback_data="chc/usd_rub_c"),
+                InlineKeyboardButton("🇷🇺→🪙USDT", callback_data="chc/rub_usd_c"))
+
+    keybord.row(InlineKeyboardButton("🇷🇺→🇹🇷 (IBAN)", callback_data="chc/rub_try_c"),
+                InlineKeyboardButton("🇷🇺→🇹🇷 (Наличные)", callback_data="chc/cash_rub_try_c"))
+
+    keybord.row(InlineKeyboardButton("🪙USDT→🇹🇷 (IBAN)", callback_data="chc/usd_try_c"),
+                InlineKeyboardButton("🪙USDT→🇹🇷 (Наличные)", callback_data="chc/cash_usd_try_c"))
+
+    keybord.add(InlineKeyboardButton("🇹🇷→🇷🇺 (Переводом)", callback_data="chc/try_rub_c"))
+
+    keybord.row(InlineKeyboardButton("🪙USDT→🇹🇭 (Переводом)", callback_data="chc/usd_thb_c"),
+                InlineKeyboardButton("🪙USDT→🇹🇭 (Наличные)", callback_data="chc/cash_usd_thb_c"))
+
+    keybord.row(InlineKeyboardButton("🇷🇺→🇹🇭 (Переводом)", callback_data="chc/rub_thb_c"),
+                InlineKeyboardButton("🇷🇺→🇹🇭 (Наличные)", callback_data="chc/cash_rub_thb_c"))
+
+    bot.send_message(chat_id, msg1, reply_markup=keybord, parse_mode="HTML")
 
 
 
@@ -324,7 +347,7 @@ def change_coef(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
-    global user_calc_states
+    global user_calc_states, admin_change_coef_states
     user_id = call.from_user.id
     chat_id = call.message.chat.id
     last_name = call.from_user.last_name or ""
@@ -655,6 +678,12 @@ def callback_query(call):
         keybord.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/1"),
                     InlineKeyboardButton("◀️Назад", callback_data="tr_menu"))
         bot.send_message(chat_id, msg, reply_markup=keybord)
+    if call.data.startswith("chc"):
+        _, table_name= call.data.split("/")
+        admin_change_coef_states[chat_id] = table_name
+        bot.send_message(chat_id,text="✏️Введите новую наценку в процентах в формате десятичной дроби (1.0 = 1%; 1.5=1.5%):\n\n"
+                         "<i>Число не должно быть меньше 0</i>\n", parse_mode="HTML")
+        bot.register_next_step_handler(call.message, process_coef_change)
 
 
 
@@ -730,4 +759,28 @@ def process_amount(message):
     keybord.row(InlineKeyboardButton("✅Обменять", callback_data=f"convert"),
                 InlineKeyboardButton("❌Отмена", callback_data="main_menu"))
     bot.send_message(chat_id, msg, reply_markup=keybord, parse_mode="HTML")
+def process_coef_change(message):
+    chat_id = message.chat.id
+    try:
+        if not float(message.text):
+            keyboard = InlineKeyboardMarkup()
+            keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
+            bot.send_message(chat_id, "❌Введите, пожалуйста, только десятичную дробь (например, 1.0)", reply_markup=keyboard)
+            bot.register_next_step_handler(message, process_coef_change)
+            return
+        flmes = float(message.text)
+        if flmes <= 0:
+            keyboard = InlineKeyboardMarkup()
+            keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
+            bot.send_message(chat_id, f"❌Число не должно быть меньше <b>0</b>",parse_mode="HTML", reply_markup=keyboard)
+            bot.register_next_step_handler(message, process_amount)
+            return
+        flmes /= 100
+
+        qdb.set_coef(admin_change_coef_states[chat_id], flmes)
+        bot.send_message(chat_id, "✅Наценка изменена!")
+
+    except Exception as e:
+        bot.send_message(chat_id, f"Что-то пошло не так, уведомили программиста:\n\n"
+                                  f"{e}")
 

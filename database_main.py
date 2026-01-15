@@ -6,8 +6,8 @@ from utils import logger
 
 
 
-
 class QueueDB:
+
     def __init__(self, path_to_db="database.db"):
         logger.info("Запускаем базу данных...")
         self.db_path = path_to_db
@@ -92,12 +92,12 @@ class QueueDB:
     def get_connection(self):
 
         conn = sqlite3.connect(self.db_path, check_same_thread=False)
-        logger.info("Подключились к БД...")
+
         try:
-            logger.info("Работаем в БД...")
+
             yield conn
         finally:
-            logger.info("Закрыли БД...")
+
             conn.close()
 
     def add_to_queue(self,  tg_id, name, country=1,reason=None, amount1=None, amount2=None, currency1=None,
@@ -136,7 +136,7 @@ class QueueDB:
                 return False
 
             conn.commit()
-            logger.info("Коммит!")
+
             logger.info(f"{name} (ID {tg_id}) добавлен в очередь.")
             return True
 
@@ -150,7 +150,7 @@ class QueueDB:
             # 1. Берём последнюю запись
             c.execute("SELECT * FROM queue ORDER BY id DESC LIMIT 1")
             row = c.fetchone()
-            logger.info("Подтянули!")
+
 
             if row is None:
                 logger.info("Записей не осталось!")
@@ -165,7 +165,7 @@ class QueueDB:
             logger.info("Удалили запись из очереди...")
 
             conn.commit()
-            logger.info("Коммит!")
+
             logger.info(f"Извлечена и удалена запись с id={last_id}!")
 
             return row  # кортеж со всеми полями, None сохраняются как есть
@@ -173,13 +173,14 @@ class QueueDB:
     def count_rows(self):
         with self.get_connection() as conn:
             c = conn.cursor()
-            logger.info("Считаем очередь...")
+
             c.execute("SELECT COUNT(*) FROM queue")
             count = c.fetchone()[0]
             logger.info(f"Посчитали, что осталось {count} заявок!")
         return count
 
     def update_currency(self):
+
         """:return api_courses= {"usd_try":api_usd_try,
                           "usd_rub":api_usd_rub,
                           "usd_thb":api_usd_thb,
@@ -199,7 +200,7 @@ class QueueDB:
             logger.info("Подтянули лиры...")
             all_courses = coinoxr.Latest().get(base=f"THB", show_alternative=True)
             api_thb_rub = all_courses.body["rates"]["RUB"]
-            print(api_thb_rub)
+
             logger.info("Подтянули баты!")
 
             rows_list= self.get_coef()
@@ -258,33 +259,42 @@ class QueueDB:
     def set_currency(self, rates:tuple, time=datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")):
         with self.get_connection() as conn:
             c = conn.cursor()
-            logger.info("Вставляем курсы в таблицу...")
+
             c.execute('''INSERT INTO currency (usd_rub, rub_usd, usd_try,cash_usd_try, rub_try, cash_rub_try, try_rub, 
              usd_thb, cash_usd_thb, rub_thb, cash_rub_thb, updated_at) 
              VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', (*rates, time))
-            logger.info("Вставили!")
+
             conn.commit()
-            logger.info("Коммит!")
+
 
     def get_currencies(self):
+        """returns: latest currency row (list) + api currencies (dict)"""
         with self.get_connection() as conn:
             c = conn.cursor()
-            logger.info("Подтягиваем курсы из таблицы...")
+
             c.execute("SELECT * FROM currency ORDER BY id DESC LIMIT 1")
 
             row = c.fetchone()
-            logger.info("Подтянули курсы, даем!")
+
             return row
 
     def get_coef(self):
         with self.get_connection() as conn:
             c = conn.cursor()
-            logger.info("Подтягиваем наценку из таблицы...")
+
             c.execute("SELECT * FROM coef")
 
             rows = c.fetchall()
-            logger.info("Подтянули наценку, даем!")
+
             return rows
+    def set_coef(self, column:str, value:float):
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute(f'''UPDATE coef SET {column} = ?, updated_at = ? WHERE id = 1''',
+                      (value, datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")))
+
+            logger.info(f"Коэффициент таблицы {column} изменен. Теперь он {value}")
+            conn.commit()
 
 
 

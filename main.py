@@ -1,5 +1,5 @@
 
-from bot_main import bot,manager_chat_id, send_media, send_updated_cur
+from bot_main import bot,manager_chat_id, send_media
 
 from utils import logger
 
@@ -14,7 +14,7 @@ if __name__ == '__main__':
         logger.info("Курсики подтянули, запускаемся...")
         bot.send_message(manager_chat_id, text="Калькулятор 2change на связи🤙\n\n"
                                                 f"версия: {bot_version}\n\n" + changes, disable_notification=True)
-        send_updated_cur()
+
 
         bot.infinity_polling()
     except KeyboardInterrupt:

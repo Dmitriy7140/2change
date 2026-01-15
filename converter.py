@@ -151,6 +151,8 @@ class FinInstr:
         if currency1 == "try":
             if currency2 == "rub":
                 return f"{amount * self.try_rub:.2f}"
+            return None
+        return None
 if __name__ == '__main__':
     fistr = FinInstr()
     print(fistr.convert_currencies(200, "try", "rub"))
