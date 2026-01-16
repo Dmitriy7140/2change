@@ -329,7 +329,7 @@ def change_coef(message):
           f""
           f"(🏛) USDT/CNY : {rates["usd_cny"]:.2f} CNY\n"
           f"Продаем 1 USDT за {usd_cny:.2f} CNY ({c_usd_cny*100}%)\n\n"
-          f"(🏛) CNY/RUB : {rates["cny_rub"]:.2f} CNY\n"
+          f"(🏛) CNY/RUB : {rates["rub_cny"]:.2f} CNY\n"
           f"Продаем 1 CNY за {rub_cny} RUB ({c_rub_cny*100}%)\n"
           f"Покупаем 1 CNY за {cny_rub} RUB ({c_cny_rub*100}%)\n")
     bot.send_message(chat_id=chat_id, text=msg, parse_mode="HTML")
@@ -732,7 +732,7 @@ def callback_query(call):
             keybord4 = InlineKeyboardMarkup()
             keybord4.add(InlineKeyboardButton("🇷🇺→🇨🇳CNY (юань)", callback_data="exchange/rub/cny/4"),)
             keybord4.add(InlineKeyboardButton("🪙USDT→🇨🇳CNY (юань)", callback_data="exchange/usd/cny/4"))
-            keybord4.add(InlineKeyboardButton("🇳CNY (юань)→🇷🇺", callback_data="exchange/cny/rub/4"))
+            keybord4.add(InlineKeyboardButton("🇨🇳CNY (юань)→🇷🇺", callback_data="exchange/cny/rub/4"))
             keybord4.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/4"),
                          InlineKeyboardButton("◀️Назад", callback_data="cn_menu"))
             bot.send_message(chat_id, msg, reply_markup=keybord4, parse_mode="HTML")

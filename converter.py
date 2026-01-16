@@ -138,7 +138,7 @@ class FinInstr:
                    f"Получаете:🇨🇳{self.usd_cny:.2f} CNY\n\n"
                    f""
                    f"Отдаете:🇨🇳1 CNY\n"
-                   f"Получаете:🇷🇺{self.cny_rub}RUB\n\n")
+                   f"Получаете:🇷🇺{self.cny_rub:.2f}RUB\n\n")
             return msg
         logger.error("Что-то поломалось с отправкой сообщения с курсами!!!")
         return "Что-то пошло не так, попробуйте еще раз..."
