@@ -328,10 +328,10 @@ def change_coef(message):
           f"Продаем 1 THB 💵 за {cash_rub_thb:.2f} RUB ({c_cash_rub_thb*100}%)\n\n"
           f""
           f"(🏛) USDT/CNY : {rates["usd_cny"]:.2f} CNY\n"
-          f"Продаем 1 USDT за {usd_cny:.2f} CNY ({c_usd_cny*100}%)\n\n"
+          f"Покупаем 1 USDT за {usd_cny:.2f} CNY ({c_usd_cny*100}%)\n\n"
           f"(🏛) CNY/RUB : {rates["rub_cny"]:.2f} CNY\n"
-          f"Продаем 1 CNY за {rub_cny} RUB ({c_rub_cny*100}%)\n"
-          f"Покупаем 1 CNY за {cny_rub} RUB ({c_cny_rub*100}%)\n")
+          f"Продаем 1 CNY за {rub_cny:.2f} RUB ({c_rub_cny*100}%)\n"
+          f"Покупаем 1 CNY за {cny_rub:.2f} RUB ({c_cny_rub*100}%)\n")
     bot.send_message(chat_id=chat_id, text=msg, parse_mode="HTML")
 
     msg1 = "Выберите курс для изменения наценки:"
@@ -353,7 +353,7 @@ def change_coef(message):
     keybord.row(InlineKeyboardButton("🇷🇺→🇹🇭 (Переводом)", callback_data="chc/rub_thb_c"),
                 InlineKeyboardButton("🇷🇺→🇹🇭 (Наличные)", callback_data="chc/cash_rub_thb_c"))
     keybord.add(InlineKeyboardButton("🇷🇺→🇨🇳CNY (юань)", callback_data="chc/rub_cny_c"), )
-    keybord.row(InlineKeyboardButton("🪙USDT→🇨🇳CNY (юань)", callback_data="chc/usd_cny_c"), InlineKeyboardButton("🇳CNY (юань)→🇷🇺", callback_data="chc/cny_rub_c"))
+    keybord.row(InlineKeyboardButton("🪙USDT→🇨🇳CNY (юань)", callback_data="chc/usd_cny_c"), InlineKeyboardButton("🇨🇳CNY (юань)→🇷🇺", callback_data="chc/cny_rub_c"))
 
 
     bot.send_message(chat_id, msg1, reply_markup=keybord, parse_mode="HTML")
