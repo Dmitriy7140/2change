@@ -53,16 +53,16 @@ class ApplicationCreator:
         country_names = {0:"Страна не указана", 1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇨🇳Китай"}
         intro = country_names.get(self.country, "Страна не указана") +"\n"+f"👤Клиент: {self.client_name}"
         if self.amount1:
-            main_body=""
-            if self.currency1 and self.currency2:
-                main_body =f"<b>🫵Отдаст: {self.amount1}</b> {self.currency1}" +'\n\n'+f"👉<b>Получит: {self.amount2}</b> {self.currency2}"
-            elif self.currency1 and not self.currency2:
-                main_body =f"<b>🫵Отдаст:{self.amount1}</b> {self.currency1}"+"\n\n"+f"<b>👉Получит:</b> 🤔Иную валюту."
-            elif not self.currency1 and self.currency2:
-                main_body=f"<b>🫵Отдаст: {self.amount1}</b> 🤔Иной валюты" +"\n\n"+f"<b>👉Получит:</b> {self.currency2}"
-            elif not self.currency1 and not self.currency2:
-                main_body=f"<b>🫵Отдаст: {self.amount1}</b> 🤔Иной валюты" +"\n\n"+f"<b>👉Получит:</b> 🤔Иную валюту."
-            msg+= intro+"\n\n"+main_body+"\n\n"+f"🕘<i>{self.time}</i>"
+            main_body =f"<b>🫵Отдаст: {self.amount1}</b> {self.currency1}" +'\n\n'+f"👉<b>Получит: {self.amount2}</b> {self.currency2}"
+            rate =""
+            if self.amount2 > self.amount1:
+                rate = f"<b>📈Курс:</b> {self.amount2 / self.amount1:.2f}"
+            elif self.amount1 > self.amount2:
+                rate = f"<b>📈Курс:</b> {self.amount1 / self.amount2:.2f}"
+
+
+
+            msg+= intro+"\n\n"+main_body+"\n\n"+rate+"\n\n"+f"🕘<i>{self.time}</i>"
             return msg
         else:
 
@@ -854,7 +854,7 @@ def process_coef_change(message):
         flmes /= 100
 
         qdb.set_coef(admin_change_coef_states[chat_id], flmes)
-        bot.send_message(chat_id, "✅Наценка изменена!")
+        bot.send_message(chat_id, "✅Наценка изменена! Изменения появятся в течении 5 минут.")
 
     except Exception as e:
         bot.send_message(chat_id, f"Что-то пошло не так, уведомили программиста:\n\n"
