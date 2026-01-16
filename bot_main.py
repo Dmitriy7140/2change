@@ -419,7 +419,7 @@ def callback_query(call):
     if call.data == "cn_menu":
         if check_subscribtion(user_id, 1):
             finstr = FinInstr()
-            msg = finstr.show_currency(country=3)
+            msg = finstr.show_currency(country=4)
             keyboard = InlineKeyboardMarkup()
             keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_cn"))
             keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="tr_card_menu"))
