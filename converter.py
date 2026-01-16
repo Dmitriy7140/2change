@@ -26,6 +26,9 @@ class FinInstr:
          self.cash_usd_thb,
          self.rub_thb,
          self.cash_rub_thb,
+         self.rub_cny,
+         self.usd_cny,
+         self.cny_rub,
          self.updated_at_str) = raw
         logger.info("Финансист курсы принял...")
 
@@ -56,12 +59,15 @@ class FinInstr:
              self.cash_usd_thb,
              self.rub_thb,
              self.cash_rub_thb,
+             self.rub_cny,
+             self.usd_cny,
+             self.cny_rub,
              self.updated_at_str) = raw
             logger.info("Курсы обновили! Успех!")
 
 
     def show_currency(self, country=1):
-
+        """Countries: 1 == Turkey, 2==Russia, 3== Thailand, 4== China"""
         if country == 1:
             msg=(f"💱<b> Актуальный курс на сегодняшний день: </b>\n\n"
                  
@@ -122,6 +128,18 @@ class FinInstr:
                  )
             logger.info("Сделали сообщение для Тайланда, выслали!")
             return msg
+        elif country == 4:
+            msg = (f"💱<b> Актуальный курс на сегодняшний день: </b>\n\n"
+                   f""
+                   f"Отдаете:🇷🇺{self.rub_cny:.2f} RUB\n"
+                   f"Получаете:🇨🇳1 CNY\n\n"
+                   f""
+                   f"Отдаете:🪙1 USDT\n"
+                   f"Получаете:🇨🇳{self.usd_cny:.2f} CNY\n\n"
+                   f""
+                   f"Отдаете:🇨🇳1 CNY\n"
+                   f"Получаете:🇷🇺{self.cny_rub}RUB\n\n")
+            return msg
         logger.error("Что-то поломалось с отправкой сообщения с курсами!!!")
         return "Что-то пошло не так, попробуйте еще раз..."
     def convert_currencies(self, amount, currency1, currency2):
@@ -136,6 +154,9 @@ class FinInstr:
             elif currency2 == "thb_cash":
                 return f"{amount* self.cash_usd_thb:.2f}"
 
+            elif currency2 == "cny":
+                return f"{amount* self.usd_cny:.2f}"
+
         if currency1 == "rub":
             if currency2 == "usd":
                 return f"{amount / self.rub_usd:.2f}"
@@ -147,6 +168,11 @@ class FinInstr:
                 return f"{amount/ self.cash_rub_thb:.2f}"
             elif currency2 == "thb":
                 return f"{amount / self.rub_thb:.2f}"
+            elif currency2 == "cny":
+                return f"{amount / self.rub_cny:.2f}"
+        if currency1 == "cny":
+            if currency2 == "rub":
+                return f"{amount * self.cny_rub:.2f}"
 
         if currency1 == "try":
             if currency2 == "rub":
@@ -155,7 +181,7 @@ class FinInstr:
         return None
 if __name__ == '__main__':
     fistr = FinInstr()
-    print(fistr.convert_currencies(200, "try", "rub"))
+    print(fistr.convert_currencies(200, "cny", "rub"))
 
 
 
