@@ -32,7 +32,7 @@ def day_off():
             logger.info("Выходной! Последняя суббота месяца!")
             return True
     logger.info("Не выходной, увы!")
-    return False#if not day off
+    return True#if not day off
 
 
 
