@@ -55,9 +55,9 @@ class ApplicationCreator:
         if self.amount1:
             main_body =f"<b>🫵Отдаст: {self.amount1}</b> {self.currency1}" +'\n\n'+f"👉<b>Получит: {self.amount2}</b> {self.currency2}"
             rate =""
-            if self.amount2 > self.amount1:
+            if float(self.amount2) > float(self.amount1):
                 rate = f"<b>📈Курс:</b> {self.amount2 / self.amount1:.2f}"
-            elif self.amount1 > self.amount2:
+            elif float(self.amount1) > float(self.amount2):
                 rate = f"<b>📈Курс:</b> {self.amount1 / self.amount2:.2f}"
 
 
@@ -133,8 +133,7 @@ def send_application(user_id,user_name,chat_id,reason=None,country=None,amount1=
                "<b>выходной</b>"
                )
         bot.send_message(chat_id, msg, parse_mode="HTML")
-        bot.send_message(manager_chat_id, f"🛑Новая заявка в очереди. Всего заявок: {qdb.count_rows()}\n\n"
-                                          f"Нажмите /queue для отработки.", disable_notification=True)
+
     else:
         keybord = InlineKeyboardMarkup()
         keybord.add( InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client"))
@@ -242,24 +241,28 @@ def handle_manager(message):
 
 
 @bot.message_handler(commands=['queue'], func=lambda message: message.from_user.id in admin_id)
-def handle_queue(message):
-    last_name = message.from_user.last_name or ""
-    user_name = (message.from_user.first_name or "") + (" " + last_name if last_name else "")
+def handle_queue():
 
 
 
-    lines= qdb.get_from_queue()
+
+    lines= qdb.get_from_queue(True)
     if lines:
+        for i in lines:
+            _, tg_id, country, client_name, amount1, amount2, currency1, currency2, reason, created_at = i
 
-        _, tg_id, country, client_name, amount1, amount2, currency1, currency2, reason, created_at = lines
+            keyboard = InlineKeyboardMarkup()
+            keyboard.row(InlineKeyboardButton("✅",callback_data=f"apq/y/{tg_id}"), InlineKeyboardButton("❌",callback_data=f"apq/n/{tg_id}"))
+            bot.send_message(tg_id, f"Здравствуйте, {client_name}!\n\n"
+                                    f"Подскажите, пожалуйста, актуальна ли Ваша заявка?\n\n"
+                                    f"{reason if reason else f'<b>Обмен:</b> {currency_names[currency1]} → {currency_names[currency2]}\n\n Сумма: {amount1} {currency_names[currency1]}'}",
+                             reply_markup=keyboard, parse_mode="HTML")
 
-        apmake = ApplicationCreator(country=country, client_name=client_name, amount1=amount1,amount2=amount2, currency1=currency1, currency2=currency2, reason=reason, time=created_at)
-        msg = apmake.create()
-        msg += "\n" + f"\n✅<b>Взят в работу:</b>\n<i>{datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")}</i>\n\n💼Менеджер: {user_name} " + "\n" + f"\n➡️Cсылка на чат с клиентом:<a href='tg://user?id={tg_id}'>➡️ {client_name}</a>"
-        msg += "\n" + f"\n⚡️Заявок в очереди: {qdb.count_rows()}"
-        bot.send_message(message.chat.id, msg, parse_mode="HTML")
+
+
     else:
-        bot.send_message(message.chat.id, "Заявок в очереди не осталось.")
+        bot.send_message(manager_chat_id, "Заявок в очереди нет.")
+        return
 @bot.message_handler(commands=['change_coef'], func=lambda message: message.from_user.id in admin_id)
 def change_coef(message):
     global admin_change_coef_states
@@ -736,7 +739,19 @@ def callback_query(call):
             keybord4.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/4"),
                          InlineKeyboardButton("◀️Назад", callback_data="cn_menu"))
             bot.send_message(chat_id, msg, reply_markup=keybord4, parse_mode="HTML")
-
+    if call.data.startswith("apq"):
+        _, verdict, tg_id= call.data.split("/")
+        _, tg_id, country, client_name, amount1, amount2, currency1, currency2, reason, created_at = qdb.get_from_queue(get_by_id=tg_id)
+        if verdict == "y":
+            keyboard= InlineKeyboardMarkup()
+            keyboard.add(InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client"))
+            apmake = ApplicationCreator(country=country, client_name=client_name,reason=reason,currency1=currency1, currency2=currency2, amount1=amount1, amount2=amount2, time=created_at)
+            msg = apmake.create()
+            sent_msg = bot.send_message(manager_chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
+            bot.send_message(tg_id, "✅Заявка подтверждена, менеджер ответит вам в ближайшее время!")
+            id_cache[sent_msg.message_id] = (client_name, tg_id)
+        if verdict == "n":
+            bot.send_message(tg_id, "❌Заявка отменена")
     if call.data.startswith("chc"):
         _, table_name= call.data.split("/")
         admin_change_coef_states[chat_id] = table_name
@@ -859,4 +874,7 @@ def process_coef_change(message):
     except Exception as e:
         bot.send_message(chat_id, f"Что-то пошло не так, уведомили программиста:\n\n"
                                   f"{e}")
+
+
+
 

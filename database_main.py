@@ -148,12 +148,23 @@ class QueueDB:
             logger.info(f"{name} (ID {tg_id}) добавлен в очередь.")
             return True
 
-    def get_from_queue(self):
+    def get_from_queue(self, to_confirm:bool=False, get_by_id:int=None):
         """Берёт последнюю запись из очереди, удаляет её в БД и возвращает как кортеж.
             Если записей нет — возвращает None.
             """
         with self.get_connection() as conn:
             c = conn.cursor()
+            if to_confirm:
+                c.execute("SELECT * FROM queue ORDER BY id DESC")
+                rows = c.fetchall()
+                return rows
+            if get_by_id:
+                c.execute("SELECT * FROM queue WHERE tg_id = ?", (get_by_id,))
+                row = c.fetchone()
+                c.execute("DELETE FROM queue WHERE tg_id = ?", (get_by_id,))
+                conn.commit()
+                return row
+
             logger.info("Подтягиваем последнюю запись из очереди...")
             # 1. Берём последнюю запись
             c.execute("SELECT * FROM queue ORDER BY id DESC LIMIT 1")
