@@ -56,9 +56,9 @@ class ApplicationCreator:
             main_body =f"<b>🫵Отдаст: {self.amount1}</b> {self.currency1}" +'\n\n'+f"👉<b>Получит: {self.amount2}</b> {self.currency2}"
             rate =""
             if float(self.amount2) > float(self.amount1):
-                rate = f"<b>📈Курс:</b> {self.amount2 / self.amount1:.2f}"
+                rate = f"<b>📈Курс:</b> {float(self.amount2) / float(self.amount1):.2f}"
             elif float(self.amount1) > float(self.amount2):
-                rate = f"<b>📈Курс:</b> {self.amount1 / self.amount2:.2f}"
+                rate = f"<b>📈Курс:</b> {float(self.amount1) / float(self.amount2):.2f}"
 
 
 
