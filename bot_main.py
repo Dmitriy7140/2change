@@ -255,7 +255,7 @@ def handle_queue(message):
             keyboard.row(InlineKeyboardButton("✅",callback_data=f"apq/y/{tg_id}"), InlineKeyboardButton("❌",callback_data=f"apq/n/{tg_id}"))
             bot.send_message(tg_id, f"Здравствуйте, {client_name}!\n\n"
                                     f"Подскажите, пожалуйста, актуальна ли Ваша заявка?\n\n"
-                                    f"{reason if reason else f'<b>Обмен:</b> {currency_names[currency1]} → {currency_names[currency2]}\n\n Сумма: {amount1} {currency_names[currency1]}'}",
+                                    f"{reason if reason else f'<b>Обмен:</b> {currency1} → {currency2}\n\n Сумма: {amount1} {currency1}'}",
                              reply_markup=keyboard, parse_mode="HTML")
 
 
