@@ -452,6 +452,8 @@ def callback_query(call):
     if call.data.startswith("esim"):
 
         if call.data == "esim_main":
+            if chat_id in to_edit:
+                del to_edit[chat_id]
             msg = ("<b>Боитесь остаться без связи в чужой стране?</b>\n"
                     "Роуминг дорогой, а местные симки — сплошная суета?\n"
                     "<i>📲 Подключите eSIM с интернетом еще до вылета — быстро, удобно и с поддержкой на каждом шаге!</i>\n\n"
@@ -486,7 +488,7 @@ def callback_query(call):
                   "<b>💡Что вы получите?</b>\n"
                   "✔️Бесплатное подключение\n"
                   "✔️Интернет на 30 дней\n"
-                  "✔️Связь сразу по прилете - <b><i>без визита в салон</b></i>\n"
+                  "✔️Связь сразу по прилете - <i>без визита в салон</i>\n"
                   "🎁<i>При обмене от 2 000 000 ₩ - eSIM + 3Гб интернета в подарок!</i>\n\n"
                   ""
                   "<b>💰Тарифы на 30 дней:</b>\n"
@@ -497,7 +499,7 @@ def callback_query(call):
                   "<b>♾Безлимитный интернет</b> - 14 000₽\n\n"
                   ""
                   "<b>Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE</b>👩🏻‍")
-            key.row(InlineKeyboardButton("←", callback_data="esim_faq/5"), InlineKeyboardButton(text="1/2"), InlineKeyboardButton("→", callback_data="esim_faq/5"))
+            key.row(InlineKeyboardButton("←", callback_data="esim_faq/5"), InlineKeyboardButton(text="1/2", callback_data="ignore"), InlineKeyboardButton("→", callback_data="esim_faq/5"))
             key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/5"))
             key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
             if chat_id not in to_edit:
@@ -511,10 +513,10 @@ def callback_query(call):
                         to_edit[chat_id] = sent.message_id
             else:
                 msg_id = to_edit[chat_id]
-                bot.edit_message_text(msg,chat_id,parse_mode="HTML",message_id=msg_id,reply_markup=key)
+                bot.edit_message_caption(msg,chat_id,parse_mode="HTML",message_id=msg_id,reply_markup=key)
         elif call.data == "esim_thai":
             key = InlineKeyboardMarkup()
-            key.row(InlineKeyboardButton("←", callback_data="esim_faq/3"), InlineKeyboardButton(text="1/2"),
+            key.row(InlineKeyboardButton("←", callback_data="esim_faq/3"), InlineKeyboardButton(text="1/2", callback_data="ignore"),
                     InlineKeyboardButton("→", callback_data="esim_faq/3"))
             key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/3"))
             key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
@@ -524,7 +526,7 @@ def callback_query(call):
                   "<b>💡Что вы получите?</b>\n"
                   "✔️Бесплатное подключение\n"
                   "✔️Интернет на 30 дней\n"
-                  "✔️Связь сразу по прилете - <b><i>без визита в салон</b></i>\n\n"
+                  "✔️Связь сразу по прилете - <b>без визита в салон</b>\n\n"
                   
                   ""
                   "<b>💰Тарифы на 30 дней:</b>\n"
@@ -548,10 +550,10 @@ def callback_query(call):
                         to_edit[chat_id] = sent.message_id
             else:
                 msg_id = to_edit[chat_id]
-                bot.edit_message_text(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
+                bot.edit_message_caption(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
         elif call.data == "esim_cn":
             key = InlineKeyboardMarkup()
-            key.row(InlineKeyboardButton("←", callback_data="esim_faq/4"), InlineKeyboardButton(text="1/2"),
+            key.row(InlineKeyboardButton("←", callback_data="esim_faq/4"), InlineKeyboardButton(text="1/2", callback_data="ignore"),
                     InlineKeyboardButton("→", callback_data="esim_faq/4"))
             key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/4"))
             key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
@@ -561,15 +563,15 @@ def callback_query(call):
                    "<b>💡Что вы получите?</b>\n"
                    "✔️Бесплатное подключение\n"
                    "✔️Интернет на 30 дней\n"
-                   "✔️Связь сразу по прилете - <b><i>без визита в салон</i></b>\n"
+                   "✔️Связь сразу по прилете - <b>без визита в салон</b>\n"
                    "✔️Работают даже заблокированные приложения в Китае!\n\n"
 
                    ""
                    "<b>💰Тарифы на 30 дней:</b>\n"
-                   "🇹🇭1 ГБ - 450₽\n"
-                   "🇹🇭3 ГБ - 900₽\n"
-                   "🇹🇭5 ГБ - 1 250₽\n"
-                   "🇹🇭10 ГБ - 1 800₽\n\n"
+                   "🇨🇳1 ГБ - 450₽\n"
+                   "🇨🇳3 ГБ - 900₽\n"
+                   "🇨🇳5 ГБ - 1 250₽\n"
+                   "🇨🇳10 ГБ - 1 800₽\n\n"
 
                    ""
                    "<b>Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE</b>👩🏻‍")
@@ -586,10 +588,10 @@ def callback_query(call):
                         to_edit[chat_id] = sent.message_id
             else:
                 msg_id = to_edit[chat_id]
-                bot.edit_message_text(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
+                bot.edit_message_caption(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
         elif call.data == "esim_ae":
             key = InlineKeyboardMarkup()
-            key.row(InlineKeyboardButton("←", callback_data="esim_faq/6"), InlineKeyboardButton(text="1/2"),
+            key.row(InlineKeyboardButton("←", callback_data="esim_faq/6"), InlineKeyboardButton(text="1/2", callback_data="ignore"),
                     InlineKeyboardButton("→", callback_data="esim_faq/6"))
             key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/6"))
             key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
@@ -599,14 +601,14 @@ def callback_query(call):
                    "<b>💡Что вы получите?</b>\n"
                    "✔️Бесплатное подключение\n"
                    "✔️Интернет на 30 дней\n"
-                   "✔️Связь сразу по прилете - <b><i>без визита в салон</b></i>\n\n"
+                   "✔️Связь сразу по прилете - <b>без визита в салон</b>\n\n"
 
                    ""
                    "<b>💰Тарифы на 30 дней:</b>\n"
-                   "🇹🇭1 ГБ - 1 300₽\n"
-                   "🇹🇭3 ГБ - 3 500₽\n"
-                   "🇹🇭5 ГБ - 5 000₽\n"
-                   "🇹🇭10 ГБ - 8 500₽\n\n"
+                   "🇦🇪1 ГБ - 1 300₽\n"
+                   "🇦🇪3 ГБ - 3 500₽\n"
+                   "🇦🇪5 ГБ - 5 000₽\n"
+                   "🇦🇪10 ГБ - 8 500₽\n\n"
 
                    ""
                    "<b>Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE</b>👩🏻‍")
@@ -623,12 +625,12 @@ def callback_query(call):
                         to_edit[chat_id] = sent.message_id
             else:
                 msg_id = to_edit[chat_id]
-                bot.edit_message_text(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
+                bot.edit_message_caption(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
 
         elif call.data == "esim_tr":
 
             key = InlineKeyboardMarkup()
-            key.row(InlineKeyboardButton("←", callback_data="esim_faq/1"), InlineKeyboardButton(text="1/2"),
+            key.row(InlineKeyboardButton("←", callback_data="esim_faq/1"), InlineKeyboardButton(text="1/2", callback_data="ignore"),
                     InlineKeyboardButton("→", callback_data="esim_faq/1"))
             key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/1"))
             key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
@@ -642,7 +644,7 @@ def callback_query(call):
                 "💡 <b>Что вы получите?</b>\n"
                 "✔️ Бесплатное подключение\n"
                 "✔️ 1 ГБ интернета\n"
-                "✔️ Выгодное пополнение при необходимости\n"
+                "✔️ Выгодное пополнение при необходимости\n\n"
                 "🇹🇷 <b>5 ГБ — 1900₽</b>\n"
                 "🇹🇷 <b>10 ГБ — 2500₽</b>\n"
                 "🇹🇷 <b>20 ГБ — 3300₽</b>\n\n"
@@ -662,12 +664,19 @@ def callback_query(call):
                         to_edit[chat_id] = sent.message_id
             else:
                 msg_id = to_edit[chat_id]
-                bot.edit_message_text(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
+                bot.edit_message_caption(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
         elif call.data.startswith("esim_faq/"):
             _, country = call.data.split("/")
+            esim_countries = {
+                "1": "esim_tr",  # Турция
+                "3": "esim_thai",  # Тайланд
+                "4": "esim_cn",  # Китай
+                "5": "esim_kr",  # Корея
+                "6": "esim_ae"  # ОАЭ
+            }
             key = InlineKeyboardMarkup()
-            key.row(InlineKeyboardButton("←", callback_data=f"esim_faq/{country}"), InlineKeyboardButton(text="2/2"),
-                    InlineKeyboardButton("→", callback_data=f"esim_faq/{country}"))
+            key.row(InlineKeyboardButton("←", callback_data=f"{esim_countries[country]}"), InlineKeyboardButton(text="2/2", callback_data="ignore"),
+                    InlineKeyboardButton("→", callback_data=f"{esim_countries[country]}"))
             key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data=f"request/📲получить eSIM/{country}"))
             key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
             msg = ("Часто задаваемые вопросы:\n\n"
@@ -698,7 +707,7 @@ def callback_query(call):
                         to_edit[chat_id] = sent.message_id
             else:
                 msg_id = to_edit[chat_id]
-                bot.edit_message_text(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
+                bot.edit_message_caption(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
 
 
 
@@ -877,7 +886,8 @@ def callback_query(call):
     if call.data.startswith("request/"):
         _, request, country= call.data.split("/")
         send_application(user_id, user_name, chat_id,country=int(country),reason=request)
-        del to_edit[chat_id]
+        if chat_id in to_edit:
+            del to_edit[chat_id]
     if call.data.startswith("exchange/"):
 
         _, currency1, currency2, country = call.data.split("/")

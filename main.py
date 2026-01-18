@@ -1,13 +1,10 @@
 
 from bot_main import bot,manager_chat_id, send_media, handle_queue
 
-from utils import logger, start_scheduler
+from utils import logger, start_scheduler, load_changes
 import threading
 
-bot_version="1.6.0"
-changes=("🌟Добавлено подтверждение заявок!\n"
-         "🌟Бот автоматически запрашивает подтверждение каждое утро!\n"
-         "")
+changes = load_changes()
 if __name__ == '__main__':
     try:
         logger.info("2change стартует...")
@@ -16,7 +13,18 @@ if __name__ == '__main__':
 
 
         bot.send_message(manager_chat_id, text="Калькулятор 2change на связи🤙\n\n"
-                                                f"версия: {bot_version}\n\n" + changes, disable_notification=True)
+                                               "Команды:\n\n"
+                                               "/start - запуск бота\n"
+                                               "/change_coef - изменить наценку (администратор)\n"
+                                               "/manager - вызвать менеджера",disable_notification=True)
+        if changes:
+            bot.send_message(
+                manager_chat_id,
+                f"📋 <b>Что нового в боте:</b>\n\n{changes}",
+                parse_mode="HTML"
+            )
+        else:
+            pass
         scheduler_thread = threading.Thread(target=start_scheduler, args=(handle_queue,), daemon=True)
         scheduler_thread.start()
 

@@ -145,7 +145,7 @@ class FinInstr:
     def convert_currencies(self, amount, currency1, currency2):
         if currency1 == 'usd':
             if currency2 == "rub":
-                return f"{amount* self.usd_rub}"
+                return f"{amount* self.usd_rub:.2f}"
             elif currency2 == "try":
                 return f"{amount * self.usd_try:.2f}"
 
