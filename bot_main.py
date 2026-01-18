@@ -241,8 +241,7 @@ def handle_manager(message):
 
 
 
-@bot.message_handler(commands=['queue'], func=lambda message: message.from_user.id in admin_id)
-def handle_queue(message):
+def handle_queue():
 
 
 
