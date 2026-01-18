@@ -18,6 +18,7 @@ currency_names = {"rub":"<b>RUB🇷🇺</b>",
                   "thb_cash":"<b>💰THB🇹🇭</b>",
                   "cny":"<b>CNY🇨🇳</b>"}
 admin_change_coef_states= {}
+to_edit= {}
 
 admin_id = (57713855, 22231230, 5777995768)
 manager_chat_id = -1003210623925 #НЕ ЗАБУДЬ ПОМЕНЯТЬ ПРОВЕРКИ НА ПОДПИСКУ ДЛЯ РФ И ТАЙ
@@ -47,10 +48,10 @@ class ApplicationCreator:
         else:
             self.time = time
     def create(self):
-        """country_names = {1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇨🇳Китай"}"""
+        """country_names = {1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇨🇳Китай", 5: "Корея", 6 : ОАЭ}"""
 
         msg = ""
-        country_names = {0:"Страна не указана", 1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇨🇳Китай"}
+        country_names = {0:"Страна не указана", 1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇨🇳Китай", 5:"🇰🇷Корея", 6:"🇦ОАЭ"}
         intro = country_names.get(self.country, "Страна не указана") +"\n"+f"👤Клиент: {self.client_name}"
         if self.amount1:
             main_body =f"<b>🫵Отдаст: {self.amount1}</b> {self.currency1}" +'\n\n'+f"👉<b>Получит: {self.amount2}</b> {self.currency2}"
@@ -255,7 +256,7 @@ def handle_queue(message):
             keyboard.row(InlineKeyboardButton("✅",callback_data=f"apq/y/{tg_id}"), InlineKeyboardButton("❌",callback_data=f"apq/n/{tg_id}"))
             bot.send_message(tg_id, f"Здравствуйте, {client_name}!\n\n"
                                     f"Подскажите, пожалуйста, актуальна ли Ваша заявка?\n\n"
-                                    f"{reason if reason else f'<b>Обмен:</b> {currency1} → {currency2}\n\n Сумма: {amount1} {currency1}'}",
+                                    f"{reason if reason else f'<b>Обмен:</b> {currency1} → {currency2}\n\nСумма: {amount1} {currency1}'}",
                              reply_markup=keyboard, parse_mode="HTML")
 
 
@@ -368,7 +369,7 @@ def change_coef(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
-    global user_calc_states, admin_change_coef_states
+    global user_calc_states, admin_change_coef_states, to_edit
     user_id = call.from_user.id
     chat_id = call.message.chat.id
     last_name = call.from_user.last_name or ""
@@ -450,39 +451,259 @@ def callback_query(call):
         keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
         bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
     if call.data.startswith("esim"):
-        if call.data == "esim_tr":
-            if check_subscribtion(user_id, 1):
-                keyboard = InlineKeyboardMarkup()
-                keyboard.add(
-                    InlineKeyboardButton("Оставить заявку✅", callback_data="request/🎁 бесплатная eSIM на 1ГБ/1"))
-                keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-                msg = (
-                    "🎁 <b>Дарим электронную симкарту eSIM</b> — без условий и скрытых платежей!\n\n"
-                    "Хотите оставаться на связи в Турции без переплат? \n"
-                    "Ловите подарок — eSIM с интернетом <b>абсолютно бесплатно!</b>\n\n"
-                    "<b>📱 Что такое eSIM?</b>\n"
-                    "Это интернет за границей без физической sim-карты.\n"
-                    "Удобно, быстро, без визита в салон связи.\n\n"
-                    "💡 <b>Что вы получите?</b>\n"
-                    "✔️ Бесплатное подключение\n"
-                    "✔️ 1 ГБ интернета\n"
-                    "✔️ Выгодное пополнение при необходимости\n"
-                    "🇹🇷 <b>5 ГБ — 1900₽</b>\n"
-                    "🇹🇷 <b>10 ГБ — 2500₽</b>\n"
-                    "🇹🇷 <b>20 ГБ — 3300₽</b>\n\n"
-                    "🎁 <b>Бонус +10 ГБ трафика в подарок</b>, при обмене от 20 000 лир через QR!\n\n"
-                    "👇 <b>Оставьте заявку</b> или напишите менеджеру\n "
-                    "@ALEXANDRA_2CHANGE 👩🏻‍💼"
-                )
-                send_media("img/esim.jpg", chat_id, msg, reply_markup=keyboard)
-            else:
-                bot.send_message(chat_id, "<i>Для работы с ботом\n"
-                                          "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
-                                 parse_mode="HTML")
-        if call.data == "esim_main":
-            send_indev(chat_id)
 
-    if call.data=="currency_menu":
+        if call.data == "esim_main":
+            msg = ("<b>Боитесь остаться без связи в чужой стране?</b>\n"
+                    "Роуминг дорогой, а местные симки — сплошная суета?\n"
+                    "<i>📲 Подключите eSIM с интернетом еще до вылета — быстро, удобно и с поддержкой на каждом шаге!</i>\n\n"
+                     ""
+                    "💡 Условия:\n"
+                   "✔️ Быстрое подключение\n"
+                   "✔️ Интернет <b><i>без визита в салон</i></b>\n"
+                   "✔️ Для каждой страны свои тарифы\n\n"
+                   ""
+                   "<b>📌 Часто задаваемые вопросы:</b>\n\n"
+                   "• Что такое eSIM? \n"
+                   "Электронная симкарта, встроенная в большинство современных смартфонов.\n\n"
+                   ""
+                   "• Как подключить eSIM?\n"
+                   "Сканируете QR-код → eSIM подключается → перед вылетом или уже по прилету в страну включаете eSIM и пользуетесь интерентом.\n\n"
+                   ""
+                   "<b>• Совместимость</b>\n"
+                   "— <b>iPhone:</b> Настройки → Сотовая связь → «Добавить eSIM»\n"
+                   "— <b>Android:</b> Настройки → Подключения / Сеть и интернет → Диспетчер SIM-карт → «Добавить eSIM»\n\n"
+                   "<i>👇 Выберите страну или напишите менеджеру @ALEXANDRA_2CHANGE 👩🏻‍💼</i>")
+            keyboard = InlineKeyboardMarkup()
+            keyboard.row(InlineKeyboardButton("🇹🇷Турция", callback_data="esim_tr"), InlineKeyboardButton("🇹🇭Тайланд", callback_data="esim_thai"))
+            keyboard.row(InlineKeyboardButton("🇨🇳Китай", callback_data="esim_cn"), InlineKeyboardButton("🇰🇷Корея", callback_data="esim_kr"))
+            keyboard.add(InlineKeyboardButton("🇦🇪ОАЭ (Дубай)", callback_data="esim_ae"))
+            keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
+            send_media("img/esimmain.jpg", chat_id, msg, reply_markup=keyboard)
+        elif call.data == "esim_kr":
+            key = InlineKeyboardMarkup()
+            msg= ("<b>📲Хотите оставаться на связи в Корее?</b>\n"
+                  "<i>Подключите eSIM с интернетом еще до вылета - быстро, удобно и с поддержкой на каждому шагу!</i>\n\n"
+                  ""
+                  "<b>💡Что вы получите?</b>\n"
+                  "✔️Бесплатное подключение\n"
+                  "✔️Интернет на 30 дней\n"
+                  "✔️Связь сразу по прилете - <b><i>без визита в салон</b></i>\n"
+                  "🎁<i>При обмене от 2 000 000 ₩ - eSIM + 3Гб интернета в подарок!</i>\n\n"
+                  ""
+                  "<b>💰Тарифы на 30 дней:</b>\n"
+                  "🇰🇷5 ГБ - 1 600₽\n"
+                  "🇰🇷10 ГБ - 3 000₽\n"
+                  "🇰🇷20 ГБ - 6 000₽\n"
+                  "🇰🇷50 ГБ - 12 000₽\n"
+                  "<b>♾Безлимитный интернет</b> - 14 000₽\n\n"
+                  ""
+                  "<b>Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE</b>👩🏻‍")
+            key.row(InlineKeyboardButton("←", callback_data="esim_faq/5"), InlineKeyboardButton(text="1/2"), InlineKeyboardButton("→", callback_data="esim_faq/5"))
+            key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/5"))
+            key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
+            if chat_id not in to_edit:
+                if "img/esimmain.jpg" in img_cache:
+                    sent= bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key, parse_mode="html")
+                    to_edit[chat_id] = sent.message_id
+                else:
+                    with open("img/esimmain.jpg", "rb") as media:
+                        sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
+                        img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+                        to_edit[chat_id] = sent.message_id
+            else:
+                msg_id = to_edit[chat_id]
+                bot.edit_message_text(msg,chat_id,parse_mode="HTML",message_id=msg_id,reply_markup=key)
+        elif call.data == "esim_thai":
+            key = InlineKeyboardMarkup()
+            key.row(InlineKeyboardButton("←", callback_data="esim_faq/3"), InlineKeyboardButton(text="1/2"),
+                    InlineKeyboardButton("→", callback_data="esim_faq/3"))
+            key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/3"))
+            key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
+            msg= ("<b>📲Хотите оставаться на связи в Тайланде?</b>\n"
+                  "<i>Подключите eSIM с интернетом еще до вылета - быстро, удобно и с поддержкой на каждому шагу!</i>\n\n"
+                  ""
+                  "<b>💡Что вы получите?</b>\n"
+                  "✔️Бесплатное подключение\n"
+                  "✔️Интернет на 30 дней\n"
+                  "✔️Связь сразу по прилете - <b><i>без визита в салон</b></i>\n\n"
+                  
+                  ""
+                  "<b>💰Тарифы на 30 дней:</b>\n"
+                  "🇹🇭1 ГБ - 400₽\n"
+                  "🇹🇭3 ГБ - 800₽\n"
+                  "🇹🇭5 ГБ - 1 100₽\n"
+                  "🇹🇭10 ГБ - 1 800₽\n\n"
+                  
+                  ""
+                  "<b>Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE</b>👩🏻‍")
+
+            if chat_id not in to_edit:
+                if "img/esimmain.jpg" in img_cache:
+                    sent = bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key,
+                                          parse_mode="html")
+                    to_edit[chat_id] = sent.message_id
+                else:
+                    with open("img/esimmain.jpg", "rb") as media:
+                        sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
+                        img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+                        to_edit[chat_id] = sent.message_id
+            else:
+                msg_id = to_edit[chat_id]
+                bot.edit_message_text(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
+        elif call.data == "esim_cn":
+            key = InlineKeyboardMarkup()
+            key.row(InlineKeyboardButton("←", callback_data="esim_faq/4"), InlineKeyboardButton(text="1/2"),
+                    InlineKeyboardButton("→", callback_data="esim_faq/4"))
+            key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/4"))
+            key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
+            msg = ("<b>📲Хотите оставаться на связи в Китае?</b>\n"
+                   "<i>Подключите eSIM с интернетом еще до вылета - быстро, удобно и с поддержкой на каждому шагу!</i>\n\n"
+                   ""
+                   "<b>💡Что вы получите?</b>\n"
+                   "✔️Бесплатное подключение\n"
+                   "✔️Интернет на 30 дней\n"
+                   "✔️Связь сразу по прилете - <b><i>без визита в салон</i></b>\n"
+                   "✔️Работают даже заблокированные приложения в Китае!\n\n"
+
+                   ""
+                   "<b>💰Тарифы на 30 дней:</b>\n"
+                   "🇹🇭1 ГБ - 450₽\n"
+                   "🇹🇭3 ГБ - 900₽\n"
+                   "🇹🇭5 ГБ - 1 250₽\n"
+                   "🇹🇭10 ГБ - 1 800₽\n\n"
+
+                   ""
+                   "<b>Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE</b>👩🏻‍")
+
+            if chat_id not in to_edit:
+                if "img/esimmain.jpg" in img_cache:
+                    sent = bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key,
+                                          parse_mode="html")
+                    to_edit[chat_id] = sent.message_id
+                else:
+                    with open("img/esimmain.jpg", "rb") as media:
+                        sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
+                        img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+                        to_edit[chat_id] = sent.message_id
+            else:
+                msg_id = to_edit[chat_id]
+                bot.edit_message_text(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
+        elif call.data == "esim_ae":
+            key = InlineKeyboardMarkup()
+            key.row(InlineKeyboardButton("←", callback_data="esim_faq/6"), InlineKeyboardButton(text="1/2"),
+                    InlineKeyboardButton("→", callback_data="esim_faq/6"))
+            key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/6"))
+            key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
+            msg = ("<b>📲Хотите оставаться на связи в ОАЭ?</b>\n"
+                   "<i>Подключите eSIM с интернетом еще до вылета - быстро, удобно и с поддержкой на каждому шагу!</i>\n\n"
+                   ""
+                   "<b>💡Что вы получите?</b>\n"
+                   "✔️Бесплатное подключение\n"
+                   "✔️Интернет на 30 дней\n"
+                   "✔️Связь сразу по прилете - <b><i>без визита в салон</b></i>\n\n"
+
+                   ""
+                   "<b>💰Тарифы на 30 дней:</b>\n"
+                   "🇹🇭1 ГБ - 1 300₽\n"
+                   "🇹🇭3 ГБ - 3 500₽\n"
+                   "🇹🇭5 ГБ - 5 000₽\n"
+                   "🇹🇭10 ГБ - 8 500₽\n\n"
+
+                   ""
+                   "<b>Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE</b>👩🏻‍")
+
+            if chat_id not in to_edit:
+                if "img/esimmain.jpg" in img_cache:
+                    sent = bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key,
+                                          parse_mode="html")
+                    to_edit[chat_id] = sent.message_id
+                else:
+                    with open("img/esimmain.jpg", "rb") as media:
+                        sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
+                        img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+                        to_edit[chat_id] = sent.message_id
+            else:
+                msg_id = to_edit[chat_id]
+                bot.edit_message_text(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
+
+        elif call.data == "esim_tr":
+
+            key = InlineKeyboardMarkup()
+            key.row(InlineKeyboardButton("←", callback_data="esim_faq/1"), InlineKeyboardButton(text="1/2"),
+                    InlineKeyboardButton("→", callback_data="esim_faq/1"))
+            key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/1"))
+            key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
+            msg = (
+                "🎁 <b>Дарим электронную симкарту eSIM</b> — без условий и скрытых платежей!\n\n"
+                "Хотите оставаться на связи в Турции без переплат? \n"
+                "Ловите подарок — eSIM с интернетом <b>абсолютно бесплатно!</b>\n\n"
+                "<b>📱 Что такое eSIM?</b>\n"
+                "Это интернет за границей без физической sim-карты.\n"
+                "Удобно, быстро, без визита в салон связи.\n\n"
+                "💡 <b>Что вы получите?</b>\n"
+                "✔️ Бесплатное подключение\n"
+                "✔️ 1 ГБ интернета\n"
+                "✔️ Выгодное пополнение при необходимости\n"
+                "🇹🇷 <b>5 ГБ — 1900₽</b>\n"
+                "🇹🇷 <b>10 ГБ — 2500₽</b>\n"
+                "🇹🇷 <b>20 ГБ — 3300₽</b>\n\n"
+                "🎁 <b>Бонус +10 ГБ трафика в подарок</b>, при обмене от 20 000 лир через QR!\n\n"
+                "👇 <b>Оставьте заявку</b> или напишите менеджеру\n "
+                "@ALEXANDRA_2CHANGE 👩🏻‍💼"
+            )
+            if chat_id not in to_edit:
+                if "img/esimmain.jpg" in img_cache:
+                    sent = bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key,
+                                          parse_mode="html")
+                    to_edit[chat_id] = sent.message_id
+                else:
+                    with open("img/esimmain.jpg", "rb") as media:
+                        sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
+                        img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+                        to_edit[chat_id] = sent.message_id
+            else:
+                msg_id = to_edit[chat_id]
+                bot.edit_message_text(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
+        elif call.data.startswith("esim_faq/"):
+            _, country = call.data.split("/")
+            key = InlineKeyboardMarkup()
+            key.row(InlineKeyboardButton("←", callback_data=f"esim_faq/{country}"), InlineKeyboardButton(text="2/2"),
+                    InlineKeyboardButton("→", callback_data=f"esim_faq/{country}"))
+            key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data=f"request/📲получить eSIM/{country}"))
+            key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
+            msg = ("Часто задаваемые вопросы:\n\n"
+                   ""
+                   "<b>• Что такое eSIM?</b>\n"
+                   "Это электронная симкарта, встроенная в современные смартфоны, большинство айфонов от 11 модели поддерживают eSIM.\n\n"
+                   ""
+                   "<b>• Как подключить eSIM?</b>\n"
+                   "Сканируйте QR-код - телефон активирует eSIM, интернет заработает.\n\n"
+                   ""
+                   "<b>• Совместимость</b>\n"
+                   "— <b>iPhone:</b> Настройки → Сотовая связь → «Добавить eSIM»\n"
+                   "— <b>Android:</b> Настройки → Подключения / Сеть и интернет → Диспетчер SIM-карт → «Добавить eSIM»\n\n"
+                   ""
+                   "<b>• Как это работает по шагам</b>\n"
+                   "Сканируете QR→ eSIM подключается → перед вылетом или уже в стране включаете и пользуетесь.\n\n"
+                   ""
+                   "<i>👇Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE🦸🏻‍♀️</i>")
+            if chat_id not in to_edit:
+                if "img/esimmain.jpg" in img_cache:
+                    sent = bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key,
+                                          parse_mode="html")
+                    to_edit[chat_id] = sent.message_id
+                else:
+                    with open("img/esimmain.jpg", "rb") as media:
+                        sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
+                        img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+                        to_edit[chat_id] = sent.message_id
+            else:
+                msg_id = to_edit[chat_id]
+                bot.edit_message_text(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
+
+
+
+    if call.data=="currency_menu": #ТУРЦИЯ
         finstr = FinInstr()
         msg = finstr.show_currency(country=1)
         keyboard = InlineKeyboardMarkup()
@@ -657,6 +878,7 @@ def callback_query(call):
     if call.data.startswith("request/"):
         _, request, country= call.data.split("/")
         send_application(user_id, user_name, chat_id,country=int(country),reason=request)
+        del to_edit[chat_id]
     if call.data.startswith("exchange/"):
 
         _, currency1, currency2, country = call.data.split("/")

@@ -1,6 +1,8 @@
 import logging
 import calendar
 from datetime import datetime, timedelta, time
+import pytz
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 logging.basicConfig(
@@ -33,6 +35,23 @@ def day_off():
             return True
     logger.info("Не выходной, увы!")
     return False#if not day off
+
+def start_scheduler(daily_task):
+
+    scheduler = BackgroundScheduler()
+
+    msk_tz = pytz.timezone('Europe/Moscow')
+
+    # Ежедневно в 10:00 MSK, кроме воскресенья (mon-fri = 1-5)
+    scheduler.add_job(
+        daily_task,
+        'cron',
+        day_of_week='mon-sat',
+        hour=10,
+        minute=0,
+        timezone=msk_tz
+    )
+    scheduler.start()
 
 
 
