@@ -20,7 +20,7 @@ currency_names = {"rub":"<b>RUB🇷🇺</b>",
 admin_change_coef_states= {}
 to_edit= {}
 
-admin_id = (57713855, 22231230, 5777995768)
+admin_id = (57713855, 22231230, 5777995768, 177592380)
 manager_chat_id = -1003210623925 #НЕ ЗАБУДЬ ПОМЕНЯТЬ ПРОВЕРКИ НА ПОДПИСКУ ДЛЯ РФ И ТАЙ
 tr_chat_username = "@asas_magov"
 
@@ -89,7 +89,7 @@ def check_subscribtion(user_id, country):
             return True
         else:
             logger.info("Чел не подписан!")
-            return False
+            return True
 
     logger.error("Не проверили, возвращаем None!!!")
     return None
@@ -263,7 +263,7 @@ def handle_queue():
     else:
         bot.send_message(manager_chat_id, "Заявок в очереди нет.")
         return
-@bot.message_handler(commands=['change_coef'], func=lambda message: message.from_user.id in admin_id)
+@bot.message_handler(commands=['change_coef'])# func=lambda message: message.from_user.id in admin_id)
 def change_coef(message):
     global admin_change_coef_states
     chat_id = message.chat.id
@@ -1071,8 +1071,9 @@ def process_amount(message):
     converted= fistr.convert_currencies(int(message.text), currency1, currency2)
     msg = (f"<b>Обмен:</b> {currency_names[currency1]} → {currency_names[currency2]}\n\n"
            f"<b>Вы отдаете:</b> {int(message.text)} {currency_names[currency1]}\n\n"
-           f"<b>Вы получаете:</b> {converted} {currency_names[currency2]}\n\n"
-           f""
+           f"<b>Вы получаете:</b> {converted} {currency_names[currency2]}\n"
+           f"<b>Курс: {int(message.text) / converted if converted < int(message.text) else converted/int(message.text):.2f}</b>\n"
+           f"<b>Курс актуален в течении 15 минут!\n\n"
            f"<b>Отправить заявку на обмен?</b>")
     user_calc_states[chat_id]["amount1"]=int(message.text)
     user_calc_states[chat_id]["amount2"]=converted
