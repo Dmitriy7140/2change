@@ -1072,7 +1072,7 @@ def process_amount(message):
     msg = (f"<b>Обмен:</b> {currency_names[currency1]} → {currency_names[currency2]}\n\n"
            f"<b>Вы отдаете:</b> {int(message.text)} {currency_names[currency1]}\n\n"
            f"<b>Вы получаете:</b> {converted} {currency_names[currency2]}\n"
-           f"<b>Курс: {int(message.text) / converted if converted < int(message.text) else converted/int(message.text):.2f}</b>\n"
+           f"<b>Курс: {float(message.text) / float(converted) if float(converted) < float(message.text) else float(converted)/float(message.text):.2f}</b>\n"
            f"<b>Курс актуален в течении 15 минут!\n\n"
            f"<b>Отправить заявку на обмен?</b>")
     user_calc_states[chat_id]["amount1"]=int(message.text)
