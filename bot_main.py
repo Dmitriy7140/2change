@@ -21,8 +21,9 @@ admin_change_coef_states= {}
 to_edit= {}
 
 admin_id = (57713855, 22231230, 5777995768, 177592380, 398673425)
-manager_chat_id = -1003210623925 #НЕ ЗАБУДЬ ПОМЕНЯТЬ ПРОВЕРКИ НА ПОДПИСКУ ДЛЯ РФ И ТАЙ
-tr_chat_username = "@asas_magov"
+manager_chat_id = -1003210623925 #1520870092
+ #НЕ ЗАБУДЬ ПОМЕНЯТЬ ПРОВЕРКИ НА ПОДПИСКУ ДЛЯ РФ И ТАЙ
+tr_chat_username = "@asas_magov" #"@turkey_2change"
 
 
 class MyExceptionHandler(telebot.ExceptionHandler):
