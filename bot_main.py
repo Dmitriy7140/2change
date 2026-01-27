@@ -887,7 +887,7 @@ def callback_query(call):
     #ТЕХНИЧЕСКИЕ ЛОВЦЫ
     if call.data.startswith("request/"):
         _, request, country= call.data.split("/")
-        send_application(user_id, user_name, user_ref, chat_id,country=int(country),reason=request)
+        send_application(user_id=user_id, user_name=user_name, user_ref=user_ref, chat_id=chat_id,country=int(country),reason=request)
         if chat_id in to_edit:
             del to_edit[chat_id]
     if call.data.startswith("exchange/"):
@@ -996,7 +996,7 @@ def callback_query(call):
         currency1, currency2,country, amount1, amount2 = app_state["currency1"],app_state["currency2"],app_state["country"],app_state["amount1"],app_state["amount2"]
 
 
-        send_application(user_id, user_name, user_ref, chat_id,amount1=amount1,amount2=amount2, country=country, currency1=currency_names[currency1], currency2=currency_names[currency2])
+        send_application(user_id=user_id, user_name=user_name, user_ref=user_ref, chat_id=chat_id,amount1=amount1,amount2=amount2, country=country, currency1=currency_names[currency1], currency2=currency_names[currency2])
         del user_calc_states[chat_id]
         logger.info(f"Удалено состояние чата {chat_id}!!!")
     if call.data == "contact_client": #ВОТ ЭТУ ХУЙНЮ НАДО ЗАСУНУТЬ В БАЗУ ДАННЫХ А ТО ПИЗДЕЦ
