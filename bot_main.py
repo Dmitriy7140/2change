@@ -1,6 +1,6 @@
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-import datetime
+import datetime, time
 
 from utils import logger,  day_off
 from database_main import QueueDB
@@ -20,7 +20,7 @@ currency_names = {"rub":"<b>RUB🇷🇺</b>",
 admin_change_coef_states= {}
 to_edit= {}
 
-admin_id = (57713855, 22231230, 5777995768, 177592380)
+admin_id = (57713855, 22231230, 5777995768, 177592380, 398673425)
 manager_chat_id = -1003210623925 #НЕ ЗАБУДЬ ПОМЕНЯТЬ ПРОВЕРКИ НА ПОДПИСКУ ДЛЯ РФ И ТАЙ
 tr_chat_username = "@asas_magov"
 
@@ -89,7 +89,7 @@ def check_subscribtion(user_id, country):
             return True
         else:
             logger.info("Чел не подписан!")
-            return True
+            return False
 
     logger.error("Не проверили, возвращаем None!!!")
     return None
@@ -257,13 +257,13 @@ def handle_queue():
                                     f"Подскажите, пожалуйста, актуальна ли Ваша заявка?\n\n"
                                     f"{reason if reason else f'<b>Обмен:</b> {currency1} → {currency2}\n\nСумма: {amount1} {currency1}'}",
                              reply_markup=keyboard, parse_mode="HTML")
-
+            time.sleep(0.003)
 
 
     else:
         bot.send_message(manager_chat_id, "Заявок в очереди нет.")
         return
-@bot.message_handler(commands=['change_coef'])# func=lambda message: message.from_user.id in admin_id)
+@bot.message_handler(commands=['change_coef'], func=lambda message: message.from_user.id in admin_id)# func=lambda message: message.from_user.id in admin_id)
 def change_coef(message):
     global admin_change_coef_states
     chat_id = message.chat.id
