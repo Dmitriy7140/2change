@@ -117,7 +117,7 @@ def send_media(path, chat_id, caption=None, reply_markup=None, parse_mode="HTML"
             else:  # видео
                 sent = bot.send_video(chat_id, media, caption=caption, reply_markup=reply_markup, parse_mode=parse_mode)
                 img_cache[path] = sent.video.file_id
-def send_application(user_id,user_name,chat_id,reason=None,country=None,amount1=None,amount2=None,currency1=None,currency2=None):
+def send_application(user_id,user_name,chat_id,user_ref, reason=None,country=None,amount1=None,amount2=None,currency1=None,currency2=None):
     msg = ("⚡️Позвали менеджера, скоро с вами свяжутся, ожидайте\n"
            "🕰<b>Наш график работы:</b>\n"
            "Пн-Сб: 10:00 - 20:00\n"
@@ -143,7 +143,7 @@ def send_application(user_id,user_name,chat_id,reason=None,country=None,amount1=
 
         msg_admin = apmake.create()
         sent_msg= bot.send_message(manager_chat_id, msg_admin, parse_mode="HTML", reply_markup=keybord)
-        id_cache[sent_msg.message_id] = (user_name, user_id)
+        id_cache[sent_msg.message_id] = (user_name, user_id, user_ref)
 
         bot.send_message(chat_id, msg, parse_mode="HTML")
 def send_indev(chat_id):
@@ -371,6 +371,7 @@ def change_coef(message):
 def callback_query(call):
     global user_calc_states, admin_change_coef_states, to_edit
     user_id = call.from_user.id
+    user_ref = call.from_user.username
     chat_id = call.message.chat.id
     last_name = call.from_user.last_name or ""
     user_name = (call.from_user.first_name or "") + (" " + last_name if last_name else "")
@@ -886,7 +887,7 @@ def callback_query(call):
     #ТЕХНИЧЕСКИЕ ЛОВЦЫ
     if call.data.startswith("request/"):
         _, request, country= call.data.split("/")
-        send_application(user_id, user_name, chat_id,country=int(country),reason=request)
+        send_application(user_id, user_name, user_ref, chat_id,country=int(country),reason=request)
         if chat_id in to_edit:
             del to_edit[chat_id]
     if call.data.startswith("exchange/"):
@@ -995,14 +996,14 @@ def callback_query(call):
         currency1, currency2,country, amount1, amount2 = app_state["currency1"],app_state["currency2"],app_state["country"],app_state["amount1"],app_state["amount2"]
 
 
-        send_application(user_id, user_name, chat_id,amount1=amount1,amount2=amount2, country=country, currency1=currency_names[currency1], currency2=currency_names[currency2])
+        send_application(user_id, user_name, user_ref, chat_id,amount1=amount1,amount2=amount2, country=country, currency1=currency_names[currency1], currency2=currency_names[currency2])
         del user_calc_states[chat_id]
         logger.info(f"Удалено состояние чата {chat_id}!!!")
     if call.data == "contact_client": #ВОТ ЭТУ ХУЙНЮ НАДО ЗАСУНУТЬ В БАЗУ ДАННЫХ А ТО ПИЗДЕЦ
 
-        client_name, client_id = id_cache[message_id]
+        client_name, client_id, client_ref = id_cache[message_id]
         del id_cache[message_id]
-        new_text = call.message.text + "\n" + f"\n✅<b>Взят в работу:</b>\n<i>{datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")}</i>\n\n💼Менеджер: {user_name} " + "\n" + f"\n➡️Cсылка на чат с клиентом:<a href='tg://user?id={client_id}'>➡️ {client_name}</a>"
+        new_text = call.message.text + "\n" + f"\n✅<b>Взят в работу:</b>\n<i>{datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")}</i>\n\n💼Менеджер: {user_name} " + "\n" + f"\n➡️Cсылка на чат с клиентом:<a href='tg://user?id={client_id}'>➡️ {client_name}</a> {client_ref if client_ref else ""}"
         bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=new_text, parse_mode="HTML", reply_markup=None)
         logger.info(f"[ЗАЯВКА ВЗЯТА] Менеджер {user_name} взял заявку клиента {client_name} (id={client_id}) в {datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")} ")
 
