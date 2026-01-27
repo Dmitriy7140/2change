@@ -716,7 +716,7 @@ def callback_query(call):
         finstr = FinInstr()
         msg = finstr.show_currency(country=1)
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc"))
+        keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_tr"))
         keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/1"))
         bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
 
