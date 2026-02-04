@@ -29,8 +29,13 @@ class FinInstr:
          self.rub_cny,
          self.usd_cny,
          self.cny_rub,
+         self.usd_krw ,
+         self.krw_usd ,
+         self.rub_krw ,
+         self.krw_rub,
          self.updated_at_str) = raw
         logger.info("Финансист курсы принял...")
+
 
         updated_at = datetime.strptime(self.updated_at_str, "%d-%m-%Y %H:%M:%S")
         logger.info("Конвертируем время...")
@@ -62,12 +67,18 @@ class FinInstr:
              self.rub_cny,
              self.usd_cny,
              self.cny_rub,
+             self.usd_krw,
+             self.krw_usd,
+             self.rub_krw,
+             self.krw_rub,
              self.updated_at_str) = raw
             logger.info("Курсы обновили! Успех!")
 
 
     def show_currency(self, country=1):
-        """Countries: 1 == Turkey, 2==Russia, 3== Thailand, 4== China"""
+        """Countries: 1 == Turkey,
+         2==Russia, 3== Thailand,
+          4== China, 5== korea"""
         if country == 1:
             msg=(f"💱<b> Актуальный курс на сегодняшний день: </b>\n\n"
                  
@@ -140,6 +151,28 @@ class FinInstr:
                    f"Отдаете:🇨🇳1 CNY\n"
                    f"Получаете:🇷🇺{self.cny_rub:.2f}RUB\n\n")
             return msg
+        elif country == 5:
+            msg = ("<b>Актуальный курс на сегодняшний день: </b>\n\n"
+                   ""
+                   f"Отдаете: 🪙1 USDT\n"
+                   f"Получаете: 🇰🇷  {self.usd_krw:.2f} KRW\n\n"
+                   f""
+                   f"Отдаете: 🇷🇺 1 RUB\n"
+                   f"Получаете: 🇰🇷  {self.rub_krw:.2f} KRW\n\n"
+                   f""
+                   f"Отдаете: 🇰🇷 {self.krw_rub:.2f} KRW\n"
+                   f"Получаете: 🇷🇺 1 RUB\n\n"
+                   f""
+                   f"Отдаете: 🇰🇷 {self.krw_usd:.2f} KRW\n"
+                   f"Получаете:🪙 1 USDT\n\n"
+                   f""
+                   
+                   "🪙 USDT/ 🇷🇺 RUB/другие валюты - по запросу\n\n"
+
+                   "🎁 При обмене от <b>2 000 000 ₩ — eSIM + 3Гб</b> интернета в подарок!\n\n"
+
+                   "Рассчитайте обмен или оставьте заявку 👇")
+            return msg
         logger.error("Что-то поломалось с отправкой сообщения с курсами!!!")
         return "Что-то пошло не так, попробуйте еще раз..."
     def convert_currencies(self, amount, currency1, currency2):
@@ -156,6 +189,8 @@ class FinInstr:
 
             elif currency2 == "cny":
                 return f"{amount* self.usd_cny:.2f}"
+            elif currency2 == "krw":
+                return f"{amount* self.usd_krw:.2f}"
 
         if currency1 == "rub":
             if currency2 == "usd":
@@ -170,6 +205,8 @@ class FinInstr:
                 return f"{amount / self.rub_thb:.2f}"
             elif currency2 == "cny":
                 return f"{amount / self.rub_cny:.2f}"
+            elif currency2 == "krw":
+                return f"{amount * self.rub_krw:.2f}"
         if currency1 == "cny":
             if currency2 == "rub":
                 return f"{amount * self.cny_rub:.2f}"
@@ -178,10 +215,15 @@ class FinInstr:
             if currency2 == "rub":
                 return f"{amount * self.try_rub:.2f}"
             return None
+        if currency1 == "krw":
+            if currency2 == "rub":
+                return f"{amount / self.krw_rub:.2f}"
+            elif currency2 == "usd":
+                return f"{amount / self.krw_usd:.2f}"
         return None
 if __name__ == '__main__':
     fistr = FinInstr()
-    print(fistr.convert_currencies(200, "cny", "rub"))
+    print(fistr.convert_currencies(10, "rub", "krw"))
 
 
 

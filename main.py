@@ -12,11 +12,11 @@ if __name__ == '__main__':
 
 
 
-        bot.send_message(manager_chat_id, text="Калькулятор 2change на связи🤙\n\n"
-                                               "Команды:\n\n"
-                                               "/start - запуск бота\n"
-                                               "/change_coef - изменить наценку (администратор)\n"
-                                               "/manager - вызвать менеджера",disable_notification=True)
+        #bot.send_message(manager_chat_id, text="Калькулятор 2change на связи🤙\n\n"
+                                              # "Команды:\n\n"
+                                              # "/start - запуск бота\n"
+                                             #  "/change_coef - изменить наценку (администратор)\n"
+                                              # "/manager - вызвать менеджера",disable_notification=True)
         if changes:
             bot.send_message(
                 manager_chat_id,

@@ -16,7 +16,8 @@ currency_names = {"rub":"<b>RUB🇷🇺</b>",
                   "try_cash":"<b>💰TRY🇹🇷</b>",
                   "thb":"<b>THB🇹🇭</b>",
                   "thb_cash":"<b>💰THB🇹🇭</b>",
-                  "cny":"<b>CNY🇨🇳</b>"}
+                  "cny":"<b>CNY🇨🇳</b>",
+                  "krw":"<b>KRW🇰🇷</b>"}
 admin_change_coef_states= {}
 to_edit= {}
 
@@ -167,10 +168,10 @@ def handle_start(message, not_first:bool=None):
     button1= InlineKeyboardButton( "🇹🇷 Турция", callback_data="tr_menu")
     button2 = InlineKeyboardButton("🇹🇭 Тайланд", callback_data="thai_menu")
     keyboard.row(button1, button2)
-    keyboard.add(InlineKeyboardButton("🇨🇳Китай", callback_data="cn_menu"))
+    keyboard.row(InlineKeyboardButton("🇨🇳Китай", callback_data="cn_menu"), InlineKeyboardButton("🇰🇷Корея", callback_data="kr_menu"))
 
-    keyboard.add(InlineKeyboardButton("🇷🇺 Россия/🪙Крипто-доллар USDT", callback_data="rf_menu"))
-    keyboard.add(InlineKeyboardButton("📥Пополнить Bybit Card (🪙USDT)", callback_data="rf_menu"))
+    keyboard.add(InlineKeyboardButton("🇷🇺 Россия (USDT)", callback_data="rf_menu"))
+    keyboard.add(InlineKeyboardButton("📥Пополнить Bybit Card (🪙USDT)", callback_data="request/Пополнение Bybit💳/0"))
     keyboard.add(InlineKeyboardButton("🛡 Гарантии и отзывы", callback_data="comment_menu"))
     keyboard.row(InlineKeyboardButton("📲Симкарта eSIM", callback_data="esim_main"), InlineKeyboardButton("💳 Зарубежная карта", callback_data="tr_card_menu"))
     user_id = message.from_user.id
@@ -289,6 +290,10 @@ def change_coef(message):
      rub_cny,
      usd_cny,
      cny_rub,
+     usd_krw,
+     krw_usd,
+     rub_krw,
+     krw_rub,
      updated_at)=row
     row1 = qdb.get_coef()
 
@@ -306,6 +311,10 @@ def change_coef(message):
      c_rub_cny,
      c_usd_cny,
      c_cny_rub,
+     usd_krw_c,
+     krw_usd_c,
+     rub_krw_c,
+     krw_rub_c,
      updated_at)=row1[0]
 
     msg =(f"(🏛) USDT/RUB : {rates["usd_rub"]:.2f} RUB\n"
@@ -335,7 +344,14 @@ def change_coef(message):
           f"Покупаем 1 USDT за {usd_cny:.2f} CNY ({c_usd_cny*100}%)\n\n"
           f"(🏛) CNY/RUB : {rates["rub_cny"]:.2f} CNY\n"
           f"Продаем 1 CNY за {rub_cny:.2f} RUB ({c_rub_cny*100}%)\n"
-          f"Покупаем 1 CNY за {cny_rub:.2f} RUB ({c_cny_rub*100}%)\n")
+          f"Покупаем 1 CNY за {cny_rub:.2f} RUB ({c_cny_rub*100}%)\n\n"
+          f""
+          f"(🏛) KRW/RUB : {rates["krw_rub"]:.2f} KRW\n"
+          f"Продаем 1 RUB за {krw_rub:.2f} KRW ({krw_rub_c*100}%)\n"
+          f"Покупаем 1 RUB за {rub_krw:.2f} KRW ({rub_krw_c*100}%)\n"
+          f"(🏛) KRW/USDT : {rates["krw_usd"]:.2f} KRW\n"
+          f"Продаем 1 USDT за {krw_usd:.2f} KRW ({krw_usd_c*100}%)\n"
+          f"Покупаем 1 USDT за {usd_krw:.2f} KRW ({usd_krw_c*100}%)")
     bot.send_message(chat_id=chat_id, text=msg, parse_mode="HTML")
 
     msg1 = "Выберите курс для изменения наценки:"
@@ -358,6 +374,10 @@ def change_coef(message):
                 InlineKeyboardButton("🇷🇺→🇹🇭 (Наличные)", callback_data="chc/cash_rub_thb_c"))
     keybord.add(InlineKeyboardButton("🇷🇺→🇨🇳CNY (юань)", callback_data="chc/rub_cny_c"), )
     keybord.row(InlineKeyboardButton("🪙USDT→🇨🇳CNY (юань)", callback_data="chc/usd_cny_c"), InlineKeyboardButton("🇨🇳CNY (юань)→🇷🇺", callback_data="chc/cny_rub_c"))
+
+    keybord.row(InlineKeyboardButton("🇰🇷 KRW → 🇷🇺RUB", callback_data="chc/krw_rub_c"), InlineKeyboardButton("🇰🇷 KRW  → 🪙 USDT", callback_data="chc/krw_usd_c"))
+    keybord.row(InlineKeyboardButton("🇷🇺RUB → 🇰🇷 KRW ", callback_data="chc/rub_krw_c"),InlineKeyboardButton("🪙 USDT → 🇰🇷 KRW ", callback_data="chc/usd_krw_c"))
+
 
 
     bot.send_message(chat_id, msg1, reply_markup=keybord, parse_mode="HTML")
@@ -384,7 +404,7 @@ def callback_query(call):
         if check_subscribtion(user_id, 1):
             keyboard = InlineKeyboardMarkup(row_width=2)
             keyboard.add(InlineKeyboardButton("✏️Калькулятор | Оставить заявку", callback_data="calc_tr"))
-            keyboard.add(InlineKeyboardButton("📈Актуальный курс", callback_data="currency_menu"))
+            keyboard.add(InlineKeyboardButton("📈Актуальный курс", callback_data="tr_currency_menu"))
             keyboard.add(InlineKeyboardButton("🎁Получить бесплатно eSim", callback_data="esim_tr"))
             keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="tr_card_menu"))
             keyboard.add(InlineKeyboardButton("👤Менеджер", callback_data="request/🔔вызов менеджера/0"))
@@ -403,6 +423,7 @@ def callback_query(call):
             keyboard = InlineKeyboardMarkup()
             keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_rf"))
             keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/1"))
+            keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
             bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
         else:
             bot.send_message(chat_id,"<i>Для работы с ботом\n"
@@ -416,25 +437,103 @@ def callback_query(call):
             keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_thai"))
             keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="tr_card_menu"))
             keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/1"))
+            keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
             bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
         else:
             bot.send_message(chat_id,"<i>Для работы с ботом\n"
                             "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
                             parse_mode="HTML")
     if call.data == "cn_menu":
-        if check_subscribtion(user_id, 1):
-            finstr = FinInstr()
-            msg = finstr.show_currency(country=4)
-            keyboard = InlineKeyboardMarkup()
-            keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_cn"))
-            keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="tr_card_menu"))
-            keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/4"))
-            bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
-        else:
-            bot.send_message(chat_id,"<i>Для работы с ботом\n"
-                            "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
-                            parse_mode="HTML")
+        msg = ("<b>🇨🇳 Комплексная подготовка к поездке в Китай: Alipay, симкарта eSIM и обмен рублей</b>\n\n"
+               ""
+               "Хотите приехать в Китай и сразу <b>платить и быть на связи?</b>\n\n"
+               ""
+               "<b>С нами — просто! За 5 минут:</b>\n"
+               "▪️ <b>Alipay</b> — оформим кошелёк по загранпаспорту (от 18 лет): оплата по QR, переводы, такси\n"
+               "▪️ <b>eSIM</b> — подключим интернет, всё работает стабильно и без VPN\n"
+               "▪️ <b>Обмен рублей и USDT → юани</b> — моментально пополним Alipay и WeChat\n\n"
+               ""
+               "Условия:\n"
+               "• Регистрация Alipay — 900₽\n"
+               "🎁 Акция: <b>бесплатно</b> при первом пополнении через наш сервис\n"
+               "• Cимкарта eSIM — от 1500₽\n"
+               "• Пополнение Alipay/WeChat— от 2000 юаней\n\n"
+               ""
+               "<b>С сервисом 2change: </b>\n"
+               "☑️ Не нужен UnionPay — покажем удобные способы оплаты в Китае\n"
+               "☑️ Такси без переплат — научим заказывать самостоятельно\n"
+               "☑️ Интернет без ограничений — работают Telegram, WhatsApp и другие приложения\n\n"
+               ""
+               "<b>👉 Напишите @ALEXANDRA_2CHANGE или оставьте заявку на услугу</b>")
 
+        kb = InlineKeyboardMarkup()
+        kb.add(InlineKeyboardButton("✏️Калькулятор|Оставить заявку", callback_data="calc_cn"))
+        kb.add(InlineKeyboardButton("📈Актуальный курс", callback_data="cn_currency_menu"))
+        kb.add(InlineKeyboardButton("📲Cимкарта eSIM", callback_data="esim_cn"))
+        kb.add(InlineKeyboardButton("💳Регистрация Alipay", callback_data="cn_alipay"))
+        kb.add(InlineKeyboardButton("❓Как пополнить Alipay/Wechat", callback_data="cn_faq"))
+        kb.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+        send_media("img/cn_main.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
+    if call.data == "cn_alipay":
+        msg = ("🇨🇳 <b>Онлайн-оформление Alipay для россиян за 5 минут!</b>\n\n"
+        "<i>Что такое Alipay?</i>\n"
+        "Это китайский электронный кошелёк, который работает <b>без банковской карты</b>.\n\n"
+        "<b>С Alipay вы сможете:</b>\n"
+        "▪️Оплачивать покупки в магазинах, ресторанах, транспорт, билеты и экскурсии в один клик — весь Китай живёт с Alipay\n"
+        "▪️Вызывать такси DiDi прямо в приложении\n"
+        "▪️Переводить деньги и принимать оплату\n\n"
+        "📲 <b>Как подключаем:</b>\n"
+        "1. Вы оставляете заявку\n"
+        "2. Мы шаг за шагом помогаем с регистрацией и настройкой\n"
+        "3. Пополняете кошелёк через наш сервис — и сразу можете платить в Китае\n\n"
+        "⏱️ <b>Вся процедура занимает около 5 минут.</b>\n"
+         "Если что-то непонятно — мы всегда на связи.\n\n"
+         "🎁 <b>Акция:</b>\n"
+        "При первом пополнении через наш сервис оформление Alipay — <b>бесплатно</b>.\n"
+        "💳 Без пополнения — стоимость <b>900₽</b>.\n\n"
+        "👉🏻 Задайте вопрос — @ALEXANDRA_2CHANGE или оставьте заявку в боте")
+        kb = InlineKeyboardMarkup()
+        kb.add(InlineKeyboardButton("Оставить заявку✅", callback_data="request/оформление Alipay📋/4"))
+        kb.row(InlineKeyboardButton("◀️Назад", callback_data="cn_menu"), InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+
+
+        send_media("img/cn_alipay.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
+    if call.data == "cn_faq":
+        msg = ("💳 <b>Пополнение Alipay или WeChat с российской карты и USDT</b>\n\n"
+        "<b>Нельзя пополнить напрямую?</b> Мы сделаем это за вас — <b>быстро и по выгодному курсу</b>.\n\n"
+        "<b>Как это работает:</b>\n"
+        "• Оставляете заявку в боте\n"
+        "• Переводите рубли или USDT\n"
+        "• Присылаете номер своего кошелька или QR-код\n"
+        "• Моментально получаете юани\n\n"
+        "🔁 <b>Вы можете также обменять ваши юани на рубли</b>\n\n"
+        "✔️ <b>Комиссия: 0%</b>\n"
+        "✔️ <b>Мин. сумма: 2 000 юаней</b>\n"
+        "✔️ <b>Гарантия возврата, если не получите перевод за 1 час</b>\n\n"
+        "➡️ Пишите @ALEXANDRA_2CHANGE или оставьте заявку в боте")
+
+        kb = InlineKeyboardMarkup()
+        kb.add(InlineKeyboardButton("Оставить заявку✅", callback_data="request/пополнение Alipay💰/4"))
+        kb.row(InlineKeyboardButton("◀️Назад", callback_data="cn_menu"),
+               InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+        send_media("img/cn_ap_wc.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
+
+    if call.data == "kr_menu":
+        if chat_id in user_calc_states:
+            del user_calc_states[chat_id]
+        msg = ("<b>🇰🇷2Change - услуги в Корее</b>\n\n"
+               ""
+               "🕓График работы:\n"
+               "Пн-Сб 10:00 - 20:00 (Вс - выходной)")
+
+        kb = InlineKeyboardMarkup()
+        kb.add(InlineKeyboardButton("✏️Калькулятор|Оставить заявку", callback_data="calc_kr"))
+        kb.add(InlineKeyboardButton("📈Актуальный курс", callback_data="kr_currency_menu"))
+        kb.add(InlineKeyboardButton("🎁Бесплатная симкарта eSIM", callback_data="esim_kr"))
+        kb.row(InlineKeyboardButton("Наличные воны🏧", callback_data="kr_cash_transactions_menu"), InlineKeyboardButton("Оплата обучения📚", callback_data="kr_edu"))
+        kb.add(InlineKeyboardButton("Зарубежная карта💳", callback_data="tr_card_menu"))
+        kb.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+        bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=kb)
     if call.data == "comment_menu":
         msg = ('<b>Мы дорожим нашей репутацией, благодаря этому наш сервис работает уже 3 года.⭐️\n\n'
                '✅Про нас писали в газете <a href="https://t.me/review_2change/394">«Один из популярных сервисов обмена Турции»</a>\n'
@@ -713,38 +812,30 @@ def callback_query(call):
 
 
 
-    if call.data=="currency_menu": #ТУРЦИЯ
-        finstr = FinInstr()
-        msg = finstr.show_currency(country=1)
-        keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_tr"))
-        keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/1"))
-        bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
+
+
 
 
 
     #МЕНЮ ТУРЦИИ
     if call.data=="tr_card_menu":
-        if check_subscribtion(user_id, 1):
-            photo_path = "img/card.jpg"
-            msg =("💳 Оформим зарубежную карту Visa за 5 минут!\n\n"
-                 "🌍 Оплата и снятие наличных  по всему миру\n"
-                 "💳 Моментальное пополнение с российской карты\n"
-                 "⚡️ Онлайн-регистрация за 5 минут\n"
-                 "🇷🇺 Приложение на русском языке (IOS/Android)\n"
-                 "🛫 Доставка по РФ\n\n"
-                
-                 "Подробнее 👉<a href='https://telegra.ph/Karty-VisaMastercard-ot-2ChangePay-10-15'> в статье </a>\n\n"
-                
-                 "⬇️ Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE")
-            keyboard = InlineKeyboardMarkup()
-            keyboard.add(InlineKeyboardButton("Оставить заявку✅", callback_data="request/💳зарубежная карта/1"))
-            keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-            send_media(photo_path, chat_id, msg, keyboard)
-        else:
-            bot.send_message(chat_id,"<i>Для работы с ботом\n"
-                            "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
-                            parse_mode="HTML")
+
+        photo_path = "img/card_video.mp4"
+        msg =("💳 Друзья, есть возможность выпустить зарубежную карту <b>Bybit Card — доставим физическую карту</b> по России за 2 недели, а виртуальной можно оплачивать покупки в интернете уже через 10 минут! \n\n"
+              ""
+              "<b>Преимущества:</b> \n"
+              "💰 Лимиты: до 5 000 $ в сутки и 50 000 $ в месяц.\n"
+              "💳 Форматы: виртуальная и/или пластиковая карта.\n"
+              "📦 Доставка в Россию — за 2 недели курьером прямо к двери.\n\n"
+              ""
+              "Санкции ужесточаются и оформить карту позже может стать сложнее.\n\n"
+              ""
+              "👉Напишите @ALEXANDRA_2CHANGE или оставьте заявку, чтобы узнать подробности")
+        keyboard = InlineKeyboardMarkup()
+        keyboard.add(InlineKeyboardButton("Оставить заявку✅", callback_data="request/💳зарубежная карта/0"))
+        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+        send_media(photo_path, chat_id, msg, keyboard, parse_mode="HTML")
+
     if call.data == "tr_qr_menu":
         msg = ("<b>💵 Как обменять РУБЛИ и USDT на наличные лиры за 5 минут?</b>\n\n"
 
@@ -868,6 +959,13 @@ def callback_query(call):
             InlineKeyboardButton("✅Узнать у менеджера", callback_data="request/Онлайн-сервисы  💻/1"))
         keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
         bot.send_message(chat_id, msg, reply_markup=keyboard, parse_mode="HTML")
+    if call.data=="tr_currency_menu": #ТУРЦИЯ
+        finstr = FinInstr()
+        msg = finstr.show_currency(country=1)
+        keyboard = InlineKeyboardMarkup()
+        keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_tr"))
+        keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/1"))
+        bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
     if call.data == "other_menu":
         msg=("👋 <b>Добро пожаловать!</b>\n"
              "Здесь вы можете ознакомиться со всеми видами услуг сервиса <b>2Change</b>.\n\n"
@@ -883,6 +981,68 @@ def callback_query(call):
         keyboard.add(InlineKeyboardButton("Онлайн-сервисы и букинги💻", callback_data="tr_services_booking_menu"))
         keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
         bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
+
+    if call.data == "cn_currency_menu":
+        finstr = FinInstr()
+        msg = finstr.show_currency(country=4)
+        keyboard = InlineKeyboardMarkup()
+        keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_cn"))
+        keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="tr_card_menu"))
+        keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/4"))
+        bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
+
+    #МЕНЮ КОРЕИ
+    if call.data == "kr_currency_menu":
+
+        finstr = FinInstr()
+        msg = finstr.show_currency(country=5)
+        keyboard = InlineKeyboardMarkup()
+        keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_kr"))
+        keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/5"))
+        bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
+    if call.data== "kr_cash_transactions_menu":
+        msg = ("💵 Как обменять рубли и USDT на наличные воны — за 5 минут в любом городе Южной Кореи! 🏧 🏧\n\n"
+               ""
+               "Получите наличные воны без карты в любом банкомате по QR-коду — даже в аэропорту. Рядом с магазинами 7-Eleven и CU.\n\n"
+               ""
+               "▪️ Лимиты: от 300 000₩ до 20 млн ₩\n"
+               "▪️ Комиссия: 0%\n"
+               "▪️ Требования: телефон с интернетом (подключить eSIM)\n"
+               "🎁 eSIM +3 ГБ в подарок при обмене от 2 000 000₩ !\n\n"
+               ""
+               "🔄 Как это работает:\n"
+               "— Оставьте заявку в боте или напишите @ALEXANDRA_2CHANGE\n"
+               "— Переведите рубли или USDT\n"
+               "— Отправьте нам фото QR-кода на экране банкомата\n"
+               "— Заберите наличные воны\n"
+               "Смотрите простую инструкцию в коротком видео!\n\n"
+               "👇 Рассчитайте обмен или напишите менеджеру\n"
+               " @ALEXANDRA_2CHANGE")
+        kb = InlineKeyboardMarkup()
+        kb.add(InlineKeyboardButton("📈Курсы|Калькулятор", callback_data="kr_currency_menu"))
+        kb.add(InlineKeyboardButton("🎁Бесплатная симкарта eSIM", callback_data="esim_kr"))
+        kb.row(InlineKeyboardButton("◀️Назад", callback_data="kr_menu"), InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
+        send_media("img/krw_cash.MP4", chat_id=chat_id, caption=msg, reply_markup=kb, parse_mode="HTML")
+    if call.data== "kr_edu":
+        msg = ("🇰🇷 Хотите оплатить учёбу в Южной Корее?\n"
+               "Оплатим языковые курсы, университеты и колледжи напрямую — с поддержкой, без поездок и лишних сложностей.\n\n"
+               ""
+               "Как это работает:\n"
+               "1. Вы переводите нам рубли или USDT.\n"
+               "2. Мы оплачиваем ваш инвойс с корейского банка.\n"
+               "3. Деньги зачисляются в вонах на счёт учебного заведения\n"
+               "Удобно для студентов и их родителей. Быстро и безопасно.\n\n"
+               ""
+               "📌 Для каждого клиента оптимальные условия и курс — в зависимости от задачи.\n\n"
+               ""
+               "👉 Оставьте заявку в боте или напишите менеджеру @ALEXANDRA_2CHANGE — расскажем подробнее и поможем с оплатой.")
+        kb = InlineKeyboardMarkup()
+        kb.add(InlineKeyboardButton("📈Курсы|Калькулятор", callback_data="kr_currency_menu"))
+
+        kb.row(InlineKeyboardButton("◀️Назад", callback_data="kr_menu"),
+               InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
+        send_media("img/kr_edu_pic.jpg", chat_id, msg, reply_markup=kb, parse_mode="HTML")
+
 
     #ТЕХНИЧЕСКИЕ ЛОВЦЫ
     if call.data.startswith("request/"):
@@ -919,9 +1079,13 @@ def callback_query(call):
                    "usd/rub":"<b>500 USDT</b>",
                    "rub/cny":"<b>6285₽</b>",
                    "usd/cny":"<b>76 USDT</b>",
-                   "cny/rub":"<b>300 CNY</b>"}
+                   "cny/rub":"<b>300 CNY</b>",
+                   "usd/krw": "<b>214 USDT</b>",
+                   "krw/usd":"<b>300.000 KRW</b>",
+                   "rub/krw":"<b>17302 RUB</b>",
+                   "krw/rub":"<b>300.000 KRW</b>"}
 
-        countries_menu = {"1":"tr_menu", "2":"rf_menu", "3":"thai_menu", "4":"cn_menu"}
+        countries_menu = {"1":"tr_menu", "2":"rf_menu", "3":"thai_menu", "4":"cn_menu", "5":"kr_menu"}
         keybord = InlineKeyboardMarkup()
         keybord.add(InlineKeyboardButton("◀️Назад", callback_data=countries_menu[country]))
         msg = (f"✏️ Введите сумму в {currency_names[currency1]}\n"
@@ -972,6 +1136,18 @@ def callback_query(call):
             keybord4.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/4"),
                          InlineKeyboardButton("◀️Назад", callback_data="cn_menu"))
             bot.send_message(chat_id, msg, reply_markup=keybord4, parse_mode="HTML")
+        elif call.data == "calc_kr":
+            msg = ("<i>Выберите валюту для обмена:</i>\n\n"
+                   "<b>🎁 При обмене от 2 000 000₩ – eSIM +3 ГБ в подарок!</b>")
+            kb = InlineKeyboardMarkup()
+            kb.add(InlineKeyboardButton("🇰🇷 KRW (нал/перевод) → 🇷🇺RUB", callback_data="exchange/krw/rub/5"))
+            kb.add(InlineKeyboardButton("🇰🇷 KRW (нал/перевод) → 🪙 USDT", callback_data="exchange/krw/usd/5"))
+            kb.add(InlineKeyboardButton("🇷🇺RUB → 🇰🇷 KRW (нал/счет)", callback_data="exchange/rub/krw/5"))
+            kb.add(InlineKeyboardButton("🪙 USDT → 🇰🇷 KRW (нал/счет)", callback_data="exchange/usd/krw/5"))
+            kb.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/5"),
+                         InlineKeyboardButton("◀️Назад", callback_data="kr_menu"))
+            bot.send_message(chat_id, msg, reply_markup=kb, parse_mode="HTML")
+
     if call.data.startswith("apq"):
         _, verdict, tg_id= call.data.split("/")
         _, tg_id, country, client_name, amount1, amount2, currency1, currency2, reason, created_at = qdb.get_from_queue(get_by_id=tg_id)
@@ -1040,7 +1216,11 @@ def process_amount(message):
                   "usd/rub": 500,
                   "rub/cny":6285,
                   "usd/cny": 76,
-                  "cny/rub": 300,}
+                  "cny/rub": 300,
+                  "krw/rub": 300000,
+                  "krw/usd": 300000,
+                  "usd/krw": 214,
+                  "rub/krw": 17302}
     fistr = FinInstr()
     chat_id = message.chat.id
     if chat_id not in user_calc_states:
@@ -1079,7 +1259,7 @@ def process_amount(message):
            f"<b>Отправить заявку на обмен?</b>")
     user_calc_states[chat_id]["amount1"]=int(message.text)
     user_calc_states[chat_id]["amount2"]=converted
-    print(user_calc_states)
+
     keybord = InlineKeyboardMarkup(row_width=2)
     keybord.row(InlineKeyboardButton("✅Обменять", callback_data=f"convert"),
                 InlineKeyboardButton("❌Отмена", callback_data="main_menu"))

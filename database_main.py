@@ -51,15 +51,14 @@ class QueueDB:
                 rub_cny REAL,
                 usd_cny REAL,
                 cny_rub REAL,
+                
+                usd_krw REAL,
+                krw_usd REAL,
+                rub_krw REAL,
+                krw_rub REAL,
                 updated_at TEXT)''')
             logger.info("Таблица с курсами загружена...")
-            # c.execute('''CREATE TABLE IF NOT EXISTS calc_states (
-            #                 chat_id INTEGER PRIMARY KEY,
-            #                 country INTEGER,
-            #                 currency1 INTEGER,
-            #                 currency2 INTEGER,
-            #                 created_at TEXT)''')
-            # logger.info("Таблица с состояниями загружена...")
+
             c.execute('''CREATE TABLE IF NOT EXISTS coef (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             usd_rub_c REAL, 
@@ -79,14 +78,19 @@ class QueueDB:
                             rub_cny_c REAL,
                             usd_cny_c REAL,
                             cny_rub_c REAL,
+                            
+                            usd_krw_c REAL,
+                            krw_usd_c REAL,
+                            rub_krw_c REAL,
+                            krw_rub_c REAL,
                             updated_at TEXT)''')
             logger.info("Таблица с наценкой загружена...")
             c.execute("SELECT COUNT(*) FROM coef")
             count = c.fetchone()[0]
 
             if count == 0:  # Только если таблица пустая
-                c.execute('''INSERT INTO coef (usd_rub_c, rub_usd_c, usd_try_c, cash_usd_try_c, rub_try_c, cash_rub_try_c, try_rub_c, usd_thb_c, cash_usd_thb_c, rub_thb_c, cash_rub_thb_c, rub_cny_c, usd_cny_c, cny_rub_c, updated_at) 
-                                             VALUES (0.03,    0.03,         0.03, 0.05,     0.03,        0.05,         0.03,      0.03,        0.05,         0.03,                 0.05,                    0.03, 0.03, 0.03,          ?)''', ("default",))
+                c.execute('''INSERT INTO coef (usd_rub_c, rub_usd_c, usd_try_c, cash_usd_try_c, rub_try_c, cash_rub_try_c, try_rub_c, usd_thb_c, cash_usd_thb_c, rub_thb_c, cash_rub_thb_c, rub_cny_c, usd_cny_c, cny_rub_c, usd_krw_c, krw_usd_c, rub_krw_c, krw_rub_c, updated_at) 
+                                             VALUES (0.03,    0.03,         0.03, 0.05,     0.03,        0.05,         0.03,      0.03,        0.05,         0.03,                 0.05,                    0.03, 0.03, 0.03,  0.10, 0.10, 0.10, 0.10,       ?)''', ("default",))
 
                 logger.info("Начальные коэффициенты добавлены")
             else:
@@ -214,6 +218,7 @@ class QueueDB:
             api_usd_rub = all_courses.body["rates"]["RUB"]
             api_usd_thb = all_courses.body["rates"]["THB"]
             api_usd_cny = all_courses.body["rates"]["CNY"]
+            api_krw_usd = all_courses.body["rates"]["KRW"]
             logger.info("Подтянули доллар...")
             all_courses = coinoxr.Latest().get(base=f"TRY", show_alternative=True)
             api_try_rub = all_courses.body["rates"]["RUB"]
@@ -224,6 +229,8 @@ class QueueDB:
             all_courses = coinoxr.Latest().get(base=f"CNY", show_alternative=True)
             api_rub_cny = all_courses.body["rates"]["RUB"]
             logger.info("Подтянули юани!")
+            all_courses = coinoxr.Latest().get(base=f"RUB", show_alternative=True)
+            api_krw_rub = all_courses.body["rates"]["KRW"]
 
 
 
@@ -236,7 +243,9 @@ class QueueDB:
                           "try_rub":api_try_rub,
                           "thb_rub":api_thb_rub,
                           "usd_cny":api_usd_cny,
-                          "rub_cny":api_rub_cny}
+                          "rub_cny":api_rub_cny,
+                          "krw_rub":api_krw_rub,
+                          "krw_usd":api_krw_usd,}
 
             we_sell = {"id": rows[0],
                        "usd_rub_c": rows[1],
@@ -256,6 +265,12 @@ class QueueDB:
                        "rub_cny_c": rows[12],
                        "usd_cny_c": rows[13],
                        "cny_rub_c": rows[14],
+
+                       "usd_krw_c": rows[15],
+                       "krw_usd_c": rows[16],
+                       "rub_krw_c": rows[17],
+                       "krw_rub_c": rows[18],
+
                        }
 
 
@@ -282,7 +297,13 @@ class QueueDB:
             rub_cny = api_rub_cny *(1 + we_sell["rub_cny_c"])
             usd_cny = api_usd_cny -(api_usd_cny* we_sell["usd_cny_c"])
             cny_rub = api_rub_cny -(api_rub_cny* we_sell["cny_rub_c"])
-            rates = (usd_rub,rub_usd,usd_try,cash_usd_try, rub_try, cash_rub_try,try_rub,usd_thb,cash_usd_thb,rub_thb,cash_rub_thb, rub_cny, usd_cny, cny_rub)
+
+            #ВОНЫ
+            krw_usd = api_krw_usd *(1 + we_sell["krw_usd_c"])
+            krw_rub = api_krw_rub *(1 + we_sell["krw_rub_c"])
+            usd_krw =api_krw_usd -(api_krw_usd* we_sell["krw_usd_c"])
+            rub_krw = api_krw_rub -(api_krw_rub* we_sell["krw_rub_c"])
+            rates = (usd_rub,rub_usd,usd_try,cash_usd_try, rub_try, cash_rub_try,try_rub,usd_thb,cash_usd_thb,rub_thb,cash_rub_thb, rub_cny, usd_cny, cny_rub, krw_usd, krw_rub, usd_krw, rub_krw)
         except Exception as e:
             logger.error(f"Ошибка с добавлением курса:{e}!!!")
             return None
@@ -295,8 +316,8 @@ class QueueDB:
             c = conn.cursor()
 
             c.execute('''INSERT INTO currency (usd_rub, rub_usd, usd_try,cash_usd_try, rub_try, cash_rub_try, try_rub, 
-             usd_thb, cash_usd_thb, rub_thb, cash_rub_thb, rub_cny, usd_cny, cny_rub, updated_at) 
-             VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)''', (*rates, time))
+             usd_thb, cash_usd_thb, rub_thb, cash_rub_thb, rub_cny, usd_cny, cny_rub,krw_usd, krw_rub, usd_krw, rub_krw, updated_at) 
+             VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?)''', (*rates, time))
 
             conn.commit()
 
