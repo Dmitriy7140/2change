@@ -13,19 +13,19 @@ user_calc_states={}
 currency_names = {"rub":"<b>RUB🇷🇺</b>",
                   "usd":"<b>USDT🪙</b>",
                   "try":"<b>TRY🇹🇷</b>",
-                  "try_cash":"<b>💰TRY🇹🇷</b>",
+                  "try_cash":"<b>Наличные TRY🇹🇷</b>",
                   "thb":"<b>THB🇹🇭</b>",
-                  "thb_cash":"<b>💰THB🇹🇭</b>",
+                  "thb_cash":"<b>Наличные THB🇹🇭</b>",
                   "cny":"<b>CNY🇨🇳</b>",
                   "krw":"<b>KRW🇰🇷</b>"}
 admin_change_coef_states= {}
 to_edit= {}
 
 admin_id = (57713855, 22231230, 5777995768, 177592380, 398673425, 5853188702)
-manager_chat_id = -1003210623925
- #НЕ ЗАБУДЬ ПОМЕНЯТЬ ПРОВЕРКИ НА ПОДПИСКУ ДЛЯ РФ И ТАЙ
-tr_chat_username = "@asas_magov"#"@turkey_2change"
-kr_chat_username = "@asas_magov"#@korea_obmen1"
+manager_chat_id = 1520870092
+
+tr_chat_username = "@turkey_2change"
+kr_chat_username = "@korea_obmen1"
 
 class MyExceptionHandler(telebot.ExceptionHandler):
 
@@ -74,7 +74,7 @@ class ApplicationCreator:
 
 
 qdb=QueueDB()
-bot = telebot.TeleBot( "8559812575:AAGPTLuOH4yCQ77QEvSU91yN1L9jlZ6uQIg", exception_handler=MyExceptionHandler())
+bot = telebot.TeleBot( "8236711902:AAEvpg2ItZeRw25-EUyg0SI5DVYBbP23LLM", exception_handler=MyExceptionHandler())
 
 
 def check_subscribtion(user_id, country):
@@ -333,9 +333,11 @@ def change_coef(message):
      krw_rub_c,
      updated_at)=row1[0]
 
-    msg =(f"(🏛) USDT/RUB : {rates["usd_rub"]:.2f} RUB\n"
+    msg =(f"🇷🇺🇷🇺🇷🇺🇷🇺🇷🇺🇷🇺🇷🇺🇷🇺🇷🇺🇷🇺\n"
+          f"(🏛) USDT/RUB : {rates["usd_rub"]:.2f} RUB\n"
           f"Покупаем 1 USDT за {usd_rub:.2f} RUB ({c_usd_rub*100}%)\n"
-          f"Продаем 1 USDT за {rub_usd:.2f} RUB ({c_rub_usd*100}%)\n\n"
+          f"Продаем 1 USDT за {rub_usd:.2f} RUB ({c_rub_usd*100}%)\n"
+          f"🇹🇷🇹🇷🇹🇷🇹🇷🇹🇷🇹🇷🇹🇷🇹🇷🇹🇷🇹🇷"
           
         f"(🏛) USDT/TRY : {rates["usd_try"]:.2f} TRY\n" # ЛИРЫ ЗА 1 ДОЛЛАР
           f"Продаем {usd_try:.2f} TRY💳 за 1 USDT ({c_usd_try*100}%)\n" #ПЕРЕВОДОМ ЛИРЫ ЗА 1 ДОЛЛАР
@@ -344,8 +346,8 @@ def change_coef(message):
           f"(🏛) TRY/RUB : {rates["try_rub"]:.2f} RUB\n" #РУБЛЕЙ ЗА 1 ЛИРУ 
           f"Продаем 1 TRY💳  за {rub_try:.2f} RUB ({c_rub_try*100}%)\n"
           f"Продаем 1 TRY💵 за {cash_rub_try:.2f} RUB ({c_cash_rub_try*100}%)\n"
-          f"Покупаем 1 TRY💳 за {try_rub:.2f} RUB ({c_try_rub*100}%)\n\n"
-          f""
+          f"Покупаем 1 TRY💳 за {try_rub:.2f} RUB ({c_try_rub*100}%)\n"
+          f"🇹🇭🇹🇭🇹🇭🇹🇭🇹🇭🇹🇭🇹🇭🇹🇭🇹🇭🇹🇭\n"
           
           
            f"(🏛) USDT/THB : {rates["usd_thb"]:.2f} THB\n"
@@ -354,17 +356,17 @@ def change_coef(message):
            
            f"(🏛) THB/RUB : {rates["thb_rub"]:.2f} RUB\n"
           f"Продаем 1 THB💳 за {rub_thb:.2f} RUB ({c_rub_thb*100}%)\n"
-          f"Продаем 1 THB 💵 за {cash_rub_thb:.2f} RUB ({c_cash_rub_thb*100}%)\n\n"
-          f""
+          f"Продаем 1 THB 💵 за {cash_rub_thb:.2f} RUB ({c_cash_rub_thb*100}%)\n"
+          f"🇨🇳🇨🇳🇨🇳🇨🇳🇨🇳🇨🇳🇨🇳🇨🇳🇨🇳🇨🇳\n"
           f"(🏛) USDT/CNY : {rates["usd_cny"]:.2f} CNY\n"
           f"Покупаем 1 USDT за {usd_cny:.2f} CNY ({c_usd_cny*100}%)\n\n"
           f"(🏛) CNY/RUB : {rates["rub_cny"]:.2f} CNY\n"
           f"Продаем 1 CNY за {rub_cny:.2f} RUB ({c_rub_cny*100}%)\n"
-          f"Покупаем 1 CNY за {cny_rub:.2f} RUB ({c_cny_rub*100}%)\n\n"
-          f""
+          f"Покупаем 1 CNY за {cny_rub:.2f} RUB ({c_cny_rub*100}%)\n"
+          f"🇰🇷🇰🇷🇰🇷🇰🇷🇰🇷🇰🇷🇰🇷🇰🇷🇰🇷🇰🇷\n"
           f"(🏛) KRW/RUB : {rates["krw_rub"]:.2f} KRW\n"
           f"Продаем 1 RUB за {krw_rub:.2f} KRW ({krw_rub_c*100}%)\n"
-          f"Покупаем 1 RUB за {rub_krw:.2f} KRW ({rub_krw_c*100}%)\n"
+          f"Покупаем 1 RUB за {rub_krw:.2f} KRW ({rub_krw_c*100}%)\n\n"
           f"(🏛) KRW/USDT : {rates["krw_usd"]:.2f} KRW\n"
           f"Продаем 1 USDT за {krw_usd:.2f} KRW ({krw_usd_c*100}%)\n"
           f"Покупаем 1 USDT за {usd_krw:.2f} KRW ({usd_krw_c*100}%)")

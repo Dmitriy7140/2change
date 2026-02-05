@@ -182,7 +182,7 @@ class FinInstr:
             elif currency2 == "try":
                 return f"{amount * self.usd_try:.2f}"
             elif currency2 == "try_cash":
-                return f"{amount* self.cash_usd_try}"
+                return f"{amount* self.cash_usd_try:.2f}"
 
             elif currency2 == "thb":
                 return f"{amount * self.usd_thb:.2f}"
