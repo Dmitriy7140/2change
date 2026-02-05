@@ -565,19 +565,19 @@ def callback_query(call):
         if check_subscribtion(user_id, 5):
             if chat_id in user_calc_states:
                 del user_calc_states[chat_id]
-                msg = ("<b>🇰🇷2Change - услуги в Корее</b>\n\n"
-                       ""
-                       "🕓График работы:\n"
-                       "Пн-Сб 10:00 - 20:00 (Вс - выходной)")
+            msg = ("<b>🇰🇷2Change - услуги в Корее</b>\n\n"
+                   ""
+                   "🕓График работы:\n"
+                   "Пн-Сб 10:00 - 20:00 (Вс - выходной)")
 
-                kb = InlineKeyboardMarkup()
-                kb.add(InlineKeyboardButton("✏️Калькулятор|Оставить заявку", callback_data="calc_kr"))
-                kb.add(InlineKeyboardButton("📈Актуальный курс", callback_data="kr_currency_menu"))
-                kb.add(InlineKeyboardButton("🎁Бесплатная симкарта eSIM", callback_data="esim_kr"))
-                kb.row(InlineKeyboardButton("Наличные воны🏧", callback_data="kr_cash_transactions_menu"), InlineKeyboardButton("Оплата обучения📚", callback_data="kr_edu"))
-                kb.add(InlineKeyboardButton("Зарубежная карта💳", callback_data="tr_card_menu"))
-                kb.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-                bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=kb)
+            kb = InlineKeyboardMarkup()
+            kb.add(InlineKeyboardButton("✏️Калькулятор|Оставить заявку", callback_data="calc_kr"))
+            kb.add(InlineKeyboardButton("📈Актуальный курс", callback_data="kr_currency_menu"))
+            kb.add(InlineKeyboardButton("🎁Бесплатная симкарта eSIM", callback_data="esim_kr"))
+            kb.row(InlineKeyboardButton("Наличные воны🏧", callback_data="kr_cash_transactions_menu"), InlineKeyboardButton("Оплата обучения📚", callback_data="kr_edu"))
+            kb.add(InlineKeyboardButton("Зарубежная карта💳", callback_data="tr_card_menu"))
+            kb.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+            bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=kb)
         else:
             bot.send_message(chat_id, "<i>Для работы с ботом\n"
                                       "Подпишитесь на 👉  <a href='https://t.me/korea_obmen1'>чат 2Change</a></i>",
