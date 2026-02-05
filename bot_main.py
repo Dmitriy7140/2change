@@ -22,7 +22,7 @@ admin_change_coef_states= {}
 to_edit= {}
 
 admin_id = (57713855, 22231230, 5777995768, 177592380, 398673425, 5853188702)
-manager_chat_id = 1520870092
+manager_chat_id = -1001520870092
 
 tr_chat_username = "@turkey_2change"
 kr_chat_username = "@korea_obmen1"
