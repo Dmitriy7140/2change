@@ -6,8 +6,8 @@ qdb = QueueDB()
 
 
 class FinInstr:
-    def __init__(self,raw=qdb.get_currencies()):
-
+    def __init__(self):
+        raw = qdb.get_currencies()
         if not raw:
             logger.error("Финансист курсы не принял, колонка пустая!!!")
             qdb.update_currency()
@@ -181,6 +181,8 @@ class FinInstr:
                 return f"{amount* self.usd_rub:.2f}"
             elif currency2 == "try":
                 return f"{amount * self.usd_try:.2f}"
+            elif currency2 == "try_cash":
+                return f"{amount* self.cash_usd_try}"
 
             elif currency2 == "thb":
                 return f"{amount * self.usd_thb:.2f}"

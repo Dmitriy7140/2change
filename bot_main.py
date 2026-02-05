@@ -8,7 +8,7 @@ from converter import FinInstr
 
 #глобали
 img_cache={}
-id_cache={}
+
 user_calc_states={}
 currency_names = {"rub":"<b>RUB🇷🇺</b>",
                   "usd":"<b>USDT🪙</b>",
@@ -22,10 +22,10 @@ admin_change_coef_states= {}
 to_edit= {}
 
 admin_id = (57713855, 22231230, 5777995768, 177592380, 398673425, 5853188702)
-manager_chat_id = -1003210623925 #1520870092
+manager_chat_id = -1003210623925
  #НЕ ЗАБУДЬ ПОМЕНЯТЬ ПРОВЕРКИ НА ПОДПИСКУ ДЛЯ РФ И ТАЙ
-tr_chat_username = "@asas_magov" #"@turkey_2change"
-
+tr_chat_username = "@asas_magov"#"@turkey_2change"
+kr_chat_username = "@asas_magov"#@korea_obmen1"
 
 class MyExceptionHandler(telebot.ExceptionHandler):
 
@@ -53,7 +53,7 @@ class ApplicationCreator:
         """country_names = {1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇨🇳Китай", 5: "Корея", 6 : ОАЭ}"""
 
         msg = ""
-        country_names = {0:"Страна не указана", 1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇨🇳Китай", 5:"🇰🇷Корея", 6:"🇦ОАЭ"}
+        country_names = {0:"Страна не указана", 1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇨🇳Китай", 5:"🇰🇷Корея", 6:"🇦🇪ОАЭ"}
         intro = country_names.get(self.country, "Страна не указана") +"\n"+f"👤Клиент: {self.client_name}"
         if self.amount1:
             main_body =f"<b>🫵Отдаст: {self.amount1}</b> {self.currency1}" +'\n\n'+f"👉<b>Получит: {self.amount2}</b> {self.currency2}"
@@ -74,18 +74,24 @@ class ApplicationCreator:
 
 
 qdb=QueueDB()
-bot = telebot.TeleBot( "8559812575:AAFducMZ0rp9WKCbo_pv8yyhkMAG8Drz6m8", exception_handler=MyExceptionHandler())
+bot = telebot.TeleBot( "8559812575:AAGPTLuOH4yCQ77QEvSU91yN1L9jlZ6uQIg", exception_handler=MyExceptionHandler())
 
 
 def check_subscribtion(user_id, country):
-    if user_id == 300423184:
-        logger.info("Тестировщик!")
-        return True
-    elif country == 1: #tr
+
+    if country == 1: #tr
         logger.info(f"Проверяем подписку id={user_id} на Турецкий чат...")
 
         chat_member = bot.get_chat_member(tr_chat_username, user_id)
 
+        if chat_member.status in ("creator", "administrator", "member"):
+            logger.info("Чел подписан!")
+            return True
+        else:
+            logger.info("Чел не подписан!")
+            return False
+    elif country == 5:
+        chat_member = bot.get_chat_member(kr_chat_username, user_id)
         if chat_member.status in ("creator", "administrator", "member"):
             logger.info("Чел подписан!")
             return True
@@ -144,9 +150,13 @@ def send_application(user_id,user_name,chat_id,user_ref, reason=None,country=Non
 
         msg_admin = apmake.create()
         sent_msg= bot.send_message(manager_chat_id, msg_admin, parse_mode="HTML", reply_markup=keybord)
-        id_cache[sent_msg.message_id] = (user_name, user_id, user_ref)
 
-        bot.send_message(chat_id, msg, parse_mode="HTML")
+        if qdb.set_user_name(sent_msg.message_id, user_id, user_ref):
+
+            bot.send_message(chat_id, msg, parse_mode="HTML")
+        else:
+            bot.send_message(chat_id, "⛔️Менеджер не сможет вам написать из-за ваших настроек приватности⛔️\n "
+                                      "Включите видимость вашего аккаунта по ссылке в настройках приватности, или напишите @ALEXANDRA_2CHANGE", parse_mode="HTML")
 def send_indev(chat_id):
     msg =("<b>⚠️Мы пока дорабатываем эту функцию⚠️</b>\n\n"
           ""
@@ -171,7 +181,7 @@ def handle_start(message, not_first:bool=None):
     keyboard.row(InlineKeyboardButton("🇨🇳Китай", callback_data="cn_menu"), InlineKeyboardButton("🇰🇷Корея", callback_data="kr_menu"))
 
     keyboard.add(InlineKeyboardButton("🇷🇺 Россия (USDT)", callback_data="rf_menu"))
-    keyboard.add(InlineKeyboardButton("📥Пополнить Bybit Card (🪙USDT)", callback_data="request/Пополнение Bybit💳/0"))
+    keyboard.add(InlineKeyboardButton("📥Пополнить Bybit Card (🪙USDT)", callback_data="bybit_add"))
     keyboard.add(InlineKeyboardButton("🛡 Гарантии и отзывы", callback_data="comment_menu"))
     keyboard.row(InlineKeyboardButton("📲Симкарта eSIM", callback_data="esim_main"), InlineKeyboardButton("💳 Зарубежная карта", callback_data="tr_card_menu"))
     user_id = message.from_user.id
@@ -211,6 +221,7 @@ def handle_start(message, not_first:bool=None):
 def handle_manager(message):
     user_name = message.from_user.first_name + " " + message.from_user.last_name
     user_id = message.from_user.id
+    user_ref = message.from_user.username
     if check_subscribtion(user_id,1):
         if day_off():
             qdb.add_to_queue(tg_id=user_id, name=user_name, reason="🔔вызов менеджера")
@@ -229,12 +240,17 @@ def handle_manager(message):
             keyboard = InlineKeyboardMarkup()
             keyboard.add(InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client"))
             sent_msg = bot.send_message(manager_chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
-            id_cache[sent_msg.message_id] = (user_name, user_id)
-            bot.send_message(message.chat.id, "⚡️Позвали менеджера, скоро с вами свяжутся, ожидайте\n"
-                       "🕰<b>Наш график работы:</b>\n"
-                       "Пн-Сб: 10:00 - 20:00\n"
-                       "Вс и последняя суббота месяца:\n"
-                       "<b>выходной</b>", parse_mode="HTML")
+
+            if qdb.set_user_name(sent_msg.message_id, user_id, user_ref):
+                bot.send_message(message.chat.id, "⚡️Позвали менеджера, скоро с вами свяжутся, ожидайте\n"
+                           "🕰<b>Наш график работы:</b>\n"
+                           "Пн-Сб: 10:00 - 20:00\n"
+                           "Вс и последняя суббота месяца:\n"
+                           "<b>выходной</b>", parse_mode="HTML")
+            else:
+                bot.send_message(message.chat.id, "⛔️Менеджер не сможет вам написать из-за ваших настроек приватности⛔️\n "
+                                          "Включите видимость вашего аккаунта по ссылке в настройках приватности, или напишите @ALEXANDRA_2CHANGE",
+                                 parse_mode="HTML")
     else:
         bot.send_message(message.chat.id,"<i>Для работы с ботом\n"
                             "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>", parse_mode="HTML")
@@ -422,7 +438,7 @@ def callback_query(call):
             msg = finstr.show_currency(country=2)
             keyboard = InlineKeyboardMarkup()
             keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_rf"))
-            keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/1"))
+            keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/2"))
             keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
             bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
         else:
@@ -436,7 +452,7 @@ def callback_query(call):
             keyboard = InlineKeyboardMarkup()
             keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_thai"))
             keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="tr_card_menu"))
-            keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/1"))
+            keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/3"))
             keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
             bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
         else:
@@ -444,96 +460,128 @@ def callback_query(call):
                             "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
                             parse_mode="HTML")
     if call.data == "cn_menu":
-        msg = ("<b>🇨🇳 Комплексная подготовка к поездке в Китай: Alipay, симкарта eSIM и обмен рублей</b>\n\n"
-               ""
-               "Хотите приехать в Китай и сразу <b>платить и быть на связи?</b>\n\n"
-               ""
-               "<b>С нами — просто! За 5 минут:</b>\n"
-               "▪️ <b>Alipay</b> — оформим кошелёк по загранпаспорту (от 18 лет): оплата по QR, переводы, такси\n"
-               "▪️ <b>eSIM</b> — подключим интернет, всё работает стабильно и без VPN\n"
-               "▪️ <b>Обмен рублей и USDT → юани</b> — моментально пополним Alipay и WeChat\n\n"
-               ""
-               "Условия:\n"
-               "• Регистрация Alipay — 900₽\n"
-               "🎁 Акция: <b>бесплатно</b> при первом пополнении через наш сервис\n"
-               "• Cимкарта eSIM — от 1500₽\n"
-               "• Пополнение Alipay/WeChat— от 2000 юаней\n\n"
-               ""
-               "<b>С сервисом 2change: </b>\n"
-               "☑️ Не нужен UnionPay — покажем удобные способы оплаты в Китае\n"
-               "☑️ Такси без переплат — научим заказывать самостоятельно\n"
-               "☑️ Интернет без ограничений — работают Telegram, WhatsApp и другие приложения\n\n"
-               ""
-               "<b>👉 Напишите @ALEXANDRA_2CHANGE или оставьте заявку на услугу</b>")
+        if check_subscribtion(user_id, 1):
+            msg = ("<b>🇨🇳 Комплексная подготовка к поездке в Китай: Alipay, симкарта eSIM и обмен рублей</b>\n\n"
+                   ""
+                   "Хотите приехать в Китай и сразу <b>платить и быть на связи?</b>\n\n"
+                   ""
+                   "<b>С нами — просто! За 5 минут:</b>\n"
+                   "▪️ <b>Alipay</b> — оформим кошелёк по загранпаспорту (от 18 лет): оплата по QR, переводы, такси\n"
+                   "▪️ <b>eSIM</b> — подключим интернет, всё работает стабильно и без VPN\n"
+                   "▪️ <b>Обмен рублей и USDT → юани</b> — моментально пополним Alipay и WeChat\n\n"
+                   ""
+                   "Условия:\n"
+                   "• Регистрация Alipay — 900₽\n"
+                   "🎁 Акция: <b>бесплатно</b> при первом пополнении через наш сервис\n"
+                   "• Cимкарта eSIM — от 1500₽\n"
+                   "• Пополнение Alipay/WeChat— от 2000 юаней\n\n"
+                   ""
+                   "<b>С сервисом 2change: </b>\n"
+                   "☑️ Не нужен UnionPay — покажем удобные способы оплаты в Китае\n"
+                   "☑️ Такси без переплат — научим заказывать самостоятельно\n"
+                   "☑️ Интернет без ограничений — работают Telegram, WhatsApp и другие приложения\n\n"
+                   ""
+                   "<b>👉 Напишите @ALEXANDRA_2CHANGE или оставьте заявку на услугу</b>")
 
+            kb = InlineKeyboardMarkup()
+            kb.add(InlineKeyboardButton("✏️Калькулятор|Оставить заявку", callback_data="calc_cn"))
+            kb.add(InlineKeyboardButton("📈Актуальный курс", callback_data="cn_currency_menu"))
+            kb.add(InlineKeyboardButton("📲Cимкарта eSIM", callback_data="esim_cn"))
+            kb.add(InlineKeyboardButton("💳Регистрация Alipay", callback_data="cn_alipay"))
+            kb.add(InlineKeyboardButton("❓Как пополнить Alipay/Wechat", callback_data="cn_faq"))
+            kb.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+            send_media("img/cn_main.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
+        else:
+            bot.send_message(chat_id, "<i>Для работы с ботом\n"
+                                      "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
+                             parse_mode="HTML")
+    if call.data == "bybit_add":
+        msg = ("💳Мы предоставляем услуги по пополнению карт Bybit!\n\n"
+               ""
+               "<i>📌 Минимальная сумма: 10 000₽</i>\n\n"
+               ""
+               "<b>Хотите оставить заявку на пополнение?</b>")
         kb = InlineKeyboardMarkup()
-        kb.add(InlineKeyboardButton("✏️Калькулятор|Оставить заявку", callback_data="calc_cn"))
-        kb.add(InlineKeyboardButton("📈Актуальный курс", callback_data="cn_currency_menu"))
-        kb.add(InlineKeyboardButton("📲Cимкарта eSIM", callback_data="esim_cn"))
-        kb.add(InlineKeyboardButton("💳Регистрация Alipay", callback_data="cn_alipay"))
-        kb.add(InlineKeyboardButton("❓Как пополнить Alipay/Wechat", callback_data="cn_faq"))
-        kb.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-        send_media("img/cn_main.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
+        kb.add(InlineKeyboardButton("✅Оставить заявку", callback_data="request/пополнение карты bybit/0"))
+        kb.add(InlineKeyboardButton("📋Назад", callback_data="main_menu"))
+        bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=kb)
+
+
     if call.data == "cn_alipay":
-        msg = ("🇨🇳 <b>Онлайн-оформление Alipay для россиян за 5 минут!</b>\n\n"
-        "<i>Что такое Alipay?</i>\n"
-        "Это китайский электронный кошелёк, который работает <b>без банковской карты</b>.\n\n"
-        "<b>С Alipay вы сможете:</b>\n"
-        "▪️Оплачивать покупки в магазинах, ресторанах, транспорт, билеты и экскурсии в один клик — весь Китай живёт с Alipay\n"
-        "▪️Вызывать такси DiDi прямо в приложении\n"
-        "▪️Переводить деньги и принимать оплату\n\n"
-        "📲 <b>Как подключаем:</b>\n"
-        "1. Вы оставляете заявку\n"
-        "2. Мы шаг за шагом помогаем с регистрацией и настройкой\n"
-        "3. Пополняете кошелёк через наш сервис — и сразу можете платить в Китае\n\n"
-        "⏱️ <b>Вся процедура занимает около 5 минут.</b>\n"
-         "Если что-то непонятно — мы всегда на связи.\n\n"
-         "🎁 <b>Акция:</b>\n"
-        "При первом пополнении через наш сервис оформление Alipay — <b>бесплатно</b>.\n"
-        "💳 Без пополнения — стоимость <b>900₽</b>.\n\n"
-        "👉🏻 Задайте вопрос — @ALEXANDRA_2CHANGE или оставьте заявку в боте")
-        kb = InlineKeyboardMarkup()
-        kb.add(InlineKeyboardButton("Оставить заявку✅", callback_data="request/оформление Alipay📋/4"))
-        kb.row(InlineKeyboardButton("◀️Назад", callback_data="cn_menu"), InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+        if check_subscribtion(user_id, 1):
+            msg = ("🇨🇳 <b>Онлайн-оформление Alipay для россиян за 5 минут!</b>\n\n"
+            "<i>Что такое Alipay?</i>\n"
+            "Это китайский электронный кошелёк, который работает <b>без банковской карты</b>.\n\n"
+            "<b>С Alipay вы сможете:</b>\n"
+            "▪️Оплачивать покупки в магазинах, ресторанах, транспорт, билеты и экскурсии в один клик — весь Китай живёт с Alipay\n"
+            "▪️Вызывать такси DiDi прямо в приложении\n"
+            "▪️Переводить деньги и принимать оплату\n\n"
+            "📲 <b>Как подключаем:</b>\n"
+            "1. Вы оставляете заявку\n"
+            "2. Мы шаг за шагом помогаем с регистрацией и настройкой\n"
+            "3. Пополняете кошелёк через наш сервис — и сразу можете платить в Китае\n\n"
+            "⏱️ <b>Вся процедура занимает около 5 минут.</b>\n"
+             "Если что-то непонятно — мы всегда на связи.\n\n"
+             "🎁 <b>Акция:</b>\n"
+            "При первом пополнении через наш сервис оформление Alipay — <b>бесплатно</b>.\n"
+            "💳 Без пополнения — стоимость <b>900₽</b>.\n\n"
+            "👉🏻 Задайте вопрос — @ALEXANDRA_2CHANGE или оставьте заявку в боте")
+            kb = InlineKeyboardMarkup()
+            kb.add(InlineKeyboardButton("Оставить заявку✅", callback_data="request/оформление Alipay📋/4"))
+            kb.row(InlineKeyboardButton("◀️Назад", callback_data="cn_menu"), InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
 
 
-        send_media("img/cn_alipay.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
+            send_media("img/cn_alipay.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
+        else:
+            bot.send_message(chat_id, "<i>Для работы с ботом\n"
+                                      "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
+                             parse_mode="HTML")
     if call.data == "cn_faq":
-        msg = ("💳 <b>Пополнение Alipay или WeChat с российской карты и USDT</b>\n\n"
-        "<b>Нельзя пополнить напрямую?</b> Мы сделаем это за вас — <b>быстро и по выгодному курсу</b>.\n\n"
-        "<b>Как это работает:</b>\n"
-        "• Оставляете заявку в боте\n"
-        "• Переводите рубли или USDT\n"
-        "• Присылаете номер своего кошелька или QR-код\n"
-        "• Моментально получаете юани\n\n"
-        "🔁 <b>Вы можете также обменять ваши юани на рубли</b>\n\n"
-        "✔️ <b>Комиссия: 0%</b>\n"
-        "✔️ <b>Мин. сумма: 2 000 юаней</b>\n"
-        "✔️ <b>Гарантия возврата, если не получите перевод за 1 час</b>\n\n"
-        "➡️ Пишите @ALEXANDRA_2CHANGE или оставьте заявку в боте")
+        if check_subscribtion(user_id, 1):
+            msg = ("💳 <b>Пополнение Alipay или WeChat с российской карты и USDT</b>\n\n"
+            "<b>Нельзя пополнить напрямую?</b> Мы сделаем это за вас — <b>быстро и по выгодному курсу</b>.\n\n"
+            "<b>Как это работает:</b>\n"
+            "• Оставляете заявку в боте\n"
+            "• Переводите рубли или USDT\n"
+            "• Присылаете номер своего кошелька или QR-код\n"
+            "• Моментально получаете юани\n\n"
+            "🔁 <b>Вы можете также обменять ваши юани на рубли</b>\n\n"
+            "✔️ <b>Комиссия: 0%</b>\n"
+            "✔️ <b>Мин. сумма: 2 000 юаней</b>\n"
+            "✔️ <b>Гарантия возврата, если не получите перевод за 1 час</b>\n\n"
+            "➡️ Пишите @ALEXANDRA_2CHANGE или оставьте заявку в боте")
 
-        kb = InlineKeyboardMarkup()
-        kb.add(InlineKeyboardButton("Оставить заявку✅", callback_data="request/пополнение Alipay💰/4"))
-        kb.row(InlineKeyboardButton("◀️Назад", callback_data="cn_menu"),
-               InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-        send_media("img/cn_ap_wc.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
+            kb = InlineKeyboardMarkup()
+            kb.add(InlineKeyboardButton("Оставить заявку✅", callback_data="request/пополнение Alipay💰/4"))
+            kb.row(InlineKeyboardButton("◀️Назад", callback_data="cn_menu"),
+                   InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+            send_media("img/cn_ap_wc.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
+        else:
+            bot.send_message(chat_id, "<i>Для работы с ботом\n"
+                                      "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
+                             parse_mode="HTML")
 
     if call.data == "kr_menu":
-        if chat_id in user_calc_states:
-            del user_calc_states[chat_id]
-        msg = ("<b>🇰🇷2Change - услуги в Корее</b>\n\n"
-               ""
-               "🕓График работы:\n"
-               "Пн-Сб 10:00 - 20:00 (Вс - выходной)")
+        if check_subscribtion(user_id, 5):
+            if chat_id in user_calc_states:
+                del user_calc_states[chat_id]
+                msg = ("<b>🇰🇷2Change - услуги в Корее</b>\n\n"
+                       ""
+                       "🕓График работы:\n"
+                       "Пн-Сб 10:00 - 20:00 (Вс - выходной)")
 
-        kb = InlineKeyboardMarkup()
-        kb.add(InlineKeyboardButton("✏️Калькулятор|Оставить заявку", callback_data="calc_kr"))
-        kb.add(InlineKeyboardButton("📈Актуальный курс", callback_data="kr_currency_menu"))
-        kb.add(InlineKeyboardButton("🎁Бесплатная симкарта eSIM", callback_data="esim_kr"))
-        kb.row(InlineKeyboardButton("Наличные воны🏧", callback_data="kr_cash_transactions_menu"), InlineKeyboardButton("Оплата обучения📚", callback_data="kr_edu"))
-        kb.add(InlineKeyboardButton("Зарубежная карта💳", callback_data="tr_card_menu"))
-        kb.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-        bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=kb)
+                kb = InlineKeyboardMarkup()
+                kb.add(InlineKeyboardButton("✏️Калькулятор|Оставить заявку", callback_data="calc_kr"))
+                kb.add(InlineKeyboardButton("📈Актуальный курс", callback_data="kr_currency_menu"))
+                kb.add(InlineKeyboardButton("🎁Бесплатная симкарта eSIM", callback_data="esim_kr"))
+                kb.row(InlineKeyboardButton("Наличные воны🏧", callback_data="kr_cash_transactions_menu"), InlineKeyboardButton("Оплата обучения📚", callback_data="kr_edu"))
+                kb.add(InlineKeyboardButton("Зарубежная карта💳", callback_data="tr_card_menu"))
+                kb.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+                bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=kb)
+        else:
+            bot.send_message(chat_id, "<i>Для работы с ботом\n"
+                                      "Подпишитесь на 👉  <a href='https://t.me/korea_obmen1'>чат 2Change</a></i>",
+                             parse_mode="HTML")
     if call.data == "comment_menu":
         msg = ('<b>Мы дорожим нашей репутацией, благодаря этому наш сервис работает уже 3 года.⭐️\n\n'
                '✅Про нас писали в газете <a href="https://t.me/review_2change/394">«Один из популярных сервисов обмена Турции»</a>\n'
@@ -553,219 +601,251 @@ def callback_query(call):
     if call.data.startswith("esim"):
 
         if call.data == "esim_main":
-            if chat_id in to_edit:
-                del to_edit[chat_id]
-            msg = ("<b>Боитесь остаться без связи в чужой стране?</b>\n"
-                    "Роуминг дорогой, а местные симки — сплошная суета?\n"
-                    "<i>📲 Подключите eSIM с интернетом еще до вылета — быстро, удобно и с поддержкой на каждом шаге!</i>\n\n"
-                     ""
-                    "💡 Условия:\n"
-                   "✔️ Быстрое подключение\n"
-                   "✔️ Интернет <b><i>без визита в салон</i></b>\n"
-                   "✔️ Для каждой страны свои тарифы\n\n"
-                   ""
-                   "<b>📌 Часто задаваемые вопросы:</b>\n\n"
-                   "• Что такое eSIM? \n"
-                   "Электронная симкарта, встроенная в большинство современных смартфонов.\n\n"
-                   ""
-                   "• Как подключить eSIM?\n"
-                   "Сканируете QR-код → eSIM подключается → перед вылетом или уже по прилету в страну включаете eSIM и пользуетесь интерентом.\n\n"
-                   ""
-                   "<b>• Совместимость</b>\n"
-                   "— <b>iPhone:</b> Настройки → Сотовая связь → «Добавить eSIM»\n"
-                   "— <b>Android:</b> Настройки → Подключения / Сеть и интернет → Диспетчер SIM-карт → «Добавить eSIM»\n\n"
-                   "<i>👇 Выберите страну или напишите менеджеру @ALEXANDRA_2CHANGE 👩🏻‍💼</i>")
-            keyboard = InlineKeyboardMarkup()
-            keyboard.row(InlineKeyboardButton("🇹🇷Турция", callback_data="esim_tr"), InlineKeyboardButton("🇹🇭Тайланд", callback_data="esim_thai"))
-            keyboard.row(InlineKeyboardButton("🇨🇳Китай", callback_data="esim_cn"), InlineKeyboardButton("🇰🇷Корея", callback_data="esim_kr"))
-            keyboard.add(InlineKeyboardButton("🇦🇪ОАЭ (Дубай)", callback_data="esim_ae"))
-            keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
-            send_media("img/esimmain.jpg", chat_id, msg, reply_markup=keyboard)
+            if check_subscribtion(user_id, 5):
+                if chat_id in to_edit:
+                    del to_edit[chat_id]
+                msg = ("<b>Боитесь остаться без связи в чужой стране?</b>\n"
+                        "Роуминг дорогой, а местные симки — сплошная суета?\n"
+                        "<i>📲 Подключите eSIM с интернетом еще до вылета — быстро, удобно и с поддержкой на каждом шаге!</i>\n\n"
+                         ""
+                        "💡 Условия:\n"
+                       "✔️ Быстрое подключение\n"
+                       "✔️ Интернет <b><i>без визита в салон</i></b>\n"
+                       "✔️ Для каждой страны свои тарифы\n\n"
+                       ""
+                       "<b>📌 Часто задаваемые вопросы:</b>\n\n"
+                       "• Что такое eSIM? \n"
+                       "Электронная симкарта, встроенная в большинство современных смартфонов.\n\n"
+                       ""
+                       "• Как подключить eSIM?\n"
+                       "Сканируете QR-код → eSIM подключается → перед вылетом или уже по прилету в страну включаете eSIM и пользуетесь интерентом.\n\n"
+                       ""
+                       "<b>• Совместимость</b>\n"
+                       "— <b>iPhone:</b> Настройки → Сотовая связь → «Добавить eSIM»\n"
+                       "— <b>Android:</b> Настройки → Подключения / Сеть и интернет → Диспетчер SIM-карт → «Добавить eSIM»\n\n"
+                       "<i>👇 Выберите страну или напишите менеджеру @ALEXANDRA_2CHANGE 👩🏻‍💼</i>")
+                keyboard = InlineKeyboardMarkup()
+                keyboard.row(InlineKeyboardButton("🇹🇷Турция", callback_data="esim_tr"), InlineKeyboardButton("🇹🇭Тайланд", callback_data="esim_thai"))
+                keyboard.row(InlineKeyboardButton("🇨🇳Китай", callback_data="esim_cn"), InlineKeyboardButton("🇰🇷Корея", callback_data="esim_kr"))
+                keyboard.add(InlineKeyboardButton("🇦🇪ОАЭ (Дубай)", callback_data="esim_ae"))
+                keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
+                send_media("img/esimmain.jpg", chat_id, msg, reply_markup=keyboard)
+            else:
+                bot.send_message(chat_id, "<i>Для работы с ботом\n"
+                                          "Подпишитесь на 👉  <a href='https://t.me/korea_obmen1'>чат 2Change</a></i>",
+                                 parse_mode="HTML")
         elif call.data == "esim_kr":
-            key = InlineKeyboardMarkup()
-            msg= ("<b>📲Хотите оставаться на связи в Корее?</b>\n"
-                  "<i>Подключите eSIM с интернетом еще до вылета - быстро, удобно и с поддержкой на каждому шагу!</i>\n\n"
-                  ""
-                  "<b>💡Что вы получите?</b>\n"
-                  "✔️Бесплатное подключение\n"
-                  "✔️Интернет на 30 дней\n"
-                  "✔️Связь сразу по прилете - <i>без визита в салон</i>\n"
-                  "🎁<i>При обмене от 2 000 000 ₩ - eSIM + 3Гб интернета в подарок!</i>\n\n"
-                  ""
-                  "<b>💰Тарифы на 30 дней:</b>\n"
-                  "🇰🇷5 ГБ - 1 600₽\n"
-                  "🇰🇷10 ГБ - 3 000₽\n"
-                  "🇰🇷20 ГБ - 6 000₽\n"
-                  "🇰🇷50 ГБ - 12 000₽\n"
-                  "<b>♾Безлимитный интернет</b> - 14 000₽\n\n"
-                  ""
-                  "<b>Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE</b>👩🏻‍")
-            key.row(InlineKeyboardButton("←", callback_data="esim_faq/5"), InlineKeyboardButton(text="1/2", callback_data="ignore"), InlineKeyboardButton("→", callback_data="esim_faq/5"))
-            key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/5"))
-            key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
-            if chat_id not in to_edit:
-                if "img/esimmain.jpg" in img_cache:
-                    sent= bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key, parse_mode="html")
-                    to_edit[chat_id] = sent.message_id
-                else:
-                    with open("img/esimmain.jpg", "rb") as media:
-                        sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
-                        img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+            if check_subscribtion(user_id, 5):
+                key = InlineKeyboardMarkup()
+                msg= ("<b>📲Хотите оставаться на связи в Корее?</b>\n"
+                      "<i>Подключите eSIM с интернетом еще до вылета - быстро, удобно и с поддержкой на каждому шагу!</i>\n\n"
+                      ""
+                      "<b>💡Что вы получите?</b>\n"
+                      "✔️Бесплатное подключение\n"
+                      "✔️Интернет на 30 дней\n"
+                      "✔️Связь сразу по прилете - <i>без визита в салон</i>\n"
+                      "🎁<i>При обмене от 2 000 000 ₩ - eSIM + 3Гб интернета в подарок!</i>\n\n"
+                      ""
+                      "<b>💰Тарифы на 30 дней:</b>\n"
+                      "🇰🇷5 ГБ - 1 600₽\n"
+                      "🇰🇷10 ГБ - 3 000₽\n"
+                      "🇰🇷20 ГБ - 6 000₽\n"
+                      "🇰🇷50 ГБ - 12 000₽\n"
+                      "<b>♾Безлимитный интернет</b> - 14 000₽\n\n"
+                      ""
+                      "<b>Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE</b>👩🏻‍")
+                key.row(InlineKeyboardButton("←", callback_data="esim_faq/5"), InlineKeyboardButton(text="1/2", callback_data="ignore"), InlineKeyboardButton("→", callback_data="esim_faq/5"))
+                key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/5"))
+                key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
+                if chat_id not in to_edit:
+                    if "img/esimmain.jpg" in img_cache:
+                        sent= bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key, parse_mode="html")
                         to_edit[chat_id] = sent.message_id
+                    else:
+                        with open("img/esimmain.jpg", "rb") as media:
+                            sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
+                            img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+                            to_edit[chat_id] = sent.message_id
+                else:
+                    msg_id = to_edit[chat_id]
+                    bot.edit_message_caption(msg,chat_id,parse_mode="HTML",message_id=msg_id,reply_markup=key)
             else:
-                msg_id = to_edit[chat_id]
-                bot.edit_message_caption(msg,chat_id,parse_mode="HTML",message_id=msg_id,reply_markup=key)
+                bot.send_message(chat_id, "<i>Для работы с ботом\n"
+                                          "Подпишитесь на 👉  <a href='https://t.me/korea_obmen1'>чат 2Change</a></i>",
+                                 parse_mode="HTML")
+
         elif call.data == "esim_thai":
-            key = InlineKeyboardMarkup()
-            key.row(InlineKeyboardButton("←", callback_data="esim_faq/3"), InlineKeyboardButton(text="1/2", callback_data="ignore"),
-                    InlineKeyboardButton("→", callback_data="esim_faq/3"))
-            key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/3"))
-            key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
-            msg= ("<b>📲Хотите оставаться на связи в Тайланде?</b>\n"
-                  "<i>Подключите eSIM с интернетом еще до вылета - быстро, удобно и с поддержкой на каждому шагу!</i>\n\n"
-                  ""
-                  "<b>💡Что вы получите?</b>\n"
-                  "✔️Бесплатное подключение\n"
-                  "✔️Интернет на 30 дней\n"
-                  "✔️Связь сразу по прилете - <b>без визита в салон</b>\n\n"
-                  
-                  ""
-                  "<b>💰Тарифы на 30 дней:</b>\n"
-                  "🇹🇭1 ГБ - 400₽\n"
-                  "🇹🇭3 ГБ - 800₽\n"
-                  "🇹🇭5 ГБ - 1 100₽\n"
-                  "🇹🇭10 ГБ - 1 800₽\n\n"
-                  
-                  ""
-                  "<b>Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE</b>👩🏻‍")
+            if check_subscribtion(user_id, 5):
+                key = InlineKeyboardMarkup()
+                key.row(InlineKeyboardButton("←", callback_data="esim_faq/3"), InlineKeyboardButton(text="1/2", callback_data="ignore"),
+                        InlineKeyboardButton("→", callback_data="esim_faq/3"))
+                key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/3"))
+                key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
+                msg= ("<b>📲Хотите оставаться на связи в Тайланде?</b>\n"
+                      "<i>Подключите eSIM с интернетом еще до вылета - быстро, удобно и с поддержкой на каждому шагу!</i>\n\n"
+                      ""
+                      "<b>💡Что вы получите?</b>\n"
+                      "✔️Бесплатное подключение\n"
+                      "✔️Интернет на 30 дней\n"
+                      "✔️Связь сразу по прилете - <b>без визита в салон</b>\n\n"
+                      
+                      ""
+                      "<b>💰Тарифы на 30 дней:</b>\n"
+                      "🇹🇭1 ГБ - 400₽\n"
+                      "🇹🇭3 ГБ - 800₽\n"
+                      "🇹🇭5 ГБ - 1 100₽\n"
+                      "🇹🇭10 ГБ - 1 800₽\n\n"
+                      
+                      ""
+                      "<b>Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE</b>👩🏻‍")
 
-            if chat_id not in to_edit:
-                if "img/esimmain.jpg" in img_cache:
-                    sent = bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key,
-                                          parse_mode="html")
-                    to_edit[chat_id] = sent.message_id
-                else:
-                    with open("img/esimmain.jpg", "rb") as media:
-                        sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
-                        img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+                if chat_id not in to_edit:
+                    if "img/esimmain.jpg" in img_cache:
+                        sent = bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key,
+                                              parse_mode="html")
                         to_edit[chat_id] = sent.message_id
+                    else:
+                        with open("img/esimmain.jpg", "rb") as media:
+                            sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
+                            img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+                            to_edit[chat_id] = sent.message_id
+                else:
+                    msg_id = to_edit[chat_id]
+                    bot.edit_message_caption(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
             else:
-                msg_id = to_edit[chat_id]
-                bot.edit_message_caption(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
+
+                bot.send_message(chat_id, "<i>Для работы с ботом\n"
+                                          "Подпишитесь на 👉  <a href='https://t.me/korea_obmen1'>чат 2Change</a></i>",
+                                 parse_mode="HTML")
         elif call.data == "esim_cn":
-            key = InlineKeyboardMarkup()
-            key.row(InlineKeyboardButton("←", callback_data="esim_faq/4"), InlineKeyboardButton(text="1/2", callback_data="ignore"),
-                    InlineKeyboardButton("→", callback_data="esim_faq/4"))
-            key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/4"))
-            key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
-            msg = ("<b>📲Хотите оставаться на связи в Китае?</b>\n"
-                   "<i>Подключите eSIM с интернетом еще до вылета - быстро, удобно и с поддержкой на каждому шагу!</i>\n\n"
-                   ""
-                   "<b>💡Что вы получите?</b>\n"
-                   "✔️Бесплатное подключение\n"
-                   "✔️Интернет на 30 дней\n"
-                   "✔️Связь сразу по прилете - <b>без визита в салон</b>\n"
-                   "✔️Работают даже заблокированные приложения в Китае!\n\n"
+            if check_subscribtion(user_id, 5):
+                key = InlineKeyboardMarkup()
+                key.row(InlineKeyboardButton("←", callback_data="esim_faq/4"), InlineKeyboardButton(text="1/2", callback_data="ignore"),
+                        InlineKeyboardButton("→", callback_data="esim_faq/4"))
+                key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/4"))
+                key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
+                msg = ("<b>📲Хотите оставаться на связи в Китае?</b>\n"
+                       "<i>Подключите eSIM с интернетом еще до вылета - быстро, удобно и с поддержкой на каждому шагу!</i>\n\n"
+                       ""
+                       "<b>💡Что вы получите?</b>\n"
+                       "✔️Бесплатное подключение\n"
+                       "✔️Интернет на 30 дней\n"
+                       "✔️Связь сразу по прилете - <b>без визита в салон</b>\n"
+                       "✔️Работают даже заблокированные приложения в Китае!\n\n"
+    
+                       ""
+                       "<b>💰Тарифы на 30 дней:</b>\n"
+                       "🇨🇳1 ГБ - 450₽\n"
+                       "🇨🇳3 ГБ - 900₽\n"
+                       "🇨🇳5 ГБ - 1 250₽\n"
+                       "🇨🇳10 ГБ - 1 800₽\n\n"
+    
+                       ""
+                       "<b>Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE</b>👩🏻‍")
 
-                   ""
-                   "<b>💰Тарифы на 30 дней:</b>\n"
-                   "🇨🇳1 ГБ - 450₽\n"
-                   "🇨🇳3 ГБ - 900₽\n"
-                   "🇨🇳5 ГБ - 1 250₽\n"
-                   "🇨🇳10 ГБ - 1 800₽\n\n"
-
-                   ""
-                   "<b>Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE</b>👩🏻‍")
-
-            if chat_id not in to_edit:
-                if "img/esimmain.jpg" in img_cache:
-                    sent = bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key,
-                                          parse_mode="html")
-                    to_edit[chat_id] = sent.message_id
-                else:
-                    with open("img/esimmain.jpg", "rb") as media:
-                        sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
-                        img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+                if chat_id not in to_edit:
+                    if "img/esimmain.jpg" in img_cache:
+                        sent = bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key,
+                                              parse_mode="html")
                         to_edit[chat_id] = sent.message_id
+                    else:
+                        with open("img/esimmain.jpg", "rb") as media:
+                            sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
+                            img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+                            to_edit[chat_id] = sent.message_id
+                else:
+                    msg_id = to_edit[chat_id]
+                    bot.edit_message_caption(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
             else:
-                msg_id = to_edit[chat_id]
-                bot.edit_message_caption(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
+
+                bot.send_message(chat_id, "<i>Для работы с ботом\n"
+                                          "Подпишитесь на 👉  <a href='https://t.me/korea_obmen1'>чат 2Change</a></i>",
+                                 parse_mode="HTML")
         elif call.data == "esim_ae":
-            key = InlineKeyboardMarkup()
-            key.row(InlineKeyboardButton("←", callback_data="esim_faq/6"), InlineKeyboardButton(text="1/2", callback_data="ignore"),
-                    InlineKeyboardButton("→", callback_data="esim_faq/6"))
-            key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/6"))
-            key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
-            msg = ("<b>📲Хотите оставаться на связи в ОАЭ?</b>\n"
-                   "<i>Подключите eSIM с интернетом еще до вылета - быстро, удобно и с поддержкой на каждому шагу!</i>\n\n"
-                   ""
-                   "<b>💡Что вы получите?</b>\n"
-                   "✔️Бесплатное подключение\n"
-                   "✔️Интернет на 30 дней\n"
-                   "✔️Связь сразу по прилете - <b>без визита в салон</b>\n\n"
+            if check_subscribtion(user_id, 5):
+                key = InlineKeyboardMarkup()
+                key.row(InlineKeyboardButton("←", callback_data="esim_faq/6"), InlineKeyboardButton(text="1/2", callback_data="ignore"),
+                        InlineKeyboardButton("→", callback_data="esim_faq/6"))
+                key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/6"))
+                key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
+                msg = ("<b>📲Хотите оставаться на связи в ОАЭ?</b>\n"
+                       "<i>Подключите eSIM с интернетом еще до вылета - быстро, удобно и с поддержкой на каждому шагу!</i>\n\n"
+                       ""
+                       "<b>💡Что вы получите?</b>\n"
+                       "✔️Бесплатное подключение\n"
+                       "✔️Интернет на 30 дней\n"
+                       "✔️Связь сразу по прилете - <b>без визита в салон</b>\n\n"
+    
+                       ""
+                       "<b>💰Тарифы на 30 дней:</b>\n"
+                       "🇦🇪1 ГБ - 1 300₽\n"
+                       "🇦🇪3 ГБ - 3 500₽\n"
+                       "🇦🇪5 ГБ - 5 000₽\n"
+                       "🇦🇪10 ГБ - 8 500₽\n\n"
+    
+                       ""
+                       "<b>Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE</b>👩🏻‍")
 
-                   ""
-                   "<b>💰Тарифы на 30 дней:</b>\n"
-                   "🇦🇪1 ГБ - 1 300₽\n"
-                   "🇦🇪3 ГБ - 3 500₽\n"
-                   "🇦🇪5 ГБ - 5 000₽\n"
-                   "🇦🇪10 ГБ - 8 500₽\n\n"
-
-                   ""
-                   "<b>Оставьте заявку или напишите менеджеру @ALEXANDRA_2CHANGE</b>👩🏻‍")
-
-            if chat_id not in to_edit:
-                if "img/esimmain.jpg" in img_cache:
-                    sent = bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key,
-                                          parse_mode="html")
-                    to_edit[chat_id] = sent.message_id
-                else:
-                    with open("img/esimmain.jpg", "rb") as media:
-                        sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
-                        img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+                if chat_id not in to_edit:
+                    if "img/esimmain.jpg" in img_cache:
+                        sent = bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key,
+                                              parse_mode="html")
                         to_edit[chat_id] = sent.message_id
+                    else:
+                        with open("img/esimmain.jpg", "rb") as media:
+                            sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
+                            img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+                            to_edit[chat_id] = sent.message_id
+                else:
+                    msg_id = to_edit[chat_id]
+                    bot.edit_message_caption(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
             else:
-                msg_id = to_edit[chat_id]
-                bot.edit_message_caption(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
+                bot.send_message(chat_id, "<i>Для работы с ботом\n"
+                                          "Подпишитесь на 👉  <a href='https://t.me/korea_obmen1'>чат 2Change</a></i>",
+                                 parse_mode="HTML")
 
         elif call.data == "esim_tr":
-
-            key = InlineKeyboardMarkup()
-            key.row(InlineKeyboardButton("←", callback_data="esim_faq/1"), InlineKeyboardButton(text="1/2", callback_data="ignore"),
-                    InlineKeyboardButton("→", callback_data="esim_faq/1"))
-            key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/1"))
-            key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
-            msg = (
-                "🎁 <b>Дарим электронную симкарту eSIM</b> — без условий и скрытых платежей!\n\n"
-                "Хотите оставаться на связи в Турции без переплат? \n"
-                "Ловите подарок — eSIM с интернетом <b>абсолютно бесплатно!</b>\n\n"
-                "<b>📱 Что такое eSIM?</b>\n"
-                "Это интернет за границей без физической sim-карты.\n"
-                "Удобно, быстро, без визита в салон связи.\n\n"
-                "💡 <b>Что вы получите?</b>\n"
-                "✔️ Бесплатное подключение\n"
-                "✔️ 1 ГБ интернета\n"
-                "✔️ Выгодное пополнение при необходимости\n\n"
-                "🇹🇷 <b>5 ГБ — 1900₽</b>\n"
-                "🇹🇷 <b>10 ГБ — 2500₽</b>\n"
-                "🇹🇷 <b>20 ГБ — 3300₽</b>\n\n"
-                "🎁 <b>Бонус +10 ГБ трафика в подарок</b>, при обмене от 20 000 лир через QR!\n\n"
-                "👇 <b>Оставьте заявку</b> или напишите менеджеру\n "
-                "@ALEXANDRA_2CHANGE 👩🏻‍💼"
-            )
-            if chat_id not in to_edit:
-                if "img/esimmain.jpg" in img_cache:
-                    sent = bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key,
-                                          parse_mode="html")
-                    to_edit[chat_id] = sent.message_id
-                else:
-                    with open("img/esimmain.jpg", "rb") as media:
-                        sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
-                        img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+            if check_subscribtion(user_id, 1):
+                key = InlineKeyboardMarkup()
+                key.row(InlineKeyboardButton("←", callback_data="esim_faq/1"), InlineKeyboardButton(text="1/2", callback_data="ignore"),
+                        InlineKeyboardButton("→", callback_data="esim_faq/1"))
+                key.add(InlineKeyboardButton("Оставить заявку на eSIM✅", callback_data="request/📲получить eSIM/1"))
+                key.add(InlineKeyboardButton("Другие страны🌏", callback_data="esim_main"))
+                msg = (
+                    "🎁 <b>Дарим электронную симкарту eSIM</b> — без условий и скрытых платежей!\n\n"
+                    "Хотите оставаться на связи в Турции без переплат? \n"
+                    "Ловите подарок — eSIM с интернетом <b>абсолютно бесплатно!</b>\n\n"
+                    "<b>📱 Что такое eSIM?</b>\n"
+                    "Это интернет за границей без физической sim-карты.\n"
+                    "Удобно, быстро, без визита в салон связи.\n\n"
+                    "💡 <b>Что вы получите?</b>\n"
+                    "✔️ Бесплатное подключение\n"
+                    "✔️ 1 ГБ интернета\n"
+                    "✔️ Выгодное пополнение при необходимости\n\n"
+                    "🇹🇷 <b>5 ГБ — 1900₽</b>\n"
+                    "🇹🇷 <b>10 ГБ — 2500₽</b>\n"
+                    "🇹🇷 <b>20 ГБ — 3300₽</b>\n\n"
+                    "🎁 <b>Бонус +10 ГБ трафика в подарок</b>, при обмене от 20 000 лир через QR!\n\n"
+                    "👇 <b>Оставьте заявку</b> или напишите менеджеру\n "
+                    "@ALEXANDRA_2CHANGE 👩🏻‍💼"
+                )
+                if chat_id not in to_edit:
+                    if "img/esimmain.jpg" in img_cache:
+                        sent = bot.send_photo(chat_id, caption=msg, photo=img_cache["img/esimmain.jpg"], reply_markup=key,
+                                              parse_mode="html")
                         to_edit[chat_id] = sent.message_id
+                    else:
+                        with open("img/esimmain.jpg", "rb") as media:
+                            sent = bot.send_photo(chat_id, media, caption=msg, reply_markup=key, parse_mode="HTML")
+                            img_cache["img/esimmain.jpg"] = sent.photo[-1].file_id
+                            to_edit[chat_id] = sent.message_id
+                else:
+                    msg_id = to_edit[chat_id]
+                    bot.edit_message_caption(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
             else:
-                msg_id = to_edit[chat_id]
-                bot.edit_message_caption(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
+                bot.send_message(chat_id, "<i>Для работы с ботом\n"
+                                          "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
+                                 parse_mode="HTML")
         elif call.data.startswith("esim_faq/"):
             _, country = call.data.split("/")
             esim_countries = {
@@ -819,22 +899,26 @@ def callback_query(call):
 
     #МЕНЮ ТУРЦИИ
     if call.data=="tr_card_menu":
-
-        photo_path = "img/card_video.mp4"
-        msg =("💳 Друзья, есть возможность выпустить зарубежную карту <b>Bybit Card — доставим физическую карту</b> по России за 2 недели, а виртуальной можно оплачивать покупки в интернете уже через 10 минут! \n\n"
-              ""
-              "<b>Преимущества:</b> \n"
-              "💰 Лимиты: до 5 000 $ в сутки и 50 000 $ в месяц.\n"
-              "💳 Форматы: виртуальная и/или пластиковая карта.\n"
-              "📦 Доставка в Россию — за 2 недели курьером прямо к двери.\n\n"
-              ""
-              "Санкции ужесточаются и оформить карту позже может стать сложнее.\n\n"
-              ""
-              "👉Напишите @ALEXANDRA_2CHANGE или оставьте заявку, чтобы узнать подробности")
-        keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("Оставить заявку✅", callback_data="request/💳зарубежная карта/0"))
-        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-        send_media(photo_path, chat_id, msg, keyboard, parse_mode="HTML")
+        if check_subscribtion(user_id, 1):
+            photo_path = "img/card_video.mp4"
+            msg =("💳 Друзья, есть возможность выпустить зарубежную карту <b>Bybit Card — доставим физическую карту</b> по России за 2 недели, а виртуальной можно оплачивать покупки в интернете уже через 10 минут! \n\n"
+                  ""
+                  "<b>Преимущества:</b> \n"
+                  "💰 Лимиты: до 5 000 $ в сутки и 50 000 $ в месяц.\n"
+                  "💳 Форматы: виртуальная и/или пластиковая карта.\n"
+                  "📦 Доставка в Россию — за 2 недели курьером прямо к двери.\n\n"
+                  ""
+                  "Санкции ужесточаются и оформить карту позже может стать сложнее.\n\n"
+                  ""
+                  "👉Напишите @ALEXANDRA_2CHANGE или оставьте заявку, чтобы узнать подробности")
+            keyboard = InlineKeyboardMarkup()
+            keyboard.add(InlineKeyboardButton("Оставить заявку✅", callback_data="request/💳зарубежная карта/0"))
+            keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+            send_media(photo_path, chat_id, msg, keyboard, parse_mode="HTML")
+        else:
+            bot.send_message(chat_id, "<i>Для работы с ботом\n"
+                                      "Подпишитесь на 👉  <a href='https://t.me/turkey_2change'>чат 2Change</a></i>",
+                             parse_mode="HTML")
 
     if call.data == "tr_qr_menu":
         msg = ("<b>💵 Как обменять РУБЛИ и USDT на наличные лиры за 5 минут?</b>\n\n"
@@ -1100,7 +1184,7 @@ def callback_query(call):
             keybord1 = InlineKeyboardMarkup(row_width=2)
             keybord1.row(InlineKeyboardButton("🪙USDT→🇷🇺", callback_data="exchange/usd/rub/2"),
                         InlineKeyboardButton("🇷🇺→🪙USDT", callback_data="exchange/rub/usd/2"))
-            keybord1.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/1"),
+            keybord1.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/2"),
                         InlineKeyboardButton("◀️Назад", callback_data="rf_menu"))
             bot.send_message(chat_id, msg, reply_markup=keybord1, parse_mode="HTML")
         elif call.data == "calc_thai":
@@ -1111,7 +1195,7 @@ def callback_query(call):
 
             keybord2.row(InlineKeyboardButton("🇷🇺→🇹🇭 (Переводом)", callback_data="exchange/rub/thb/3"),
                         InlineKeyboardButton("🇷🇺→🇹🇭 (Наличные)", callback_data="exchange/rub/thb_cash/3"))
-            keybord2.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/1"),
+            keybord2.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/3"),
                          InlineKeyboardButton("◀️Назад", callback_data="thai_menu"))
             bot.send_message(chat_id, msg, reply_markup=keybord2, parse_mode="HTML")
         elif call.data == "calc_tr":
@@ -1157,8 +1241,13 @@ def callback_query(call):
             apmake = ApplicationCreator(country=country, client_name=client_name,reason=reason,currency1=currency1, currency2=currency2, amount1=amount1, amount2=amount2, time=created_at)
             msg = apmake.create()
             sent_msg = bot.send_message(manager_chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
-            bot.send_message(tg_id, "✅Заявка подтверждена, менеджер ответит вам в ближайшее время!")
-            id_cache[sent_msg.message_id] = (client_name, tg_id)
+            if qdb.set_user_name(sent_msg.message_id, user_id, user_ref):
+                bot.send_message(tg_id, "✅Заявка подтверждена, менеджер ответит вам в ближайшее время!")
+            else:
+                bot.send_message(chat_id, "⛔️Менеджер не сможет вам написать из-за ваших настроек приватности⛔️\n "
+                                          "Включите видимость вашего аккаунта по ссылке в настройках приватности, или напишите @ALEXANDRA_2CHANGE",
+                                 parse_mode="HTML")
+
         if verdict == "n":
             bot.send_message(tg_id, "❌Заявка отменена")
     if call.data.startswith("chc"):
@@ -1177,11 +1266,15 @@ def callback_query(call):
         logger.info(f"Удалено состояние чата {chat_id}!!!")
     if call.data == "contact_client": #ВОТ ЭТУ ХУЙНЮ НАДО ЗАСУНУТЬ В БАЗУ ДАННЫХ А ТО ПИЗДЕЦ
 
-        client_name, client_id, client_ref = id_cache[message_id]
-        del id_cache[message_id]
-        new_text = call.message.text + "\n" + f"\n✅<b>Взят в работу:</b>\n<i>{datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")}</i>\n\n💼Менеджер: {user_name} " + "\n" + f"\n➡️Cсылка на чат с клиентом:<a href='tg://user?id={client_id}'>➡️ {client_name}</a> {f"@{client_ref}" if client_ref else ""}"
-        bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=new_text, parse_mode="HTML", reply_markup=None)
-        logger.info(f"[ЗАЯВКА ВЗЯТА] Менеджер {user_name} взял заявку клиента {client_name} (id={client_id}) в {datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")} ")
+        _, client_id, client_ref = qdb.get_user_name(message_id)
+        if client_id or client_ref:
+            new_text = call.message.text + "\n" + f"\n✅<b>Взят в работу:</b>\n<i>{datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")}</i>\n\n💼Менеджер: {user_name} " + "\n" + f"\n<a href='tg://user?id={client_id}'>👉Cсылка на чат с клиентом👈</a> {f"@{client_ref}" if client_ref else ""}"
+            bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=new_text, parse_mode="HTML", reply_markup=None)
+            logger.info(f"[ЗАЯВКА ВЗЯТА] Менеджер {user_name} взял заявку клиента {client_ref if client_ref else client_id}  в {datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")} ")
+        else:
+            new_text = call.message.text + "\n" + f"\n✅<b>Взят в работу:</b>\n<i>{datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")}</i>\n\n💼Менеджер: {user_name} " + "\n" + f"\n<b>⚠️НЕТ ССЫЛКИ! У клиента отключен доступ к профилю по ссылке и отсутствует юзернейм. Клиенту был отправлен юзернейм менеджера⚠️</b>"
+            bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=new_text, parse_mode="HTML",
+                                  reply_markup=None)
 
 
 

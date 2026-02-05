@@ -87,6 +87,11 @@ class QueueDB:
             logger.info("Таблица с наценкой загружена...")
             c.execute("SELECT COUNT(*) FROM coef")
             count = c.fetchone()[0]
+            c.execute('''CREATE TABLE IF NOT EXISTS id_cache (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        message_id INTEGER,
+                        user_id INTEGER,
+                        user_ref TEXT)''')
 
             if count == 0:  # Только если таблица пустая
                 c.execute('''INSERT INTO coef (usd_rub_c, rub_usd_c, usd_try_c, cash_usd_try_c, rub_try_c, cash_rub_try_c, try_rub_c, usd_thb_c, cash_usd_thb_c, rub_thb_c, cash_rub_thb_c, rub_cny_c, usd_cny_c, cny_rub_c, usd_krw_c, krw_usd_c, rub_krw_c, krw_rub_c, updated_at) 
@@ -350,6 +355,35 @@ class QueueDB:
 
             logger.info(f"Коэффициент таблицы {column} изменен. Теперь он {value}")
             conn.commit()
+    def set_user_name(self, message_id, user_id=None, user_ref=None):
+        if not user_id and not user_ref:
+            return False
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute('''
+                    INSERT INTO id_cache
+                    (message_id, user_id, user_ref) 
+                    VALUES (?, ?, ?)''', (message_id, user_id, user_ref))
+            conn.commit()
+            return True
+    def get_user_name(self, message_id):
+        """По message_id: удаляет строку И возвращает (message_id, user_id, user_ref)"""
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute('''
+                SELECT message_id, user_id, user_ref 
+                FROM id_cache 
+                WHERE message_id = ?
+            ''', (message_id,))
+
+            result = c.fetchone()  # Получаем строку
+
+            if result:
+                # Удаляем
+                c.execute('DELETE FROM id_cache WHERE message_id = ?', (message_id,))
+                conn.commit()
+
+            return result
 
 
 
