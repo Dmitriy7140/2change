@@ -424,7 +424,7 @@ def callback_query(call):
             keyboard.add(InlineKeyboardButton("✏️Калькулятор | Оставить заявку", callback_data="calc_tr"))
             keyboard.add(InlineKeyboardButton("📈Актуальный курс", callback_data="tr_currency_menu"))
             keyboard.add(InlineKeyboardButton("🎁Получить бесплатно eSim", callback_data="esim_tr"))
-            keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="tr_card_menu"))
+            # keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="tr_card_menu"))
             # keyboard.add(InlineKeyboardButton("👤Менеджер", callback_data="request/🔔вызов менеджера/0"))
             # button1= InlineKeyboardButton("💼Другие услуги", callback_data="other_menu")
             button2= InlineKeyboardButton("📋Главное меню", callback_data="main_menu")
