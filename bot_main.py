@@ -425,10 +425,10 @@ def callback_query(call):
             keyboard.add(InlineKeyboardButton("📈Актуальный курс", callback_data="tr_currency_menu"))
             keyboard.add(InlineKeyboardButton("🎁Получить бесплатно eSim", callback_data="esim_tr"))
             keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="tr_card_menu"))
-            keyboard.add(InlineKeyboardButton("👤Менеджер", callback_data="request/🔔вызов менеджера/0"))
-            button1= InlineKeyboardButton("💼Другие услуги", callback_data="other_menu")
+            # keyboard.add(InlineKeyboardButton("👤Менеджер", callback_data="request/🔔вызов менеджера/0"))
+            # button1= InlineKeyboardButton("💼Другие услуги", callback_data="other_menu")
             button2= InlineKeyboardButton("📋Главное меню", callback_data="main_menu")
-            keyboard.row(button1, button2)
+            keyboard.add( button2)
             send_media(path="img/turkey.jpg", chat_id=chat_id, caption='''🇹🇷<b>2Change — услуги в Турции\n\n🕒 График работы:</b>\nПн-Сб: 10:00 - 20:00 (Вс - выходной)\nОфис по записи''', parse_mode="HTML", reply_markup=keyboard)
         else:
             bot.send_message(chat_id,"<i>Для работы с ботом\n"
