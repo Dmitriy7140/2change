@@ -306,7 +306,7 @@ class QueueDB:
             #ВОНЫ
             krw_usd = api_krw_usd +(api_krw_usd * we_sell["krw_usd_c"])
             krw_rub = api_krw_rub +(api_krw_rub * we_sell["krw_rub_c"])
-            usd_krw =api_krw_usd -(api_krw_usd* we_sell["krw_usd_c"])
+            usd_krw =api_krw_usd -(api_krw_usd* we_sell["usd_krw_c"])
             rub_krw = api_krw_rub -(api_krw_rub* we_sell["krw_rub_c"])
             rates = (usd_rub,rub_usd,usd_try,cash_usd_try, rub_try, cash_rub_try,try_rub,usd_thb,cash_usd_thb,rub_thb,cash_rub_thb, rub_cny, usd_cny, cny_rub, krw_usd, krw_rub, usd_krw, rub_krw)
         except Exception as e:
