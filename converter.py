@@ -225,7 +225,7 @@ class FinInstr:
         return None
 if __name__ == '__main__':
     fistr = FinInstr()
-    print(fistr.convert_currencies(10, "rub", "krw"))
+    print(fistr.convert_currencies(300000, "krw", "usd"))
 
 
 
