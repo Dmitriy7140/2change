@@ -8,6 +8,11 @@ from converter import FinInstr
 
 from services.subscription import SubscriptionService
 from services.applications import ApplicationCreator
+from services.senders import SenderService
+
+from handlers.turkey import TurkeyHandlers
+
+
 
 #глобали
 img_cache={}
@@ -44,6 +49,16 @@ class MyExceptionHandler(telebot.ExceptionHandler):
 qdb=QueueDB()
 bot = telebot.TeleBot( "8236711902:AAEvpg2ItZeRw25-EUyg0SI5DVYBbP23LLM", exception_handler=MyExceptionHandler())
 subscription_service = SubscriptionService(bot, logger)
+sender_service = SenderService(bot, qdb, manager_chat_id, day_off)
+
+turkey_handlers = TurkeyHandlers(
+    bot,
+    subscription_service,
+    sender_service.send_media,
+    FinInstr
+)
+
+turkey_handlers.register()
 
 
 
@@ -54,66 +69,6 @@ subscription_service = SubscriptionService(bot, logger)
 
 
 
-def send_media(path, chat_id, caption=None, reply_markup=None, parse_mode="HTML"):
-    if path in img_cache:
-        file_id = img_cache[path]
-        if path.lower().endswith('.gif'):
-            bot.send_animation(chat_id, file_id, caption=caption, reply_markup=reply_markup, parse_mode=parse_mode)
-        elif path.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
-            bot.send_photo(chat_id, file_id, caption=caption, reply_markup=reply_markup, parse_mode=parse_mode)
-        else:  # mp4, avi и т.д.
-            bot.send_video(chat_id, file_id, caption=caption, reply_markup=reply_markup, parse_mode=parse_mode)
-    else:
-        with open(path, "rb") as media:
-            if path.lower().endswith('.gif'):
-                sent = bot.send_animation(chat_id, media, caption=caption, reply_markup=reply_markup, parse_mode=parse_mode)
-                img_cache[path] = sent.animation.file_id
-            elif path.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
-                sent = bot.send_photo(chat_id, media, caption=caption, reply_markup=reply_markup, parse_mode=parse_mode)
-                img_cache[path] = sent.photo[-1].file_id
-            else:  # видео
-                sent = bot.send_video(chat_id, media, caption=caption, reply_markup=reply_markup, parse_mode=parse_mode)
-                img_cache[path] = sent.video.file_id
-def send_application(user_id,user_name,chat_id,user_ref, reason=None,country=None,amount1=None,amount2=None,currency1=None,currency2=None):
-    msg = ("⚡️Позвали менеджера, скоро с вами свяжутся, ожидайте\n"
-           "🕰<b>Наш график работы:</b>\n"
-           "Пн-Сб: 10:00 - 20:00\n"
-           "Вс и последняя суббота месяца:\n"
-           "<b>выходной</b>"
-           )
-    if day_off():
-        qdb.add_to_queue(country=country, tg_id=user_id,name=user_name, reason=reason,amount1=amount1,amount2=amount2,currency1=currency1,currency2=currency2)
-        msg = ("🏄‍♂️<b>К СОЖАЛЕНИЮ, МЫ СЕЙЧАС НЕ РАБОТАЕМ</b>🏄‍♀️\n\n"
-               "✅Добавили вашу заявку в очередь\n\n"
-               "⚡️В <b>рабочее</b> время менеджер получит вашу заявку и свяжется с вами\n"
-               "🕰<b>Наш график работы:</b>\n"
-               "Пн-Сб: 10:00 - 20:00\n"
-               "Вс и последняя суббота месяца:\n"
-               "<b>выходной</b>"
-               )
-        bot.send_message(chat_id, msg, parse_mode="HTML")
-
-    else:
-        keybord = InlineKeyboardMarkup()
-        keybord.add( InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client"))
-        apmake=ApplicationCreator(country=country, client_name=user_name, reason=reason,amount1=amount1,amount2=amount2, currency1=currency1,currency2=currency2)
-
-        msg_admin = apmake.create()
-        sent_msg= bot.send_message(manager_chat_id, msg_admin, parse_mode="HTML", reply_markup=keybord)
-
-        if qdb.set_user_name(sent_msg.message_id, user_id, user_ref):
-
-            bot.send_message(chat_id, msg, parse_mode="HTML")
-        else:
-            bot.send_message(chat_id, "⛔️Менеджер не сможет вам написать из-за ваших настроек приватности⛔️\n "
-                                      "Включите видимость вашего аккаунта по ссылке в настройках приватности, или напишите @ALEXANDRA_2CHANGE", parse_mode="HTML")
-def send_indev(chat_id):
-    msg =("<b>⚠️Мы пока дорабатываем эту функцию⚠️</b>\n\n"
-          ""
-          "💛Приносим свои извинения за неудобства, стараемся сделать ваш опыт использования бота комфортнее и лучше💛\n\n"
-          ""
-          "🔔Но наш менеджер всегда на связи, чтобы его позвать нажмите /manager")
-    send_media("img/401.mp4", chat_id, caption=msg)
 
 
 
@@ -165,7 +120,7 @@ def handle_start(message, not_first:bool=None):
                 f"🕒 Пн–Сб 10:00-20:00 (по Мск)\n"
                 f"❗️@ALEXANDRA_2CHANGE - <i>единственный менеджер 2Change</i> — /manager")
 
-    send_media(path=video_path,chat_id=message.chat.id,reply_markup=keyboard,caption=msg)
+    sender_service.send_media(path=video_path,chat_id=message.chat.id,reply_markup=keyboard,caption=msg)
 
 @bot.message_handler(commands=['manager'])
 def handle_manager(message):
@@ -467,7 +422,7 @@ def handle_request(call):
     user_name = (call.from_user.first_name or "") + (" " + last_name if last_name else "")
 
     _, request, country = call.data.split("/")
-    send_application(user_id=user_id, user_name=user_name, user_ref=user_ref, chat_id=chat_id, country=int(country),
+    sender_service.send_application(user_id=user_id, user_name=user_name, user_ref=user_ref, chat_id=chat_id, country=int(country),
                      reason=request)
     if chat_id in to_edit:
         del to_edit[chat_id]
@@ -484,7 +439,7 @@ def handle_convert(call):
         currency1, currency2,country, amount1, amount2 = app_state["currency1"],app_state["currency2"],app_state["country"],app_state["amount1"],app_state["amount2"]
 
 
-        send_application(user_id=user_id, user_name=user_name, user_ref=user_ref, chat_id=chat_id,amount1=amount1,amount2=amount2, country=country, currency1=currency_names[currency1], currency2=currency_names[currency2])
+        sender_service.send_application(user_id=user_id, user_name=user_name, user_ref=user_ref, chat_id=chat_id,amount1=amount1,amount2=amount2, country=country, currency1=currency_names[currency1], currency2=currency_names[currency2])
         del user_calc_states[chat_id]
         logger.info(f"Удалено состояние чата {chat_id}!!!")
         return
@@ -522,7 +477,7 @@ def handle_esim(call):
                      InlineKeyboardButton("🇰🇷Корея", callback_data="esim_kr"))
         keyboard.add(InlineKeyboardButton("🇦🇪ОАЭ (Дубай)", callback_data="esim_ae"))
         keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
-        send_media("img/esimmain.jpg", chat_id, msg, reply_markup=keyboard)
+        sender_service.send_media("img/esimmain.jpg", chat_id, msg, reply_markup=keyboard)
 
     elif call.data == "esim_kr":
 
@@ -774,199 +729,7 @@ def handle_esim(call):
             msg_id = to_edit[chat_id]
             bot.edit_message_caption(msg, chat_id, parse_mode="HTML", message_id=msg_id, reply_markup=key)
     return
-@bot.callback_query_handler(lambda c: c.data.startswith("tr"))
-@subscription_service.require_subscription(1)
-def handle_turkey(call):
-    chat_id = call.message.chat.id
 
-    if call.data=="tr_menu":
-
-        keyboard = InlineKeyboardMarkup(row_width=2)
-        keyboard.add(InlineKeyboardButton("✏️Калькулятор | Оставить заявку", callback_data="calc_tr"))
-        keyboard.add(InlineKeyboardButton("📈Актуальный курс", callback_data="tr_currency_menu"))
-        keyboard.add(InlineKeyboardButton("🎁Получить бесплатно eSim", callback_data="esim_tr"))
-        # keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="tr_card_menu"))
-        # keyboard.add(InlineKeyboardButton("👤Менеджер", callback_data="request/🔔вызов менеджера/0"))
-        # button1= InlineKeyboardButton("💼Другие услуги", callback_data="tr_other_menu")
-        button2= InlineKeyboardButton("📋Главное меню", callback_data="main_menu")
-        keyboard.add( button2)
-        send_media(path="img/turkey.jpg", chat_id=chat_id, caption='''🇹🇷<b>2Change — услуги в Турции\n\n🕒 График работы:</b>\nПн-Сб: 10:00 - 20:00 (Вс - выходной)\nОфис по записи''', parse_mode="HTML", reply_markup=keyboard)
-
-        return
-    elif call.data=="tr_card_menu":
-
-        photo_path = "img/card_video.mp4"
-        msg =("💳 Друзья, есть возможность выпустить зарубежную карту <b>Bybit Card — доставим физическую карту</b> по России за 2 недели, а виртуальной можно оплачивать покупки в интернете уже через 10 минут! \n\n"
-              ""
-              "<b>Преимущества:</b> \n"
-              "💰 Лимиты: до 5 000 $ в сутки и 50 000 $ в месяц.\n"
-              "💳 Форматы: виртуальная и/или пластиковая карта.\n"
-              "📦 Доставка в Россию — за 2 недели курьером прямо к двери.\n\n"
-              ""
-              "Санкции ужесточаются и оформить карту позже может стать сложнее.\n\n"
-              ""
-              "👉Напишите @ALEXANDRA_2CHANGE или оставьте заявку, чтобы узнать подробности")
-        keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("Оставить заявку✅", callback_data="request/💳зарубежная карта/0"))
-        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-        send_media(photo_path, chat_id, msg, keyboard, parse_mode="HTML")
-
-        return
-
-    if call.data == "tr_other_menu":
-        msg=("👋 <b>Добро пожаловать!</b>\n"
-             "Здесь вы можете ознакомиться со всеми видами услуг сервиса <b>2Change</b>.\n\n"
-             "<i>Мы помогаем с 💸 переводами, расчётами, оплатами и 📦 сопроводительными услугами для работы с разными странами 🌍 и платформами.</i>\n\n"
-             "<b>👇 Нажмите, чтобы узнать подробности</b>")
-        keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("Наличные через банкомат (QR-код)", callback_data="tr_qr_menu"))
-        button1, button2= InlineKeyboardButton("Перевод по IBAN", callback_data="tr_iban_menu"), InlineKeyboardButton("Наличные в офисе",callback_data="tr_office_cash_menu")
-        keyboard.row(button1, button2)
-        keyboard.add(InlineKeyboardButton("Симкарта eSim📲", callback_data="tr_esim_menu"))
-        keyboard.add(InlineKeyboardButton("Денежные переводы💸", callback_data="tr_cash_transactions_menu"))
-        keyboard.add(InlineKeyboardButton("Открытие счета в турецком банке🇹🇷", callback_data="tr_acc"))
-        keyboard.add(InlineKeyboardButton("Онлайн-сервисы и букинги💻", callback_data="tr_services_booking_menu"))
-        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-        bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
-        return
-
-    elif call.data == "tr_qr_menu":
-        msg = ("<b>💵 Как обменять РУБЛИ и USDT на наличные лиры за 5 минут?</b>\n\n"
-
-        "Вы можете быстро и без карты получить наличные лиры в любом банкомате Турции!\n\n"
-
-        "<b>👥 Кому подойдёт:</b>\n"
-        "— Туристам и тем, у кого нет турецкой карты\n"
-        "— Кто ценит сервис и поддержку на русском языке\n\n"
-
-        "<b>🔄 Как это работает:</b>\n"
-        "— Оставьте заявку в боте или напишите @ALEXANDRA_2CHANGE\n"
-        "— Переведите рубли или USDT\n"
-        "— Отправьте нам фото QR-кода на экране банкомата\n"
-        "— Заберите наличные ₺\n\n"
-
-        "<b>💰 Лимиты: от 5 000₺ до 100 000₺\n"
-        "📶 Требование: телефон с интернетом</b>\n"
-        "Бесплатно eSIM +1Гб можно оформить у менеджера — /manager\n"
-        "<a href='https://telegra.ph/Nalichnye-cherez-QR-kod-v-bankomate-05-21'>📎 Подробнее и FAQ</a>\n\n"
-
-        "<b>📊 Рассчитайте обмен или оставьте заявку 👇</b>"
-        )
-        keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Рассчитать обмен", callback_data="calc"))
-        keyboard.add(InlineKeyboardButton("👤Задать вопрос", callback_data="request/🏧Выдача через банкомат по QR/1"))
-        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-        send_media("img/turkey_qr.MP4", chat_id, msg, keyboard)
-        return
-    elif call.data == "tr_iban_menu":
-        msg = ("<b>💸 Обмен RUB или USDT → лиры на IBAN за 2 минуты!</b>\n\n"
-               "<b>👤 Кому подойдёт:</b>\n"
-               "— Владельцам карт турецких банков\n"
-               "— Кто ценит скорость и удобство \n\n"
-               ""
-               "<b>🔄 Как это работает:</b>\n"
-               "— Оставьте заявку в боте или напишите @ALEXANDRA_2CHANGE\n"
-               "— Переведите рубли или USDT\n"
-               "— Отправьте IBAN и ФИО (на английском)\n"
-               "— Получите ₺ лиры на счёт\n\n"
-               "💰 Лимиты: от 2 000₺ до 500 000₺\n"
-               "<a href='https://telegra.ph/IBAN-05-21'>📎Подробнее и FAQ </a>\n\n"
-               "👇 Рассчитайте обмен или задайте вопрос")
-        keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Рассчитать обмен", callback_data="calc"))
-        keyboard.add(InlineKeyboardButton("👤Задать вопрос", callback_data="request/🔄IBAN-перевод/1"))
-        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-        send_media("img/tr_iban.jpg", chat_id, msg, keyboard)
-        return
-    elif call.data=="tr_office_cash_menu":
-        msg = ("<b>🏢 Получение наличных лир в офисе — Стамбул, Анталья, Аланья\n\n"
-                ""
-                "👥 Кому подойдёт:</b>\n"
-                "— Кто хочет обменять крупную сумму\n"
-                "— Кто предпочитает личную встречу\n\n"
-                ""
-                "<b>🔄 Как это работает:</b>\n"
-                "— Приезжаете по записи\n"
-                "— Переводите рубли\n"
-                "— Получаете наличные лиры\n"
-                "— Доллары или евро по запросу\n\n"
-                "💰 Сумма: от 100 000₽\n"
-                "<b>🕒 По записи минимум за 1 час</b>\n"
-                "<a href='https://telegra.ph/Ofis-05-21-9'>📎 Подробнее и FAQ</a>\n\n"
-                ""
-                "<b>Рассчитайте обмен или оставьте заявку 👇</b>")
-        keyboard= InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Рассчитать обмен", callback_data="calc"))
-        keyboard.add(InlineKeyboardButton("👤Задать вопрос", callback_data="request/💰Выдача наличных в офисе/1"))
-        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-        bot.send_message(chat_id=chat_id, text=msg, reply_markup=keyboard, parse_mode="HTML")
-        return
-    elif call.data=="tr_cash_transactions_menu":
-        msg = ("Возможно получение на карту/счет, а также получение наличных.\n\n"
-               "Доступны для перевода:\n"
-               "🇪🇺 Европа\n🇦🇷 Аргентина\n🇧🇾 Беларусь\n🇧🇷 Бразилия\n🇬🇪 Грузия\n🇮🇳 Индия\n🇮🇩 Индонезия\n🇰🇿 Казахстан\n🇨🇦 Канада\n🇨🇳 Китай\n🇰🇷 Корея\n🇲🇽 Мексика\n🇦🇪 ОАЭ\n🇷🇺 Россия\n🇺🇸 США\n🇹🇭 Таиланд\n🇹🇷 Турция\n🇺🇿 Узбекистан и другие страны"
-               "\nWise\nSepa\nRevolut\nAlipay/Wechat\nPaypal\n\n"
-               ""
-               "👇Оставьте заявку, и менеджер @ALEXANDRA_2CHANGE ответит на ваши вопросы")
-
-        keyboard = InlineKeyboardMarkup()
-
-        keyboard.add(InlineKeyboardButton("✅Узнать у менеджера", callback_data="request/💸Денежные переводы/0"))
-        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-        bot.send_message( chat_id, msg, reply_markup=keyboard)
-        return
-    elif call.data=="tr_acc":
-        msg = ("<b>🏦 Оформление турецкой банковской карты — дистанционно</b>\n\n"
-               ""
-               "Без депозита. Без ВНЖ. Без визита в отделение.\n\n"
-               ""
-               "<b>📌 Доступные банки:\n• 🔵 DenizBank\n• 🟡 VakıfBank\n• 🟥 Ziraat Bankası</b>\n\n"
-               ""
-               "<b>Необходимые документы:</b>\n• 🛂 Загранпаспорт\n• 🧾 Турецкий ИНН (если нет — поможем оформить)\n\n"
-               ""
-               "👇Оставьте заявку, и менеджер @ALEXANDRA_2CHANGE ответит на ваши вопросы.")
-
-
-        keyboard = InlineKeyboardMarkup()
-
-        keyboard.add(InlineKeyboardButton("✅Узнать у менеджера", callback_data="request/Счет в банке 🇹🇷/1"))
-        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-        bot.send_message(chat_id, msg, reply_markup=keyboard, parse_mode="HTML")
-        return
-    elif call.data=="tr_services_booking_menu":
-        msg = ("<b>💳 Оплата любых онлайн-сервисов за 3 минуты</b>\n\n"
-               ""
-               "Airbnb, Agoda, Booking, IKEA, PS Store, Netflix, визы, аренда авто и многое другое — оплачиваем быстро и без лишних шагов.\n\n💸"
-               ""
-               "<b>Условия:</b>\n"
-               "• Оплата через наш аккаунт или ваш\n"
-               "• Комиссия — фиксированная: 300 ₽\n"
-               "• Оплата принимается в рублях (любой банк) и USDT\n\n"
-               ""
-               "<b>📌 Как это работает?</b>\n\n"
-               "1. 🔗 Отправьте <a href='https://t.me/ALEXANDRA_2CHANGE'>👤 менеджеру</a> ссылку на сервис и нужные товары/услуги\n"
-               "2. 📊 Получите расчёт в рублях\n"
-               "3. 💵 Оплатите удобным способом\n"
-               "4. ✅ Мы оплачиваем заказ или выдаём карту для самостоятельной оплаты (в зависимости от сервиса)\n\n"
-               ""
-               "<b>❓ Остались вопросы?</b>\n"
-               "Оставьте заявку — всё расскажем и подскажем 👇")
-
-        keyboard = InlineKeyboardMarkup()
-
-        keyboard.add(
-            InlineKeyboardButton("✅Узнать у менеджера", callback_data="request/Онлайн-сервисы  💻/1"))
-        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-        bot.send_message(chat_id, msg, reply_markup=keyboard, parse_mode="HTML")
-        return
-    elif call.data=="tr_currency_menu": #ТУРЦИЯ
-        finstr = FinInstr()
-        msg = finstr.show_currency(country=1)
-        keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_tr"))
-        keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/1"))
-        bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
-        return
 @bot.callback_query_handler(lambda c: c.data.startswith("rf"))
 @subscription_service.require_subscription(2)
 def handle_russia(call):
@@ -1038,7 +801,7 @@ def handle_korea(call):
         kb.add(InlineKeyboardButton("📈Курсы|Калькулятор", callback_data="kr_currency_menu"))
         kb.add(InlineKeyboardButton("🎁Бесплатная симкарта eSIM", callback_data="esim_kr"))
         kb.row(InlineKeyboardButton("◀️Назад", callback_data="kr_menu"), InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
-        send_media("img/krw_cash.MP4", chat_id=chat_id, caption=msg, reply_markup=kb, parse_mode="HTML")
+        sender_service.send_media("img/krw_cash.MP4", chat_id=chat_id, caption=msg, reply_markup=kb, parse_mode="HTML")
         return
     elif call.data== "kr_edu":
         msg = ("🇰🇷 Хотите оплатить учёбу в Южной Корее?\n"
@@ -1058,7 +821,7 @@ def handle_korea(call):
 
         kb.row(InlineKeyboardButton("◀️Назад", callback_data="kr_menu"),
                InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
-        send_media("img/kr_edu_pic.jpg", chat_id, msg, reply_markup=kb, parse_mode="HTML")
+        sender_service.send_media("img/kr_edu_pic.jpg", chat_id, msg, reply_markup=kb, parse_mode="HTML")
         return
 @bot.callback_query_handler(func=lambda c: c.data.startswith("cn"))
 @subscription_service.require_subscription(4)
@@ -1096,7 +859,7 @@ def handle_china(call):
         kb.add(InlineKeyboardButton("💳Регистрация Alipay", callback_data="cn_alipay"))
         kb.add(InlineKeyboardButton("❓Как пополнить Alipay/Wechat", callback_data="cn_faq"))
         kb.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-        send_media("img/cn_main.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
+        sender_service.send_media("img/cn_main.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
 
         return
     elif call.data == "cn_alipay":
@@ -1123,7 +886,7 @@ def handle_china(call):
         kb.row(InlineKeyboardButton("◀️Назад", callback_data="cn_menu"), InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
 
 
-        send_media("img/cn_alipay.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
+        sender_service.send_media("img/cn_alipay.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
 
         return
     elif call.data == "cn_faq":
@@ -1145,7 +908,7 @@ def handle_china(call):
         kb.add(InlineKeyboardButton("Оставить заявку✅", callback_data="request/пополнение Alipay💰/4"))
         kb.row(InlineKeyboardButton("◀️Назад", callback_data="cn_menu"),
                InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-        send_media("img/cn_ap_wc.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
+        sender_service.send_media("img/cn_ap_wc.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
 
         return
     elif call.data == "cn_currency_menu":
