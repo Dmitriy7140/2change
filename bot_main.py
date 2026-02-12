@@ -316,9 +316,11 @@ def change_coef(message):
 
 @bot.callback_query_handler(func=lambda c: c.data == "main_menu")
 def handle_main_menu(call):
+    bot.answer_callback_query(call.id)
     handle_start(call.message, True)
 @bot.callback_query_handler(func=lambda c: c.data.startswith("calc"))
 def handle_calc(call):
+    bot.answer_callback_query(call.id)
     chat_id = call.message.chat.id
     if call.data == "calc_rf":
         msg = "💸<i>Выберите валюту для обмена:</i>"
@@ -372,10 +374,10 @@ def handle_calc(call):
         kb.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/5"),
                      InlineKeyboardButton("◀️Назад", callback_data="kr_menu"))
         bot.send_message(chat_id, msg, reply_markup=kb, parse_mode="HTML")
-    bot.answer_callback_query(call.id)
     return
 @bot.callback_query_handler(func=lambda c: c.data.startswith("exchange/"))
 def handle_exchange(call):
+    bot.answer_callback_query(call.id)
     chat_id = call.message.chat.id
 
     _, currency1, currency2, country = call.data.split("/")
@@ -420,11 +422,11 @@ def handle_exchange(call):
     bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keybord)
     bot.clear_step_handler_by_chat_id(chat_id)
     bot.register_next_step_handler_by_chat_id(chat_id, process_amount)
-    bot.answer_callback_query(call.id)
     return
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith("request/"))
 def handle_request(call):
+    bot.answer_callback_query(call.id)
     user_id = call.from_user.id
     user_ref = call.from_user.username
     chat_id = call.message.chat.id
@@ -436,10 +438,10 @@ def handle_request(call):
                      reason=request)
     if chat_id in to_edit:
         del to_edit[chat_id]
-    bot.answer_callback_query(call.id)
     return
 @bot.callback_query_handler(func=lambda c: c.data == "convert")
 def handle_convert(call):
+    bot.answer_callback_query(call.id)
     user_id = call.from_user.id
     user_ref = call.from_user.username
     chat_id = call.message.chat.id
@@ -453,12 +455,11 @@ def handle_convert(call):
         sender_service.send_application(user_id=user_id, user_name=user_name, user_ref=user_ref, chat_id=chat_id,amount1=amount1,amount2=amount2, country=country, currency1=currency_names[currency1], currency2=currency_names[currency2])
         del user_calc_states[chat_id]
         logger.info(f"Удалено состояние чата {chat_id}!!!")
-        bot.answer_callback_query(call.id)
         return
 @bot.callback_query_handler(lambda c: c.data.startswith("rf"))
 @subscription_service.require_subscription(2)
 def handle_russia(call):
-
+    bot.answer_callback_query(call.id)
     chat_id = call.message.chat.id
     if call.data =="rf_menu":
 
@@ -471,11 +472,10 @@ def handle_russia(call):
         bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
 
         return
-    bot.answer_callback_query(call.id)
 @bot.callback_query_handler(func=lambda c: c.data.startswith("kr"))
 @subscription_service.require_subscription(5)
 def handle_korea(call):
-
+    bot.answer_callback_query(call.id)
     chat_id = call.message.chat.id
     if call.data == "kr_menu":
 
@@ -528,7 +528,6 @@ def handle_korea(call):
         kb.add(InlineKeyboardButton("🎁Бесплатная симкарта eSIM", callback_data="esim_kr"))
         kb.row(InlineKeyboardButton("◀️Назад", callback_data="kr_menu"), InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
         sender_service.send_media("img/krw_cash.MP4", chat_id=chat_id, caption=msg, reply_markup=kb, parse_mode="HTML")
-        bot.answer_callback_query(call.id)
         return
     elif call.data== "kr_edu":
         msg = ("🇰🇷 Хотите оплатить учёбу в Южной Корее?\n"
@@ -553,7 +552,7 @@ def handle_korea(call):
 @bot.callback_query_handler(func=lambda c: c.data.startswith("cn"))
 @subscription_service.require_subscription(4)
 def handle_china(call):
-
+    bot.answer_callback_query(call.id)
     chat_id = call.message.chat.id
     if call.data == "cn_menu":
 
@@ -647,9 +646,9 @@ def handle_china(call):
         keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/4"))
         bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
         return
-    bot.answer_callback_query(call.id)
 @bot.callback_query_handler(func=lambda c: c.data.startswith("chc"))
 def handle_change_coef(call):
+    bot.answer_callback_query(call.id)
     chat_id = call.message.chat.id
     _, table_name = call.data.split("/")
     admin_change_coef_states[chat_id] = table_name
@@ -657,10 +656,10 @@ def handle_change_coef(call):
                      text="✏️Введите новую наценку в процентах в формате десятичной дроби (1.0 = 1%; 1.5=1.5%):\n\n"
                           "<i>Число не должно быть меньше 0</i>\n", parse_mode="HTML")
     bot.register_next_step_handler(call.message, process_coef_change)
-    bot.answer_callback_query(call.id)
     return
 @bot.callback_query_handler(func=lambda c: c.data.startswith("apq"))
 def handle_application_confirm(call):
+    bot.answer_callback_query(call.id)
     user_id = call.from_user.id
     user_ref = call.from_user.username
     chat_id = call.message.chat.id
@@ -681,12 +680,11 @@ def handle_application_confirm(call):
 
     if verdict == "n":
         bot.send_message(tg_id, "❌Заявка отменена")
-    bot.answer_callback_query(call.id)
     return
 @bot.callback_query_handler(func=lambda c: c.data.startswith("thai"))
 @subscription_service.require_subscription(3)
 def handle_thailand(call):
-
+    bot.answer_callback_query(call.id)
     chat_id = call.message.chat.id
     if call.data == "thai_menu":
 
@@ -700,13 +698,14 @@ def handle_thailand(call):
         bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
 
         return
-    bot.answer_callback_query(call.id)
+
 
 
 
 
 @bot.callback_query_handler(func=lambda c: c.data in ("bybit_add","comment_menu","contact_client" ))
 def handle_other_callbacks(call):
+    bot.answer_callback_query(call.id)
     global user_calc_states, admin_change_coef_states, to_edit
     chat_id = call.message.chat.id
     last_name = call.from_user.last_name or ""
@@ -752,7 +751,7 @@ def handle_other_callbacks(call):
             bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=new_text, parse_mode="HTML",
                                   reply_markup=None)
         return
-    bot.answer_callback_query(call.id)
+
 
 def process_amount(message):
     global user_calc_states
