@@ -29,7 +29,7 @@ class TurkeyHandlers:
             self.handle_turkey(call)
 
     def handle_turkey(self, call):
-
+        self.bot.answer_callback_query(call.id)
         data = call.data
 
         handler = self.routes.get(data)

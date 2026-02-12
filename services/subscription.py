@@ -9,7 +9,8 @@ class SubscriptionService:
         2: "@russia_2change",
         3: "@thailand_2change",
         4: "@china_2change",
-        5: "@korea_obmen1"
+        5: "@korea_obmen1",
+        6: "@uae_2change"
     }
     def __init__(self, bot, logger):
         self.bot = bot
