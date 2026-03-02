@@ -12,9 +12,10 @@ class SubscriptionService:
         5: "@korea_obmen1",
         6: "@uae_2change"
     }
-    def __init__(self, bot, logger):
+    def __init__(self, bot, logger, test_mode=False):
         self.bot = bot
         self.logger = logger
+        self.test_mode = test_mode
 
 
     def check_subscription(self, user_id:int, country:int) -> bool:
@@ -22,7 +23,9 @@ class SubscriptionService:
         chat_username = self.SUBSCRIPTION_CHATS.get(country)
         if not chat_username:
             self.logger.error(f"Не найден чат для country={country}")
-            return False
+            return True
+        if self.test_mode:
+            return True
         try:
             chat_member = self.bot.get_chat_member(chat_username, user_id)
             self.logger.info("Пользователь")
@@ -30,7 +33,7 @@ class SubscriptionService:
         except ApiTelegramException as e:
 
             self.logger.error(f"Ошибка проверки подписки: {e}")
-            return False
+            return True
 
     def require_subscription(self, country: int):
         """country_names = {1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇨🇳Китай", 5: "Корея", 6 : ОАЭ}"""
@@ -44,6 +47,7 @@ class SubscriptionService:
 
                     keyboard = InlineKeyboardMarkup()
                     chat_username = self.SUBSCRIPTION_CHATS[country]
+
 
                     keyboard.add(
                         InlineKeyboardButton(

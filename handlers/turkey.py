@@ -4,11 +4,11 @@ from typing import Callable
 
 class TurkeyHandlers:
 
-    def __init__(self, bot, subscription_service, send_media, fin_instr_class):
+    def __init__(self, bot, subscription_service, send_media, fin_instr_class_obj):
         self.bot = bot
         self.subscription_service = subscription_service
         self.send_media = send_media
-        self.FinInstr = fin_instr_class
+        self.finstr = fin_instr_class_obj
 
         self.routes : dict[str, Callable] = {
             "tr_menu": self.tr_menu,
@@ -234,8 +234,8 @@ class TurkeyHandlers:
         return
     def tr_currency_menu(self, call):
         chat_id = call.message.chat.id# ТУРЦИЯ
-        finstr = self.FinInstr()
-        msg = finstr.show_currency(country=1)
+
+        msg = self.finstr.show_currency(country=1)
         keyboard = InlineKeyboardMarkup()
         keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_tr"))
         keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/1"))

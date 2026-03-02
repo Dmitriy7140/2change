@@ -1,3 +1,5 @@
+
+
 from database_main import QueueDB
 
 from datetime import datetime
@@ -7,13 +9,11 @@ qdb = QueueDB()
 
 class FinInstr:
     def __init__(self):
-        raw = qdb.get_currencies()
-        if not raw:
-            logger.error("Финансист курсы не принял, колонка пустая!!!")
-            qdb.update_currency()
-            raw=qdb.get_currencies()
-            if raw:
-                logger.info("Финансист все порешал!")
+
+
+        qdb.update_currency()
+        raw=qdb.get_currencies()
+
         (self._,
          self.usd_rub,
          self.rub_usd,
@@ -35,50 +35,17 @@ class FinInstr:
          self.krw_rub,
          self.updated_at_str) = raw
         logger.info("Финансист курсы принял...")
+        self.ensure_fresh()
 
 
-        updated_at = datetime.strptime(self.updated_at_str, "%d-%m-%Y %H:%M:%S")
-        logger.info("Конвертируем время...")
 
-        # Текущее время
-        now = datetime.now()
-        logger.info(f"Сейчас {now}, последнее обновление было {self.updated_at_str}...")
-
-        # Разница во времени
-        time_diff = now - updated_at
-        logger.info(f"С последнего обновления курсов прошло {time_diff.total_seconds()} секунд...")
-        if time_diff.total_seconds() > 7200:
-            logger.info("Обновляем курсы...")
-            qdb.update_currency()
-            raw = qdb.get_currencies()
-
-            (self._,
-             self.usd_rub,
-             self.rub_usd,
-             self.usd_try,
-             self.cash_usd_try,
-             self.rub_try,
-             self.cash_rub_try,
-             self.try_rub,
-             self.usd_thb,
-             self.cash_usd_thb,
-             self.rub_thb,
-             self.cash_rub_thb,
-             self.rub_cny,
-             self.usd_cny,
-             self.cny_rub,
-             self.usd_krw,
-             self.krw_usd,
-             self.rub_krw,
-             self.krw_rub,
-             self.updated_at_str) = raw
-            logger.info("Курсы обновили! Успех!")
 
 
     def show_currency(self, country=1):
         """Countries: 1 == Turkey,
          2==Russia, 3== Thailand,
           4== China, 5== korea"""
+        self.ensure_fresh()
         if country == 1:
             msg=(f"💱<b> Актуальный курс на сегодняшний день: </b>\n\n"
                  
@@ -176,6 +143,7 @@ class FinInstr:
         logger.error("Что-то поломалось с отправкой сообщения с курсами!!!")
         return "Что-то пошло не так, попробуйте еще раз..."
     def convert_currencies(self, amount, currency1, currency2):
+        self.ensure_fresh()
         if currency1 == 'usd':
             if currency2 == "rub":
                 return f"{amount* self.usd_rub:.2f}"
@@ -223,9 +191,47 @@ class FinInstr:
             elif currency2 == "usd":
                 return f"{amount / self.krw_usd:.2f}"
         return None
-if __name__ == '__main__':
-    fistr = FinInstr()
-    print(fistr.convert_currencies(300000, "krw", "usd"))
+
+    def ensure_fresh(self):
+        updated_at = datetime.strptime(self.updated_at_str, "%d-%m-%Y %H:%M:%S")
+        now = datetime.now()
+        logger.info(f"Сейчас {now}, последнее обновление было {self.updated_at_str}...")
+
+        # Разница во времени
+        time_diff = now - updated_at
+        logger.info(f"С последнего обновления курсов прошло {time_diff.total_seconds()} секунд...")
+        if time_diff.total_seconds() > 7200:
+            self._reload_currencies()
+
+
+    def _reload_currencies(self):
+
+        logger.info("Обновляем курсы...")
+        qdb.update_currency()
+        raw = qdb.get_currencies()
+
+        (self._,
+         self.usd_rub,
+         self.rub_usd,
+         self.usd_try,
+         self.cash_usd_try,
+         self.rub_try,
+         self.cash_rub_try,
+         self.try_rub,
+         self.usd_thb,
+         self.cash_usd_thb,
+         self.rub_thb,
+         self.cash_rub_thb,
+         self.rub_cny,
+         self.usd_cny,
+         self.cny_rub,
+         self.usd_krw,
+         self.krw_usd,
+         self.rub_krw,
+         self.krw_rub,
+         self.updated_at_str) = raw
+        logger.info("Курсы обновили! Успех!")
+
 
 
 
