@@ -3,6 +3,7 @@ import datetime
 import sqlite3
 from contextlib import contextmanager
 from utils import logger
+from config import API_KEY
 
 
 
@@ -215,7 +216,7 @@ class QueueDB:
                           "try_rub":api_try_rub,
                           "thb_rub":api_thb_rub} """
         try:
-            coinoxr.app_id = "159d37183d104e2cb66f4ca45a9cadb4"
+            coinoxr.app_id = API_KEY
             logger.info("Подсосались к апи...")
 
             all_courses = coinoxr.Latest().get(base=f"USD", show_alternative=True)

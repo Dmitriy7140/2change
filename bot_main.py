@@ -2,7 +2,7 @@ import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import datetime, time
 
-
+from config import BOT_TOKEN, TEST_BOT_TOKEN, ADMIN_IDS, NOTIFICATION_CHAT, TEST_NOTIFICATION_CHAT, TEST_MODE, SUPPORT_CHAT_ID
 from utils import logger,  day_off
 from database_main import QueueDB
 from converter import FinInstr
@@ -25,13 +25,13 @@ from handlers.thailand import ThailandHandlers
 img_cache={}
 
 
-TEST_MODE=False
+
 admin_change_coef_states= {}
 to_edit= {}
 
-admin_id = (57713855, 22231230, 5777995768, 177592380, 398673425, 5853188702)
-manager_chat_id = -1001520870092 if not TEST_MODE else -5218197068
-TOKEN = "8236711902:AAEvpg2ItZeRw25-EUyg0SI5DVYBbP23LLM" if not TEST_MODE else "8559812575:AAGgj5v9sHMPCCrl6qs7gADgnnfubxgeFDQ"
+
+manager_chat_id = NOTIFICATION_CHAT if not TEST_MODE else TEST_NOTIFICATION_CHAT
+
 
 
 
@@ -42,13 +42,13 @@ class MyExceptionHandler(telebot.ExceptionHandler):
         message = f"Ошибка в боте: {exception}"
         logger.error(message, exc_info=True)
         # Здесь можно добавить логирование ошибки, например через logger
-        bot.send_message(57713855, message)
+        bot.send_message(SUPPORT_CHAT_ID, message)
         return True
 
 
 qdb=QueueDB()
 
-bot = telebot.TeleBot( TOKEN, exception_handler=MyExceptionHandler())
+bot = telebot.TeleBot(BOT_TOKEN if not TEST_MODE else TEST_BOT_TOKEN, exception_handler=MyExceptionHandler())
 finstr = FinInstr()
 
 subscription_service = SubscriptionService(bot, logger, TEST_MODE)
@@ -235,7 +235,7 @@ def handle_queue():
     else:
         bot.send_message(manager_chat_id, "Заявок в очереди нет.")
         return
-@bot.message_handler(commands=['change_coef'], func=lambda message: message.from_user.id in admin_id)# func=lambda message: message.from_user.id in admin_id)
+@bot.message_handler(commands=['change_coef'], func=lambda message: message.from_user.id in ADMIN_IDS)# func=lambda message: message.from_user.id in admin_id)
 def change_coef(message):
     global admin_change_coef_states
     chat_id = message.chat.id
