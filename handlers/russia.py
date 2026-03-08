@@ -5,11 +5,12 @@ from typing import Callable
 
 
 class RussiaHandlers:
-    def __init__(self, bot, subscription_service, send_media, fin_instr_class_obj):
+    def __init__(self, bot, subscription_service, send_media, fin_instr_class_obj, state_manager):
         self.bot = bot
         self.subscription_service = subscription_service
         self.send_media = send_media
         self.finstr = fin_instr_class_obj
+        self.clearstate = state_manager.clear
 
         self.routes : dict[str, Callable] = {
             "rf_menu": self.rf_menu,
@@ -30,6 +31,7 @@ class RussiaHandlers:
             handler(call)
     def rf_menu(self, call):
         chat_id = call.message.chat.id
+        self.clearstate(chat_id)
 
         msg = self.finstr.show_currency(country=2)
         keyboard = InlineKeyboardMarkup()

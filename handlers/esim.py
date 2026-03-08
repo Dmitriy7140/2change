@@ -7,7 +7,7 @@ from typing import Callable
 
 class EsimHandlers:
 
-    def __init__(self, bot, subscription_service, sender_service):
+    def __init__(self, bot, subscription_service, sender_service, state_manager):
         self.bot = bot
         self.subscription_service = subscription_service
         self.sender_service = sender_service
@@ -36,7 +36,7 @@ class EsimHandlers:
             "esim_kr": self.esim_kr,
             "esim_ae": self.esim_ae,
         }
-
+        self.clearstate = state_manager.clear
     def register(self):
         @self.bot.callback_query_handler(func=lambda c: c.data.startswith("esim"))
         def handle(call):
@@ -130,6 +130,7 @@ class EsimHandlers:
 
     def esim_main(self, call):
         chat_id = call.message.chat.id
+        self.clearstate(chat_id)
         if chat_id in self.to_edit:
             del self.to_edit[chat_id]
         msg = ("<b>Боитесь остаться без связи в чужой стране?</b>\n"

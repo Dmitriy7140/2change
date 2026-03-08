@@ -4,11 +4,12 @@ from typing import Callable
 
 class TurkeyHandlers:
 
-    def __init__(self, bot, subscription_service, send_media, fin_instr_class_obj):
+    def __init__(self, bot, subscription_service, send_media, fin_instr_class_obj, state_manager):
         self.bot = bot
         self.subscription_service = subscription_service
         self.send_media = send_media
         self.finstr = fin_instr_class_obj
+        self.clearstate = state_manager.clear
 
         self.routes : dict[str, Callable] = {
             "tr_menu": self.tr_menu,
@@ -39,7 +40,9 @@ class TurkeyHandlers:
 
 
     def tr_menu(self, call):
+
         chat_id = call.message.chat.id
+        self.clearstate(chat_id)
 
         keyboard = InlineKeyboardMarkup(row_width=2)
         keyboard.add(InlineKeyboardButton("✏️Калькулятор | Оставить заявку", callback_data="calc_tr"))

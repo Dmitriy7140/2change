@@ -4,11 +4,12 @@ from typing import Callable
 
 
 class ThailandHandlers:
-    def __init__(self, bot, subscription_service, send_media, fin_instr_class_obj):
+    def __init__(self, bot, subscription_service, send_media, fin_instr_class_obj, state_manager):
         self.bot = bot
         self.subscription_service = subscription_service
         self.send_media = send_media
         self.finstr = fin_instr_class_obj
+        self.clearstate = state_manager.clear
 
         self.routes: dict[str, Callable] = {
             "thai_menu":self.thai_menu,
@@ -31,6 +32,7 @@ class ThailandHandlers:
 
     def thai_menu(self, call):
         chat_id = call.message.chat.id
+        self.clearstate(chat_id)
 
         msg = self.finstr.show_currency(country=3)
         keyboard = InlineKeyboardMarkup()

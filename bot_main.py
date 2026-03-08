@@ -65,7 +65,8 @@ turkey_handlers = TurkeyHandlers(
     bot,
     subscription_service,
     sender_service.send_media,
-    finstr
+    finstr,
+    state_manager
 )
 turkey_handlers.register()
 
@@ -74,7 +75,8 @@ russia_handlers = RussiaHandlers(
     bot,
     subscription_service,
     sender_service.send_media,
-    finstr
+    finstr,
+    state_manager,
 )
 russia_handlers.register()
 
@@ -83,7 +85,8 @@ korea_handlers = KoreaHandlers(
     bot,
     subscription_service,
     sender_service.send_media,
-    finstr
+    finstr,
+    state_manager,
 )
 korea_handlers.register()
 
@@ -92,14 +95,16 @@ thailand_handlers = ThailandHandlers(
     bot,
     subscription_service,
     sender_service.send_media,
-    finstr
+    finstr,
+    state_manager,
 )
 thailand_handlers.register()
 china_handlers = ChinaHandlers(
     bot,
     subscription_service,
     sender_service.send_media,
-    finstr
+    finstr,
+    state_manager,
 )
 china_handlers.register()
 
@@ -107,7 +112,8 @@ china_handlers.register()
 esim_handlers = EsimHandlers(
     bot,
     subscription_service,
-    sender_service
+    sender_service,
+    state_manager,
 
 )
 esim_handlers.register()
@@ -129,7 +135,7 @@ esim_handlers.register()
 @bot.message_handler(commands=['start'])
 def handle_start(message, not_first:bool=None):
 
-
+    state_manager.clear(message.chat.id)
     keyboard = InlineKeyboardMarkup(row_width=2)
     button1= InlineKeyboardButton( "🇹🇷 Турция", callback_data="tr_menu")
     button2 = InlineKeyboardButton("🇹🇭 Тайланд", callback_data="thai_menu")
@@ -175,6 +181,7 @@ def handle_start(message, not_first:bool=None):
 
 @bot.message_handler(commands=['manager'])
 def handle_manager(message):
+    state_manager.clear(message.chat.id)
     user_name = message.from_user.first_name + " " + message.from_user.last_name
     user_id = message.from_user.id
     user_ref = message.from_user.username
@@ -495,7 +502,7 @@ def process_coef_change(message):
         flmes /= 100
 
         qdb.set_coef(admin_change_coef_states[chat_id], flmes)
-        bot.send_message(chat_id, "✅Наценка изменена! Изменения появятся в течении 5 минут.")
+        bot.send_message(chat_id, "✅Наценка изменена! Изменения появятся в течение 5 минут.")
 
     except Exception as e:
         bot.send_message(chat_id, f"Что-то пошло не так, уведомили программиста:\n\n"

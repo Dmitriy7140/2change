@@ -11,14 +11,14 @@ class ExchangeService:
 
         self.state_manager = state_manager
 
-        self.currency_names = {"rub": "<b>RUB🇷🇺</b>",
-                               "usd": "<b>USDT🪙</b>",
-                               "try": "<b>TRY🇹🇷</b>",
-                               "try_cash": "<b>Наличные TRY🇹🇷</b>",
-                               "thb": "<b>THB🇹🇭</b>",
-                               "thb_cash": "<b>Наличные THB🇹🇭</b>",
-                               "cny": "<b>CNY🇨🇳</b>",
-                               "krw": "<b>KRW🇰🇷</b>"}
+        self.currency_names = {"rub": "RUB🇷🇺",
+                               "usd": "USDT🪙",
+                               "try": "TRY🇹🇷",
+                               "try_cash": "Наличные TRY🇹🇷",
+                               "thb": "THB🇹🇭",
+                               "thb_cash": "Наличные THB🇹🇭",
+                               "cny": "CNY🇨🇳",
+                               "krw": "KRW🇰🇷"}
         self.min_amount = {"rub/try_cash": 10750,
                       "rub/try": 5000,
                       "usd/try_cash": 132,
@@ -57,6 +57,26 @@ class ExchangeService:
                    "krw/usd": "<b>300.000 KRW</b>",
                    "rub/krw": "<b>17302 RUB</b>",
                    "krw/rub": "<b>300.000 KRW</b>"}
+        self.historical_pairs = {"usd/rub":True,
+                                 "rub/usd":False,
+                                 "rub/try_cash": False,
+                                  "rub/try": False,
+                                  "usd/try_cash": True,
+                                  "usd/try": True,
+                                  "try/rub": True,
+                                  "rub/thb_cash": False,
+                                  "rub/thb": False,
+                                  "usd/thb_cash":True,
+                                  "usd/thb":True,
+
+                                  "rub/cny": False,
+                                  "usd/cny":True,
+                                  "cny/rub":True,
+                                  "usd/krw":True,
+                                  "krw/usd":False,
+                                  "rub/krw":True,
+                                  "krw/rub":False }
+                                #true если второй валюты как правило больше чем первой при конвертации
 
     def register_handlers(self):
         # Главное меню и вызов меню обмена
@@ -65,12 +85,15 @@ class ExchangeService:
             self.send_exchange_main_menu(call)
 
         @self.bot.callback_query_handler(func=lambda c: c.data.startswith("exchange/"))
-        def await_sum_handler(call):
-            self.await_sum(call)
+        def await_mode_handler(call):
+            self.await_mode(call)
 
         @self.bot.callback_query_handler(func=lambda c: c.data == "convert")
         def send_convert_request_handler(call):
             self.send_convert_request(call)
+        @self.bot.callback_query_handler(func=lambda c: c.data.startswith("await_sum/"))
+        def await_sum_handler(call):
+            self.await_sum(call)
 
     def process_amount(self, message):
 
@@ -86,52 +109,104 @@ class ExchangeService:
 
         currency1 = state["currency1"]
         currency2 = state["currency2"]
-
+        mode = state["mode"]
         pair = f"{currency1}/{currency2}"
-        min_exchange = self.min_amount.get(pair)
 
-        if not min_exchange:
-            self.logger.error(f"Нет минимальной пары для {pair}")
-            return
-        try:
-            int_message = int(message.text.replace(" ", ""))
-        except ValueError:
-            keyboard = InlineKeyboardMarkup()
-            keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
-            self.bot.send_message(chat_id, "❌Введите, пожалуйста, целое число.", reply_markup=keyboard)
+        if mode == "get":
+            try:
+                int_message = int(message.text.replace(" ", ""))
+            except ValueError:
+                keyboard = InlineKeyboardMarkup()
+                keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
+                self.bot.send_message(chat_id, "❌Введите, пожалуйста, целое число.", reply_markup=keyboard)
 
-            self.bot.clear_step_handler_by_chat_id(chat_id)
-            self.bot.register_next_step_handler_by_chat_id(
-                chat_id,
-                self.process_amount
-            )
-            return
+                self.bot.clear_step_handler_by_chat_id(chat_id)
+                self.bot.register_next_step_handler_by_chat_id(
+                    chat_id,
+                    self.process_amount
+                )
+                return
+            if int_message < 1:
+                keyboard = InlineKeyboardMarkup()
+                keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
+                self.bot.send_message(
+                    chat_id,
+                    f"<b>❌Число не должно быть меньше 1</b>",
+                    parse_mode="HTML",
+                    reply_markup=keyboard
+                )
+                self.bot.clear_step_handler_by_chat_id(chat_id)
+                self.bot.register_next_step_handler_by_chat_id(
+                    chat_id,
+                    self.process_amount
+                )
+                return
+        else:
 
-        if int_message < min_exchange:
-            keyboard = InlineKeyboardMarkup()
-            keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
-            self.bot.send_message(
-                chat_id,
-                f"❌Минимальная сумма: <b>{min_exchange} {self.currency_names[currency1]}</b>",
-                parse_mode="HTML",
-                reply_markup=keyboard
-            )
-            self.bot.clear_step_handler_by_chat_id(chat_id)
-            self.bot.register_next_step_handler_by_chat_id(
-                chat_id,
-                self.process_amount
-            )
-            return
+            min_exchange = self.min_amount.get(pair)
 
+            if not min_exchange:
+                self.logger.error(f"Нет минимальной пары для {pair}")
+                return
+            try:
+                int_message = int(message.text.replace(" ", ""))
+            except ValueError:
+                keyboard = InlineKeyboardMarkup()
+                keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
+                self.bot.send_message(chat_id, "❌Введите, пожалуйста, целое число.", reply_markup=keyboard)
+
+                self.bot.clear_step_handler_by_chat_id(chat_id)
+                self.bot.register_next_step_handler_by_chat_id(
+                    chat_id,
+                    self.process_amount
+                )
+                return
+
+            if int_message < min_exchange:
+                keyboard = InlineKeyboardMarkup()
+                keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
+                self.bot.send_message(
+                    chat_id,
+                    f"❌Минимальная сумма: <b>{min_exchange} {self.currency_names[currency1]}</b>",
+                    parse_mode="HTML",
+                    reply_markup=keyboard
+                )
+                self.bot.clear_step_handler_by_chat_id(chat_id)
+                self.bot.register_next_step_handler_by_chat_id(
+                    chat_id,
+                    self.process_amount
+                )
+                return
 
         converted = self.finstr.convert_currencies(int_message, currency1, currency2)
         float_converted = float(converted)
         float_message_text = float(int_message)
+        k = float_message_text / float_converted if float_converted < float_message_text else float_converted / float_message_text
+        if mode == "get":
+
+
+
+            if self.historical_pairs[pair]:
+                float_converted /= k
+                float_converted /= k
+
+
+
+            elif not self.historical_pairs[pair]:
+                float_converted *=k
+                float_converted *= k
+
+
+
+
+
+
+
 
         msg = (f"<b>Обмен:</b> {self.currency_names[currency1]} → {self.currency_names[currency2]}\n\n"
-               f"<b>Вы отдаете:</b> {int_message} {self.currency_names[currency1]}\n\n"
-               f"<b>Вы получаете:</b> {converted} {self.currency_names[currency2]}\n"
-               f"<b>Курс: {float_message_text / float_converted if float_converted < float_message_text else float_converted / float_message_text:.2f}</b>\n"
+               f"<b>Вы отдаете:</b> {float_converted if mode == "get" else int_message:.2f} {self.currency_names[currency1]}\n\n"
+               f"<b>Вы получаете:</b> {int_message if mode == "get" else converted:.2f} {self.currency_names[currency2]}\n"
+               f"<b>Курс: {k:.2f}</b>\n"
                f"<b>Курс актуален в течении 15 минут!</b>\n\n"
                f"<b>Отправить заявку на обмен?</b>")
         state["amount1"] = int_message
@@ -143,11 +218,18 @@ class ExchangeService:
                     InlineKeyboardButton("❌Отмена", callback_data="main_menu"))
         self.bot.send_message(chat_id, msg, reply_markup=keybord, parse_mode="HTML")
 
-    def await_sum(self, call):
+    def await_mode(self, call):
         self.bot.answer_callback_query(call.id)
         chat_id = call.message.chat.id
 
         _, currency1, currency2, country = call.data.split("/")
+        msg = ("⚙️Выберите режим калькулятора:\n\n"
+              f"1. Укажу, сколько хочу получить {self.currency_names[currency2]}\n"
+              f"2. Укажу, сколько отдам {self.currency_names[currency1]}")
+        kb = InlineKeyboardMarkup(row_width=2)
+        kb.add(InlineKeyboardButton(f"Получу {self.currency_names[currency2]}", callback_data="await_sum/get"))
+        kb.add(InlineKeyboardButton(f"Отдам {self.currency_names[currency1]}", callback_data="await_sum/give"))
+        self.bot.send_message(chat_id, msg, reply_markup=kb, parse_mode="HTML")
         self.state_manager.clear(chat_id)
         self.state_manager.set(chat_id, {
 
@@ -155,25 +237,64 @@ class ExchangeService:
             'currency2': currency2,
             'country': country,
             "amount1": None,
-            "amount2": None
+            "amount2": None,
+            "mode":None
+
         })
 
 
 
-        countries_menu = {"1": "tr_menu", "2": "rf_menu", "3": "thai_menu", "4": "cn_menu", "5": "kr_menu"}
-        keybord = InlineKeyboardMarkup()
-        keybord.add(InlineKeyboardButton("◀️Назад", callback_data=countries_menu[country]))
-        msg = (f"✏️ Введите сумму в {self.currency_names[currency1]}\n"
-               f"<i>Только цифры - без пробелов, точек и символов</i>\n\n"
-               f""
-               f"📌 Минимальная сумма: {self.min_sum[f'{currency1}/{currency2}']}")
-        self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keybord)
+    def await_sum(self,call):
+        self.bot.answer_callback_query(call.id)
+        chat_id = call.message.chat.id
+        _, mode = call.data.split("/")
 
-        self.bot.clear_step_handler_by_chat_id(chat_id)
-        self.bot.register_next_step_handler_by_chat_id(
-            chat_id,
-            self.process_amount
-        )
+        state= self.state_manager.get(chat_id)
+        print(state)
+        currency1 = state["currency1"]
+        currency2 = state["currency2"]
+        country = state["country"]
+        countries_menu = {"1": "tr_menu", "2": "rf_menu", "3": "thai_menu", "4": "cn_menu", "5": "kr_menu"}
+        self.state_manager.set(chat_id, {
+
+            'currency1': currency1,
+            'currency2': currency2,
+            'country': country,
+            "amount1": None,
+            "amount2": None,
+            "mode": mode
+
+        })
+        if mode == "give":
+            keybord = InlineKeyboardMarkup()
+            keybord.add(InlineKeyboardButton("◀️Назад", callback_data=countries_menu[country]))
+            msg = (f"✏️ Введите сумму в {self.currency_names[currency1]}\n"
+                   f"<i>Только цифры - без пробелов, точек и символов</i>\n\n"
+                   f""
+                   f"📌 Минимальная сумма: {self.min_sum[f'{currency1}/{currency2}']}")
+            self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keybord)
+
+            self.bot.clear_step_handler_by_chat_id(chat_id)
+            self.bot.register_next_step_handler_by_chat_id(
+                chat_id,
+                self.process_amount
+            )
+        elif mode == "get":
+
+            keybord = InlineKeyboardMarkup()
+            keybord.add(InlineKeyboardButton("◀️Назад", callback_data=countries_menu[country]))
+            msg = (f"✏️ Введите сумму в {self.currency_names[currency2]}\n"
+                   f"<i>Только цифры - без пробелов, точек и символов</i>\n\n"
+                   f""
+                   f"<b>Укажите, сколько {self.currency_names[currency2]} вы хотите получить</b>")
+            self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keybord)
+
+            self.bot.clear_step_handler_by_chat_id(chat_id)
+            self.bot.register_next_step_handler_by_chat_id(
+                chat_id,
+                self.process_amount
+            )
+
         return
 
     def send_convert_request(self, call):

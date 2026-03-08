@@ -11,7 +11,7 @@ class FinInstr:
     def __init__(self):
 
 
-        qdb.update_currency()
+
         raw=qdb.get_currencies()
 
         (self._,
