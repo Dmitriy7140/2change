@@ -4,7 +4,7 @@ from functools import wraps
 
 
 class SubscriptionService:
-    SUBSCRIPTION_CHATS = {
+    SUBSCRIPTION_URLS = {
         1: "https://t.me/+XgJcXXDuPwAyODNi",
         2: "https://t.me/+kfAL5bXDpK41ODBh",
         3: "https://t.me/+Ys02t7bsEmRhZDYy",
@@ -12,6 +12,15 @@ class SubscriptionService:
         5: "https://t.me/+ZuxXbKKtlQRlZjgy",
         6: "https://t.me/+dBzBb6UlyiZiYjRh"
     }
+    SUBSCRIPTION_CHATS = {
+        1: "@turkey_2change",
+        2: "@russia_2change",
+        3: "@thailand_2change",
+        4: "@china_2change",
+        5: "@korea_obmen1",
+        6: "@uae_2change"
+    }
+
     def __init__(self, bot, logger, test_mode=False):
         self.bot = bot
         self.logger = logger
@@ -46,7 +55,7 @@ class SubscriptionService:
                 if not self.check_subscription(user_id, country):
 
                     keyboard = InlineKeyboardMarkup()
-                    chat_url = self.SUBSCRIPTION_CHATS[country]
+                    chat_url = self.SUBSCRIPTION_URLS[country]
 
 
                     keyboard.add(
