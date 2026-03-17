@@ -336,6 +336,9 @@ class QueueDB:
             c.execute("SELECT * FROM currency ORDER BY id DESC LIMIT 1")
 
             row = c.fetchone()
+            if not row:
+                self.update_currency()
+                self.get_currencies()
 
             return row
 

@@ -116,40 +116,33 @@ class ExchangeService:
         int_message = self.check_message(message, mode, pair, currency1, currency2)
         if int_message:
             converted = self.finstr.convert_currencies(int_message, currency1, currency2)
-            float_converted = float(converted)
-            float_int_message = float(int_message)
-            k = float_int_message / float_converted if float_converted < float_int_message else float_converted / float_int_message
+
+
+            k = int_message / converted if converted < int_message else converted / int_message
             if mode == "get":
 
-
-
                 if self.historical_pairs[pair]:
-                    float_converted /= k
-                    float_converted /= k
+                    converted /= k
+                    converted /= k
 
 
 
                 elif not self.historical_pairs[pair]:
-                    float_converted *=k
-                    float_converted *= k
+                    converted *=k
+                    converted *= k
             elif mode == "give" and currency2.endswith("_cash") :
-                converted_rounded = self.round_to_thousand(int(float_converted))
-                int_message = converted_rounded / k if float_converted > int_message else converted_rounded * k
+                converted_rounded = self.round_to_thousand(int(converted))
+                int_message = converted_rounded / k if converted > int_message else converted_rounded * k
                 converted = converted_rounded
 
 
-
-
-
-
-
             msg = (f"<b>Обмен:</b> {self.currency_names[currency1]} → {self.currency_names[currency2]}\n\n"
-                   f"<b>Вы отдаете:</b> {float_converted if mode == "get" else int_message:.0f} {self.currency_names[currency1]}\n\n"
+                   f"<b>Вы отдаете:</b> {converted if mode == "get" else int_message:.0f} {self.currency_names[currency1]}\n\n"
                    f"<b>Вы получаете:</b> {int_message if mode == "get" else converted:.0f} {self.currency_names[currency2]}\n"
                    f"<b>Курс: {k:.2f}</b>\n"
                    f"<b>Курс актуален в течении 15 минут!</b>\n\n"
                    f"<b>Отправить заявку на обмен?</b>")
-            state["amount1"] = f"{float_converted if mode == "get" else int_message:.0f}"
+            state["amount1"] = f"{converted if mode == "get" else int_message:.0f}"
             state["amount2"] = f"{int_message if mode == "get" else converted:.0f}"
             self.state_manager.set(chat_id, state)
 
@@ -223,7 +216,7 @@ class ExchangeService:
 
         _, currency1, currency2, country = call.data.split("/")
         msg = ("⚙️Выберите режим калькулятора:\n\n"
-               f"<b>{self.currency_names[currency1]}/{self.currency_names[currency2]}\n\n</b>"
+               f"<b>Обмен : {self.currency_names[currency1]} → {self.currency_names[currency2]}\n\n</b>"
                ""
               f"1. Укажу, сколько хочу получить {self.currency_names[currency2]}\n"
               f"2. Укажу, сколько отдам {self.currency_names[currency1]}")
@@ -253,7 +246,7 @@ class ExchangeService:
         _, mode = call.data.split("/")
 
         state= self.state_manager.get(chat_id)
-        print(state)
+
         currency1 = state["currency1"]
         currency2 = state["currency2"]
         country = state["country"]

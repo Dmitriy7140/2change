@@ -142,54 +142,54 @@ class FinInstr:
             return msg
         logger.error("Что-то поломалось с отправкой сообщения с курсами!!!")
         return "Что-то пошло не так, попробуйте еще раз..."
-    def convert_currencies(self, amount, currency1, currency2):
+    def convert_currencies(self, amount:int, currency1:str, currency2:str) -> float|None:
         self.ensure_fresh()
         if currency1 == 'usd':
             if currency2 == "rub":
-                return f"{amount* self.usd_rub:.2f}"
+                return amount* self.usd_rub
             elif currency2 == "try":
-                return f"{amount * self.usd_try:.2f}"
+                return amount * self.usd_try
             elif currency2 == "try_cash":
-                return f"{amount* self.cash_usd_try:.2f}"
+                return amount* self.cash_usd_try
 
             elif currency2 == "thb":
-                return f"{amount * self.usd_thb:.2f}"
+                return amount * self.usd_thb
             elif currency2 == "thb_cash":
-                return f"{amount* self.cash_usd_thb:.2f}"
+                return amount* self.cash_usd_thb
 
             elif currency2 == "cny":
-                return f"{amount* self.usd_cny:.2f}"
+                return amount* self.usd_cny
             elif currency2 == "krw":
-                return f"{amount* self.usd_krw:.2f}"
+                return amount* self.usd_krw
 
         if currency1 == "rub":
             if currency2 == "usd":
-                return f"{amount / self.rub_usd:.2f}"
+                return amount / self.rub_usd
             elif currency2 == "try_cash":
-                return f"{amount / self.cash_rub_try:.2f}"
+                return amount / self.cash_rub_try
             elif currency2 == "try":
-                return f"{amount / self.rub_try:.2f}"
+                return amount / self.rub_try
             elif currency2 == 'thb_cash':
-                return f"{amount/ self.cash_rub_thb:.2f}"
+                return amount/ self.cash_rub_thb
             elif currency2 == "thb":
-                return f"{amount / self.rub_thb:.2f}"
+                return amount / self.rub_thb
             elif currency2 == "cny":
-                return f"{amount / self.rub_cny:.2f}"
+                return amount / self.rub_cny
             elif currency2 == "krw":
-                return f"{amount * self.rub_krw:.2f}"
+                return amount * self.rub_krw
         if currency1 == "cny":
             if currency2 == "rub":
-                return f"{amount * self.cny_rub:.2f}"
+                return amount * self.cny_rub
 
         if currency1 == "try":
             if currency2 == "rub":
-                return f"{amount * self.try_rub:.2f}"
-            return None
+                return amount * self.try_rub
+
         if currency1 == "krw":
             if currency2 == "rub":
-                return f"{amount / self.krw_rub:.2f}"
+                return amount / self.krw_rub
             elif currency2 == "usd":
-                return f"{amount / self.krw_usd:.2f}"
+                return amount / self.krw_usd
         return None
 
     def ensure_fresh(self):
