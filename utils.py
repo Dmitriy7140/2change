@@ -44,8 +44,8 @@ def start_scheduler(daily_task):
         daily_task,
         'cron',
         day_of_week='mon-sat',
-        hour=22,
-        minute=31,
+        hour=10,
+        minute=1,
         timezone=msk_tz
     )
     scheduler.start()
