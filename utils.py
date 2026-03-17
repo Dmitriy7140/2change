@@ -29,11 +29,7 @@ def day_off():
     if date_time.weekday() == calendar.SUNDAY:
         logger.info("Выходной! Воскресенье!")
         return True
-    if date_time.weekday() == calendar.SATURDAY:
-        next_saturday = date_time + timedelta(days=7)
-        if next_saturday.month != date_time.month:
-            logger.info("Выходной! Последняя суббота месяца!")
-            return True
+
     logger.info("Не выходной, увы!")
     return False#if not day off
 
@@ -48,8 +44,8 @@ def start_scheduler(daily_task):
         daily_task,
         'cron',
         day_of_week='mon-sat',
-        hour=10,
-        minute=1,
+        hour=22,
+        minute=31,
         timezone=msk_tz
     )
     scheduler.start()

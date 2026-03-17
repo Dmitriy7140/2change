@@ -215,6 +215,7 @@ class ExchangeService:
         chat_id = call.message.chat.id
 
         _, currency1, currency2, country = call.data.split("/")
+        self.bot.delete_message(chat_id, call.message.message_id)
         msg = ("⚙️Выберите режим калькулятора:\n\n"
                f"<b>Обмен : {self.currency_names[currency1]} → {self.currency_names[currency2]}\n\n</b>"
                ""
@@ -244,6 +245,8 @@ class ExchangeService:
         self.bot.answer_callback_query(call.id)
         chat_id = call.message.chat.id
         _, mode = call.data.split("/")
+
+        self.bot.delete_message(chat_id, call.message.message_id)
 
         state= self.state_manager.get(chat_id)
 
@@ -319,6 +322,7 @@ class ExchangeService:
         chat_id = call.message.chat.id
         last_name = call.from_user.last_name or ""
         user_name = (call.from_user.first_name or "") + (" " + last_name if last_name else "")
+        self.bot.delete_message(chat_id, call.message.message_id)
         if call.data == "convert":
             app_state = self.state_manager.get(chat_id)
             if not app_state:
@@ -339,6 +343,7 @@ class ExchangeService:
     def send_exchange_main_menu(self, call):
         self.bot.answer_callback_query(call.id)
         chat_id = call.message.chat.id
+        self.bot.delete_message(chat_id, call.message.message_id)
         if call.data == "calc_rf":
             msg = "💸<i>Выберите валюту для обмена:</i>"
             keybord1 = InlineKeyboardMarkup(row_width=2)

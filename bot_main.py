@@ -38,10 +38,15 @@ manager_chat_id = NOTIFICATION_CHAT if not TEST_MODE else TEST_NOTIFICATION_CHAT
 class MyExceptionHandler(telebot.ExceptionHandler):
 
     def handle(self, exception):
+        # Игнорируем ошибки, которые пришли от Telegram API
+        if isinstance(exception, telebot.apihelper.ApiTelegramException):
+            # Можно залогировать для отладки, но не слать в support
+            logger.warning(f"Ignored Telegram API exception: {exception}")
+            return False  # возвращаем False, чтобы бот не считал это обработанной критической ошибкой
 
+        # Для всех остальных ошибок — логируем и шлем в SUPPORT_CHAT
         message = f"Ошибка в боте: {exception}"
         logger.error(message, exc_info=True)
-        # Здесь можно добавить логирование ошибки, например через logger
         bot.send_message(SUPPORT_CHAT_ID, message)
         return True
 
@@ -182,7 +187,8 @@ def handle_start(message, not_first:bool=None):
 @bot.message_handler(commands=['manager'])
 def handle_manager(message):
     state_manager.clear(message.chat.id)
-    user_name = message.from_user.first_name + " " + message.from_user.last_name
+    last_name = message.from_user.last_name or ""
+    user_name = (message.from_user.first_name or "") + (" " + last_name if last_name else "")
     user_id = message.from_user.id
     user_ref = message.from_user.username
 
@@ -193,7 +199,7 @@ def handle_manager(message):
                "⚡️В <b>рабочее</b> время менеджер получит вашу заявку и свяжется с вами\n"
                "🕰<b>Наш график работы:</b>\n"
                "Пн-Сб: 10:00 - 20:00\n"
-               "Вс и последняя суббота месяца:\n"
+               "Воскресенье:\n"
                "<b>выходной</b>"
                )
         bot.send_message(message.chat.id, msg, parse_mode="HTML")
@@ -208,7 +214,7 @@ def handle_manager(message):
             bot.send_message(message.chat.id, "⚡️Позвали менеджера, скоро с вами свяжутся, ожидайте\n"
                        "🕰<b>Наш график работы:</b>\n"
                        "Пн-Сб: 10:00 - 20:00\n"
-                       "Вс и последняя суббота месяца:\n"
+                       "Воскресенье:\n"
                        "<b>выходной</b>", parse_mode="HTML")
         else:
             bot.send_message(message.chat.id, "⛔️Менеджер не сможет вам написать из-за ваших настроек приватности⛔️\n "
@@ -418,6 +424,7 @@ def handle_application_confirm(call):
         msg = apmake.create()
         sent_msg = bot.send_message(manager_chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
         if qdb.set_user_name(sent_msg.message_id, user_id, user_ref):
+
             bot.send_message(tg_id, "✅Заявка подтверждена, менеджер ответит вам в ближайшее время!")
         else:
             bot.send_message(chat_id, "⛔️Менеджер не сможет вам написать из-за ваших настроек приватности⛔️\n "
@@ -425,6 +432,7 @@ def handle_application_confirm(call):
                              parse_mode="HTML")
 
     if verdict == "n":
+
         bot.send_message(tg_id, "❌Заявка отменена")
     return
 

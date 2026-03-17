@@ -5,12 +5,12 @@ from functools import wraps
 
 class SubscriptionService:
     SUBSCRIPTION_CHATS = {
-        1: "@turkey_2change",
-        2: "@russia_2change",
-        3: "@thailand_2change",
-        4: "@china_2change",
-        5: "@korea_obmen1",
-        6: "@uae_2change"
+        1: "https://t.me/+XgJcXXDuPwAyODNi",
+        2: "https://t.me/+kfAL5bXDpK41ODBh",
+        3: "https://t.me/+Ys02t7bsEmRhZDYy",
+        4: "https://t.me/+4w_OVP0LlO41NGEx",
+        5: "https://t.me/+ZuxXbKKtlQRlZjgy",
+        6: "https://t.me/+dBzBb6UlyiZiYjRh"
     }
     def __init__(self, bot, logger, test_mode=False):
         self.bot = bot
@@ -46,13 +46,13 @@ class SubscriptionService:
                 if not self.check_subscription(user_id, country):
 
                     keyboard = InlineKeyboardMarkup()
-                    chat_username = self.SUBSCRIPTION_CHATS[country]
+                    chat_url = self.SUBSCRIPTION_CHATS[country]
 
 
                     keyboard.add(
                         InlineKeyboardButton(
                             "📢 Подписаться",
-                            url=f"https://t.me/{chat_username.replace('@','')}"
+                            url=f"{chat_url}"
                         )
                     )
                     keyboard.add(
