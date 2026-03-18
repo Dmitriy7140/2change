@@ -355,11 +355,13 @@ class ExchangeService:
         elif call.data == "calc_thai":
             msg = "💸<i>Выберите валюту для обмена:</i>"
             keybord2 = InlineKeyboardMarkup(row_width=2)
-            keybord2.row(InlineKeyboardButton("🪙USDT→🇹🇭 (Переводом)", callback_data="exchange/usd/thb/3"),
-                         InlineKeyboardButton("🪙USDT→🇹🇭 (Наличные)", callback_data="exchange/usd/thb_cash/3"))
+            keybord2.row(InlineKeyboardButton("🪙USDT→🇹🇭 (Наличные)", callback_data="exchange/usd/thb_cash/3"),
+                            InlineKeyboardButton("🪙USDT→🇹🇭 (Переводом)", callback_data="exchange/usd/thb/3"))
 
-            keybord2.row(InlineKeyboardButton("🇷🇺→🇹🇭 (Переводом)", callback_data="exchange/rub/thb/3"),
-                         InlineKeyboardButton("🇷🇺→🇹🇭 (Наличные)", callback_data="exchange/rub/thb_cash/3"))
+
+            keybord2.row(InlineKeyboardButton("🇷🇺→🇹🇭 (Наличные)", callback_data="exchange/rub/thb_cash/3"),
+                InlineKeyboardButton("🇷🇺→🇹🇭 (Переводом)", callback_data="exchange/rub/thb/3"))
+
             keybord2.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/3"),
                          InlineKeyboardButton("◀️Назад", callback_data="thai_menu"))
             self.bot.send_message(chat_id, msg, reply_markup=keybord2, parse_mode="HTML")
