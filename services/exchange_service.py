@@ -18,7 +18,9 @@ class ExchangeService:
                                "thb": "THB🇹🇭",
                                "thb_cash": "нал. THB🇹🇭",
                                "cny": "CNY🇨🇳",
-                               "krw": "KRW🇰🇷"}
+                               "krw": "KRW🇰🇷",
+                               "vnd":"VND🇻🇳",
+                               "vnd_cash":"нал. VND🇻🇳"}
         self.min_amount = {"rub/try_cash": 10750,
                       "rub/try": 5000,
                       "usd/try_cash": 132,
@@ -36,7 +38,11 @@ class ExchangeService:
                       "krw/rub": 200000,
                       "krw/usd": 200000,
                       "usd/krw": 135,
-                      "rub/krw": 11000}
+                      "rub/krw": 11000,
+                       "usd/vnd": 296,
+                       "usd/vnd_cash":296,
+                       "rub/vnd": 24500,
+                       "rub/vnd_cash":24500,}
         self.min_amount_reversed = {"rub/try_cash": 5000,
                            "rub/try": 3000,
                            "usd/try_cash": 5000,
@@ -54,7 +60,12 @@ class ExchangeService:
                            "krw/rub": 11000,
                            "krw/usd": 135,
                            "usd/krw": 200000,
-                           "rub/krw": 200000}
+                           "rub/krw": 200000,
+                            "usd/vnd": 7000000,
+                            "usd/vnd_cash": 7000000,
+                            "rub/vnd": 7000000,
+                            "rub/vnd_cash": 7000000,
+                                    }
 
 
         self.historical_pairs = {"usd/rub":True,
@@ -75,7 +86,12 @@ class ExchangeService:
                                   "usd/krw":True,
                                   "krw/usd":False,
                                   "rub/krw":True,
-                                  "krw/rub":False }
+                                  "krw/rub":False,
+                                 "usd/vnd": True,
+                                 "usd/vnd_cash": True,
+                                 "rub/vnd": True,
+                                 "rub/vnd_cash": True,
+                                 }
                                 #true если второй валюты как правило больше чем первой при конвертации
 
     def register_handlers(self):
@@ -253,7 +269,7 @@ class ExchangeService:
         currency1 = state["currency1"]
         currency2 = state["currency2"]
         country = state["country"]
-        countries_menu = {"1": "tr_menu", "2": "rf_menu", "3": "thai_menu", "4": "cn_menu", "5": "kr_menu"}
+        countries_menu = {"1": "tr_menu", "2": "rf_menu", "3": "thai_menu", "4": "cn_menu", "5": "kr_menu", "7":"vn_menu"}
         self.state_manager.set(chat_id, {
 
             'currency1': currency1,
@@ -273,7 +289,7 @@ class ExchangeService:
         ) if currency2.endswith("_cash") else ""
         if mode == "give":
 
-            min_sum = f"{self.min_amount[f"{currency1}/{currency2}"]} {self.currency_names[currency1]}"
+            min_sum = f"{self.min_amount[f"{currency1}/{currency2}"]:,} {self.currency_names[currency1]}"
 
 
             keybord = InlineKeyboardMarkup()
@@ -398,6 +414,19 @@ class ExchangeService:
             kb.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/5"),
                    InlineKeyboardButton("◀️Назад", callback_data="kr_menu"))
             self.bot.send_message(chat_id, msg, reply_markup=kb, parse_mode="HTML")
+        elif call.data == "calc_vn":
+            msg = "💸<i>Выберите валюту для обмена:</i>"
+            keybord2 = InlineKeyboardMarkup(row_width=2)
+            keybord2.row(InlineKeyboardButton("🪙USDT→🇻🇳 (Наличные)", callback_data="exchange/usd/vnd_cash/7"),
+                         InlineKeyboardButton("🪙USDT→🇻🇳 (Переводом)", callback_data="exchange/usd/vnd/7"))
+
+            keybord2.row(InlineKeyboardButton("🇷🇺→🇻🇳 (Наличные)", callback_data="exchange/rub/vnd_cash/7"),
+                         InlineKeyboardButton("🇷🇺→🇻🇳 (Переводом)", callback_data="exchange/rub/vnd/7"))
+
+            keybord2.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/7"),
+                         InlineKeyboardButton("◀️Назад", callback_data="vn_menu"))
+            self.bot.send_message(chat_id, msg, reply_markup=keybord2, parse_mode="HTML")
+
         return
 
     @staticmethod

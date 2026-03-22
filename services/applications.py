@@ -2,8 +2,14 @@ from datetime import datetime
 
 
 class ApplicationCreator:
-    country_names = {0: "Страна не указана", 1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇨🇳Китай", 5: "🇰🇷Корея",
-                     6: "🇦🇪ОАЭ"}
+    country_names = {0: "Страна не указана",
+                     1: "🇹🇷Турция",
+                     2: "🇷🇺Россия",
+                     3: "🇹🇭Тайланд",
+                     4: "🇨🇳Китай",
+                     5: "🇰🇷Корея",
+                     6: "🇦🇪ОАЭ",
+                     7:"🇻🇳Вьетнам"}
     def __init__(self, country:int=None,client_name=None, reason:str=None, currency1=None, currency2=None,amount1=None, amount2=None, time=None):#AMOUNT2 БУДЕТ ВЫСЧИТЫВАТЬСЯ ИСХОДЯ ИЗ ФУНКЦИИ ИНВЕСТИНГА
         self.country = int(country) if country else None
         self.client_name = client_name
@@ -17,7 +23,7 @@ class ApplicationCreator:
 
 
     def create(self):
-        """country_names = {1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇨🇳Китай", 5: "Корея", 6 : ОАЭ}"""
+        """country_names = {1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇨🇳Китай", 5: "Корея", 6 : ОАЭ, 7: Вьетнам}"""
 
         msg=""
 

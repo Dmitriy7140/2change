@@ -10,7 +10,8 @@ class SubscriptionService:
         3: "https://t.me/+Ys02t7bsEmRhZDYy",
         4: "https://t.me/+4w_OVP0LlO41NGEx",
         5: "https://t.me/+ZuxXbKKtlQRlZjgy",
-        6: "https://t.me/+dBzBb6UlyiZiYjRh"
+        6: "https://t.me/+dBzBb6UlyiZiYjRh",
+        7: "https://t.me/+vLNtACVKxo8xYmJh"
     }
     SUBSCRIPTION_CHATS = {
         1: "@turkey_2change",
@@ -18,7 +19,8 @@ class SubscriptionService:
         3: "@thailand_2change",
         4: "@china_2change",
         5: "@korea_obmen1",
-        6: "@uae_2change"
+        6: "@uae_2change",
+        7: "@vietnam_2change"
     }
 
     def __init__(self, bot, logger, test_mode=False):
@@ -45,7 +47,7 @@ class SubscriptionService:
             return True
 
     def require_subscription(self, country: int):
-        """country_names = {1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇨🇳Китай", 5: "Корея", 6 : ОАЭ}"""
+        """country_names = {1: "🇹🇷Турция", 2: "🇷🇺Россия", 3: "🇹🇭Тайланд", 4: "🇨🇳Китай", 5: "Корея", 6 : ОАЭ, 7: вьетнам}"""
         def decorator(func):
             @wraps(func)
             def wrapper(call, *args, **kwargs):

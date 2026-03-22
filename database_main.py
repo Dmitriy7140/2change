@@ -57,7 +57,11 @@ class QueueDB:
                 krw_usd REAL,
                 rub_krw REAL,
                 krw_rub REAL,
-                updated_at TEXT)''')
+                usd_vnd REAL,
+                cash_usd_vnd REAL,
+                rub_vnd REAL,
+                cash_rub_vnd REAL,
+                updated_at TIMESTAMP)''')
             logger.info("Таблица с курсами загружена...")
 
             c.execute('''CREATE TABLE IF NOT EXISTS coef (
@@ -84,6 +88,11 @@ class QueueDB:
                             krw_usd_c REAL,
                             rub_krw_c REAL,
                             krw_rub_c REAL,
+                            
+                            usd_vnd_c REAL,
+                            cash_usd_vnd_c REAL,
+                            rub_vnd_c REAL,
+                            cash_rub_vnd_c REAL,
                             updated_at TEXT)''')
             logger.info("Таблица с наценкой загружена...")
             c.execute("SELECT COUNT(*) FROM coef")
@@ -95,8 +104,62 @@ class QueueDB:
                         user_ref TEXT)''')
 
             if count == 0:  # Только если таблица пустая
-                c.execute('''INSERT INTO coef (usd_rub_c, rub_usd_c, usd_try_c, cash_usd_try_c, rub_try_c, cash_rub_try_c, try_rub_c, usd_thb_c, cash_usd_thb_c, rub_thb_c, cash_rub_thb_c, rub_cny_c, usd_cny_c, cny_rub_c, usd_krw_c, krw_usd_c, rub_krw_c, krw_rub_c, updated_at) 
-                                             VALUES (0.03,    0.03,         0.03, 0.05,     0.03,        0.05,         0.03,      0.03,        0.05,         0.03,                 0.05,                    0.03, 0.03, 0.03,  0.10, 0.10, 0.10, 0.10,       ?)''', ("default",))
+                c.execute('''INSERT INTO coef (usd_rub_c,
+                 rub_usd_c,
+                 
+                usd_try_c,
+                cash_usd_try_c,
+                rub_try_c,
+                cash_rub_try_c,
+                try_rub_c,
+                
+                usd_thb_c, 
+                cash_usd_thb_c,
+                rub_thb_c,
+                cash_rub_thb_c,
+                
+                rub_cny_c, 
+                usd_cny_c,
+                cny_rub_c,
+                
+                usd_krw_c,
+                krw_usd_c,
+                rub_krw_c,
+                krw_rub_c,
+                
+                usd_vnd_c,
+                cash_usd_vnd_c,
+                rub_vnd_c,
+                cash_rub_vnd_c,
+                updated_at) 
+                 VALUES (0.03,
+                     0.03,
+                     
+                     0.03,
+                     0.05,  
+                     0.03, 
+                     0.05,   
+                     0.03,
+                        
+                     0.03,  
+                     0.05, 
+                     0.03, 
+                     0.05,
+                      
+                     0.03, 
+                     0.03,
+                     0.03,
+                     
+                     0.10,
+                     0.10,
+                     0.10,
+                     0.10,
+                     
+                     0.10,
+                     0.10,
+                     0.10,
+                     0.10,
+                        ?)''', ("default",))
 
                 logger.info("Начальные коэффициенты добавлены")
             else:
@@ -119,7 +182,7 @@ class QueueDB:
             conn.close()
 
     def add_to_queue(self,  tg_id, name, country=1,reason=None, amount1=None, amount2=None, currency1=None,
-                     currency2=None, time=datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")):
+                     currency2=None, time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")):
         with self.get_connection() as conn:
             c = conn.cursor()  # ✅ Исправлено
             c.execute('SELECT 1 FROM queue WHERE tg_id = ?', (tg_id,))
@@ -137,18 +200,7 @@ class QueueDB:
                         'INSERT INTO queue (country,tg_id, name, amount1, amount2, currency1, currency2, created_at) VALUES (?, ?, ?,?, ?, ?, ?, ?)',
                         (country, tg_id, name, amount1, amount2, currency1, currency2, time))
                     logger.info("В очередь добавлена заявка на обмен, обе валюты известны!")
-                elif currency1:
-                    c.execute('INSERT INTO queue (country, tg_id, name, amount1,amount2, currency1, created_at) VALUES (?,?, ?,?, ?, ?, ?)',
-                              (country, tg_id, name, amount1,amount2, currency1, time))
-                    logger.info("В очередь добавлена заявка на обмен, известна только первая валюта!")
-                elif currency2:
-                    c.execute('INSERT INTO queue (country, tg_id, name, amount1,amount2, currency2, created_at) VALUES (?,?, ?, ?, ?, ?, ?)',
-                              (country,tg_id, name, amount1,amount2, currency2, time))
-                    logger.info("В очередь добавлена заявка на обмен, известна только вторая валюта!")
-                else:
-                    c.execute('INSERT INTO queue (country, tg_id, name, amount1,amount2, created_at) VALUES (?,?, ?, ?, ?, ?)',
-                              (country,tg_id, name, amount1,amount2, time))
-                    logger.info("В очередь добавлена заявка на обмен, известна только сумма!")
+
             else:
                 logger.info("Что-то пошло не так при добавлении пользователя в очередь!!!")
                 return False
@@ -223,6 +275,7 @@ class QueueDB:
             api_usd_try = all_courses.body["rates"]["TRY"]
             api_usd_rub = all_courses.body["rates"]["RUB"]
             api_usd_thb = all_courses.body["rates"]["THB"]
+            api_vnd_usd = all_courses.body["rates"]["VND"]
             api_usd_cny = all_courses.body["rates"]["CNY"]
             api_krw_usd = all_courses.body["rates"]["KRW"]
             logger.info("Подтянули доллар...")
@@ -237,6 +290,7 @@ class QueueDB:
             logger.info("Подтянули юани!")
             all_courses = coinoxr.Latest().get(base=f"RUB", show_alternative=True)
             api_krw_rub = all_courses.body["rates"]["KRW"]
+            api_vnd_rub = all_courses.body["rates"]["VND"]
 
 
 
@@ -251,7 +305,9 @@ class QueueDB:
                           "usd_cny":api_usd_cny,
                           "rub_cny":api_rub_cny,
                           "krw_rub":api_krw_rub,
-                          "krw_usd":api_krw_usd,}
+                          "krw_usd":api_krw_usd,
+                          "vnd_usd":api_vnd_usd,
+                          "vnd_rub":api_vnd_rub,}
 
             we_sell = {"id": rows[0],
                        "usd_rub_c": rows[1],
@@ -276,6 +332,10 @@ class QueueDB:
                        "krw_usd_c": rows[16],
                        "rub_krw_c": rows[17],
                        "krw_rub_c": rows[18],
+                       "usd_vnd_c": rows[19],
+                       "cash_usd_vnd_c": rows[20],
+                       "rub_vnd_c": rows[21],
+                       "cash_rub_vnd_c": rows[22],
 
                        }
 
@@ -294,10 +354,16 @@ class QueueDB:
             try_rub=api_try_rub-(api_try_rub*we_sell["try_rub_c"]) #ЧЕЛ ДАЕТ ЛИРУ, ПОЛУЧАЕТ РУБЛЬ. НАША ВЫГОДА ОСТАВИТЬ БОЛЬШЕ РУБЛЕЙ
 
             #БАТЫ
-            usd_thb = api_usd_thb - (api_usd_thb * +we_sell["usd_thb_c"])
+            usd_thb = api_usd_thb - (api_usd_thb * we_sell["usd_thb_c"])
             cash_usd_thb = api_usd_thb - (api_usd_thb * we_sell["cash_usd_thb_c"])
             rub_thb= api_thb_rub *(1 + we_sell["rub_thb_c"])
             cash_rub_thb= api_thb_rub *(1 + we_sell["cash_rub_thb_c"])
+
+            #донги
+            usd_vnd = api_vnd_usd - (api_vnd_usd * we_sell["usd_vnd_c"])
+            cash_usd_vnd = api_vnd_usd - (api_vnd_usd * we_sell["cash_usd_vnd_c"])
+            rub_vnd = api_vnd_rub - (api_vnd_rub* we_sell["rub_vnd_c"])
+            cash_rub_vnd = api_vnd_rub - (api_vnd_rub *we_sell["cash_rub_vnd_c"])
 
             #ЮАНИ
             rub_cny = api_rub_cny *(1 + we_sell["rub_cny_c"])
@@ -309,7 +375,28 @@ class QueueDB:
             krw_rub = api_krw_rub +(api_krw_rub * we_sell["krw_rub_c"])
             usd_krw =api_krw_usd -(api_krw_usd* we_sell["usd_krw_c"])
             rub_krw = api_krw_rub -(api_krw_rub* we_sell["krw_rub_c"])
-            rates = (usd_rub,rub_usd,usd_try,cash_usd_try, rub_try, cash_rub_try,try_rub,usd_thb,cash_usd_thb,rub_thb,cash_rub_thb, rub_cny, usd_cny, cny_rub, krw_usd, krw_rub, usd_krw, rub_krw)
+            rates = (usd_rub,
+                     rub_usd,
+                     usd_try,
+                     cash_usd_try,
+                     rub_try,
+                     cash_rub_try,
+                     try_rub,
+                     usd_thb,
+                     cash_usd_thb,
+                     rub_thb,
+                     cash_rub_thb,
+                     rub_cny,
+                     usd_cny,
+                     cny_rub,
+                     krw_usd,
+                     krw_rub,
+                     usd_krw,
+                     rub_krw,
+                     usd_vnd,
+                     cash_usd_vnd,
+                     rub_vnd,
+                     cash_rub_vnd,)
         except Exception as e:
             logger.error(f"Ошибка с добавлением курса:{e}!!!")
             return None
@@ -317,13 +404,13 @@ class QueueDB:
 
         return api_courses
 
-    def set_currency(self, rates:tuple, time=datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")):
+    def set_currency(self, rates:tuple, time=datetime.datetime.now()):
         with self.get_connection() as conn:
             c = conn.cursor()
 
             c.execute('''INSERT INTO currency (usd_rub, rub_usd, usd_try,cash_usd_try, rub_try, cash_rub_try, try_rub, 
-             usd_thb, cash_usd_thb, rub_thb, cash_rub_thb, rub_cny, usd_cny, cny_rub,krw_usd, krw_rub, usd_krw, rub_krw, updated_at) 
-             VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?)''', (*rates, time))
+             usd_thb, cash_usd_thb, rub_thb, cash_rub_thb, rub_cny, usd_cny, cny_rub,krw_usd, krw_rub, usd_krw, rub_krw,usd_vnd, cash_usd_vnd, rub_vnd, cash_rub_vnd, updated_at) 
+             VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?)''', (*rates, time))
 
             conn.commit()
 
@@ -389,13 +476,23 @@ class QueueDB:
 
             return result
 
-
+    def get_latest_time(self):
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute('''SELECT updated_at
+                         FROM currency
+                         ORDER BY id DESC LIMIT 1''')
+            result = c.fetchone()
+            if not result:
+                qdb.update_currency()
+                self.get_latest_time()
+            updated_at = datetime.datetime.strptime(result[0], "%Y-%m-%d %H:%M:%S.%f")
+            return updated_at
 
 
 if __name__ == "__main__":
-   qdb=QueueDB()
-   qdb.set_coef("usd_krw_c", 0.06)
-   qdb.update_currency()
+   qdb = QueueDB()
+   print(qdb.get_latest_time())
    
 
 

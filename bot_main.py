@@ -19,6 +19,7 @@ from handlers.esim import EsimHandlers
 from handlers.china import ChinaHandlers
 from handlers.russia import RussiaHandlers
 from handlers.thailand import ThailandHandlers
+from handlers.vietnam import VietnamHandlers
 
 
 #глобали
@@ -123,6 +124,15 @@ esim_handlers = EsimHandlers(
 )
 esim_handlers.register()
 
+vietnam_handlers = VietnamHandlers(
+    bot,
+    subscription_service,
+    sender_service.send_media,
+    finstr,
+    state_manager,
+)
+vietnam_handlers.register()
+
 
 
 
@@ -148,6 +158,7 @@ def handle_start(message, not_first:bool=None):
     keyboard.row(InlineKeyboardButton("🇨🇳Китай", callback_data="cn_menu"), InlineKeyboardButton("🇰🇷Корея", callback_data="kr_menu"))
 
     keyboard.add(InlineKeyboardButton("🇷🇺 Россия (USDT)", callback_data="rf_menu"))
+    keyboard.add(InlineKeyboardButton("🇻🇳 Вьетнам", callback_data="vn_menu"))
     keyboard.add(InlineKeyboardButton("📥Пополнить Bybit Card (🪙USDT)", callback_data="bybit_add"))
     keyboard.add(InlineKeyboardButton("🛡 Гарантии и отзывы", callback_data="comment_menu"))
     keyboard.row(InlineKeyboardButton("📲Симкарта eSIM", callback_data="esim_main"), InlineKeyboardButton("💳 Зарубежная карта", callback_data="tr_card_menu"))
@@ -415,6 +426,7 @@ def handle_application_confirm(call):
     user_id = call.from_user.id
     user_ref = call.from_user.username
     chat_id = call.message.chat.id
+    bot.delete_message(chat_id=chat_id, message_id=call.message.message_id)
     _, verdict, tg_id= call.data.split("/")
     _, tg_id, country, client_name, amount1, amount2, currency1, currency2, reason, created_at = qdb.get_from_queue(get_by_id=tg_id)
     if verdict == "y":
@@ -466,7 +478,7 @@ def handle_other_callbacks(call):
                '✅Рекомендация на <a href="https://vc.ru/u/2800953-nikita-ryabkov/1012718-kak-obmenyat-dengi-v-turcii-vse-rabochie-sposoby-v-2024-godu?ysclid=m2men5tdyu815248852">VC.RU</a>\n'
                '✅Популярный <a href="https://t.me/brizhak_ilia/1703">тревел-блоггер Илья Брижак о нас</a>\n'
                '✅Бизнес-школа Бизнес Факт и бизнес-тренер №1 <a href="https://t.me/review_2pay/22">Алексей Максимченков рекомендуют наш сервис</a>\n'
-               '✅Официальный партнер проекта <a href="http://t.me/slavianskiy_forum">«Эмигрант 360»</a>\n'
+               '✅Официальный партнер проекта <a href="https://t.me/slavianskiy_forum">«Эмигрант 360»</a>\n'
                '✅Про нас опубликовали видео <a href="https://www.youtube.com/watch?v=L1zMcBJQDjI">на популярном YouTube канале про Турцию</a>\n'
                '✅Отзывы по обмену валют - @review_2change\n'
                '✅Отзывы по оплате зарубежных сервисов и денежных переводов, открытия карт - @review_2pay\n\n</b>'

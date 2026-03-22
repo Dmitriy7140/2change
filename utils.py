@@ -28,7 +28,7 @@ def day_off():
         return True
     if date_time.weekday() == calendar.SUNDAY:
         logger.info("Выходной! Воскресенье!")
-        return True
+        return False
 
     logger.info("Не выходной, увы!")
     return False#if not day off
