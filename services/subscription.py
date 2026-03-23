@@ -40,7 +40,7 @@ class SubscriptionService:
         try:
             chat_member = self.bot.get_chat_member(chat_username, user_id)
             self.logger.info("Пользователь")
-            return chat_member.status in ("creator", "administrator", "member")
+            return chat_member.status in ("creator", "administrator", "member", "restricted")
         except ApiTelegramException as e:
 
             self.logger.error(f"Ошибка проверки подписки: {e}")
