@@ -51,7 +51,7 @@ class FinInstr:
     def show_currency(self, country:int) ->str:
         """Countries: 1 == Turkey,
          2==Russia, 3== Thailand,
-          4== China, 5== korea, 7 == Vietnam"""
+          4== China, 5== korea, 7 == Vietnam, 100 = Bybit Card"""
         self.ensure_fresh()
         if country == 1:
             msg=(f"💱<b> Актуальный курс на сегодняшний день: </b>\n\n"
@@ -162,6 +162,12 @@ class FinInstr:
                    f"Получаете:🇻🇳 {self.cash_usd_vnd:.0f} VND (наличными)"
                    )
             logger.info("Сделали сообщение для Вьетнама, выслали!")
+            return msg
+        elif country == 100:
+            msg = (f"💱<b> Актуальный курс для пополнения карты: </b>\n\n"
+                   f""
+                   f"Отдаете:🇷🇺{self.rub_usd:.2f} RUB\n"
+                   f"Получаете:🪙1 USDT\n\n")
             return msg
 
 

@@ -20,6 +20,7 @@ from handlers.china import ChinaHandlers
 from handlers.russia import RussiaHandlers
 from handlers.thailand import ThailandHandlers
 from handlers.vietnam import VietnamHandlers
+from handlers.bybit import BybitHandlers
 
 
 #глобали
@@ -85,6 +86,14 @@ russia_handlers = RussiaHandlers(
     state_manager,
 )
 russia_handlers.register()
+bybit_handlers = BybitHandlers(
+    bot,
+    subscription_service,
+    sender_service.send_media,
+    finstr,
+    state_manager,
+)
+bybit_handlers.register()
 
 
 korea_handlers = KoreaHandlers(
@@ -159,7 +168,7 @@ def handle_start(message, not_first:bool=None):
 
     keyboard.add(InlineKeyboardButton("🇷🇺 Россия (USDT)", callback_data="rf_menu"))
     keyboard.add(InlineKeyboardButton("🇻🇳 Вьетнам", callback_data="vn_menu"))
-    keyboard.add(InlineKeyboardButton("📥Пополнить Bybit Card (🪙USDT)", callback_data="bybit_add"))
+    keyboard.add(InlineKeyboardButton("📥Пополнить Bybit Card (🪙USDT)", callback_data="bybit_menu"))
     keyboard.add(InlineKeyboardButton("🛡 Гарантии и отзывы", callback_data="comment_menu"))
     keyboard.row(InlineKeyboardButton("📲Симкарта eSIM", callback_data="esim_main"), InlineKeyboardButton("💳 Зарубежная карта", callback_data="tr_card_menu"))
     user_id = message.from_user.id
@@ -288,7 +297,7 @@ def change_coef(message):
      krw_usd,
      rub_krw,
      krw_rub,
-     updated_at)=row
+     updated_at,a,s,d,d)=row
     row1 = qdb.get_coef()
 
     (_,c_usd_rub,
@@ -309,7 +318,7 @@ def change_coef(message):
      krw_usd_c,
      rub_krw_c,
      krw_rub_c,
-     updated_at)=row1[0]
+     updated_at,a,d,a,d)=row1[0]
 
     msg =(f""
           f"(🏛) USDT/RUB : {rates["usd_rub"]:.2f} RUB\n"
@@ -452,7 +461,7 @@ def handle_application_confirm(call):
 
 
 
-@bot.callback_query_handler(func=lambda c: c.data in ("bybit_add","comment_menu","contact_client" ))
+@bot.callback_query_handler(func=lambda c: c.data in ("comment_menu","contact_client" ))
 def handle_other_callbacks(call):
     bot.answer_callback_query(call.id)
     global admin_change_coef_states, to_edit
@@ -460,17 +469,6 @@ def handle_other_callbacks(call):
     last_name = call.from_user.last_name or ""
     user_name = (call.from_user.first_name or "") + (" " + last_name if last_name else "")
     message_id = call.message.message_id
-    if call.data == "bybit_add":
-        msg = ("💳Мы предоставляем услуги по пополнению карт Bybit!\n\n"
-               ""
-               "<i>📌 Минимальная сумма: 10 000₽</i>\n\n"
-               ""
-               "<b>Хотите оставить заявку на пополнение?</b>")
-        kb = InlineKeyboardMarkup()
-        kb.add(InlineKeyboardButton("✅Оставить заявку", callback_data="request/пополнение карты bybit/0"))
-        kb.add(InlineKeyboardButton("📋Назад", callback_data="main_menu"))
-        bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=kb)
-        return
     if call.data == "comment_menu":
         msg = ('<b>Мы дорожим нашей репутацией, благодаря этому наш сервис работает уже 3 года.⭐️\n\n'
                '✅Про нас писали в газете <a href="https://t.me/review_2change/394">«Один из популярных сервисов обмена Турции»</a>\n'

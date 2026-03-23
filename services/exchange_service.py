@@ -39,8 +39,8 @@ class ExchangeService:
                       "krw/usd": 200000,
                       "usd/krw": 135,
                       "rub/krw": 11000,
-                       "usd/vnd": 296,
-                       "usd/vnd_cash":296,
+                       "usd/vnd": 283,
+                       "usd/vnd_cash":283,
                        "rub/vnd": 24500,
                        "rub/vnd_cash":24500,}
         self.min_amount_reversed = {"rub/try_cash": 5000,
@@ -129,7 +129,7 @@ class ExchangeService:
         pair = f"{currency1}/{currency2}"
 
 
-        int_message = self.check_message(message, mode, pair, currency1, currency2)
+        int_message = self.check_message(message, mode, pair, currency1, currency2, state["country"])
         if int_message:
             converted = self.finstr.convert_currencies(int_message, currency1, currency2)
 
@@ -168,9 +168,12 @@ class ExchangeService:
             self.bot.send_message(chat_id, msg, reply_markup=keybord, parse_mode="HTML")
             return None
         return None
-    def check_message(self, message, mode, pair, currency1,currency2) -> int|None:
+    def check_message(self, message, mode, pair, currency1,currency2, country=None) -> int|None:
         chat_id = message.chat.id
         min_exchange = self.min_amount_reversed.get(pair) if mode == "get" else self.min_amount.get(pair)
+        if country == "100":
+            min_exchange = 114 if mode == "get" else 10000
+
         if not min_exchange:
             self.logger.error(f"Нет минимальной пары для {pair}")
             return None
@@ -269,7 +272,7 @@ class ExchangeService:
         currency1 = state["currency1"]
         currency2 = state["currency2"]
         country = state["country"]
-        countries_menu = {"1": "tr_menu", "2": "rf_menu", "3": "thai_menu", "4": "cn_menu", "5": "kr_menu", "7":"vn_menu"}
+        countries_menu = {"1": "tr_menu", "2": "rf_menu", "3": "thai_menu", "4": "cn_menu", "5": "kr_menu", "7":"vn_menu", "100":"bybit_menu"}
         self.state_manager.set(chat_id, {
 
             'currency1': currency1,
@@ -290,7 +293,8 @@ class ExchangeService:
         if mode == "give":
 
             min_sum = f"{self.min_amount[f"{currency1}/{currency2}"]:,} {self.currency_names[currency1]}"
-
+            if country == "100":
+                min_sum = f"10000 RUB"
 
             keybord = InlineKeyboardMarkup()
             keybord.add(InlineKeyboardButton("◀️Назад", callback_data=countries_menu[country]))
@@ -308,7 +312,8 @@ class ExchangeService:
         elif mode == "get":
 
             min_sum = f"{self.min_amount_reversed[f"{currency1}/{currency2}"]} {self.currency_names[currency2]}"
-
+            if country == "100":
+                min_sum = f"114 USDT"
             keybord = InlineKeyboardMarkup()
             keybord.add(InlineKeyboardButton("◀️Назад", callback_data=countries_menu[country]))
 
