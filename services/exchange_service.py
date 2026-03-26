@@ -283,13 +283,8 @@ class ExchangeService:
             "mode": mode
 
         })
-        warning = (
-            "⚠️При обмене на наличные деньги введенная сумма пересчитывается так, "
-            "чтобы получаемая сумма была кратна 1000\n\n"
-            "💡Например, Вы хотите обменять 75 USDT в лиры и должны получить 7 236 лир. "
-            "Банкомат такую сумму не выдаст. Калькулятор в заявке округлит до 70 USDT, "
-            "что составит 7000 лир\n\n"
-        ) if currency2.endswith("_cash") else ""
+
+
         if mode == "give":
 
             min_sum = f"{self.min_amount[f"{currency1}/{currency2}"]:,} {self.currency_names[currency1]}"
@@ -300,7 +295,7 @@ class ExchangeService:
             keybord.add(InlineKeyboardButton("◀️Назад", callback_data=countries_menu[country]))
             msg = (f"✏️ Введите сумму в {self.currency_names[currency1]}\n"
                    f"<i>Только цифры - без пробелов, точек и символов</i>\n\n"
-                   f"{warning}"
+                   f""
                    f"📌 Минимальная сумма: <b>{min_sum}\n</b>")
             self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keybord)
 
@@ -320,7 +315,7 @@ class ExchangeService:
             msg = (
                 f"✏️ Введите сумму в {self.currency_names[currency2]}\n"
                 f"<i>Только цифры - без пробелов, точек и символов</i>\n\n"
-                f"{warning}\n"
+                f""
                 f"<b>Укажите, сколько {self.currency_names[currency2]} вы хотите получить</b>\n\n"
                 f"📌Минимальная сумма: <b>{min_sum}\n</b>"
             )
@@ -429,7 +424,7 @@ class ExchangeService:
                          InlineKeyboardButton("🇷🇺→🇻🇳 (Переводом)", callback_data="exchange/rub/vnd/7"))
 
             keybord2.row(InlineKeyboardButton("💰Иные валюты (менеджер)", callback_data="request/💰Обмен иных валют/7"),
-                         InlineKeyboardButton("◀️Назад", callback_data="vn_menu"))
+                         InlineKeyboardButton("◀️Назад", callback_data="vn_currency_menu"))
             self.bot.send_message(chat_id, msg, reply_markup=keybord2, parse_mode="HTML")
 
         return

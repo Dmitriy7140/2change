@@ -12,6 +12,7 @@ from services.applications import ApplicationCreator
 from services.senders import SenderService
 from services.exchange_service import ExchangeService
 from services.state_manager import StateManager
+from services.interest_service import InterestService
 
 from handlers.turkey import TurkeyHandlers
 from handlers.korea import KoreaHandlers
@@ -21,6 +22,8 @@ from handlers.russia import RussiaHandlers
 from handlers.thailand import ThailandHandlers
 from handlers.vietnam import VietnamHandlers
 from handlers.bybit import BybitHandlers
+
+from sheets.interest import Interest
 
 
 #глобали
@@ -54,6 +57,7 @@ class MyExceptionHandler(telebot.ExceptionHandler):
 
 
 qdb=QueueDB()
+sheets_interest = Interest(logger)
 
 bot = telebot.TeleBot(BOT_TOKEN if not TEST_MODE else TEST_BOT_TOKEN, exception_handler=MyExceptionHandler())
 finstr = FinInstr()
@@ -66,6 +70,18 @@ sender_service = SenderService(bot, qdb, manager_chat_id, day_off)
 state_manager = StateManager(logger)
 exchange_service = ExchangeService(bot, logger, sender_service, FinInstr, state_manager)
 exchange_service.register_handlers()
+
+interest_service = InterestService(
+    bot,
+    logger,
+
+    sheets_interest,
+    qdb,
+
+    ADMIN_IDS,
+
+)
+interest_service.register()
 
 
 turkey_handlers = TurkeyHandlers(
@@ -167,7 +183,7 @@ def handle_start(message, not_first:bool=None):
     keyboard.row(InlineKeyboardButton("🇨🇳Китай", callback_data="cn_menu"), InlineKeyboardButton("🇰🇷Корея", callback_data="kr_menu"))
 
     keyboard.add(InlineKeyboardButton("🇷🇺 Россия (USDT)", callback_data="rf_menu"))
-    keyboard.add(InlineKeyboardButton("🇻🇳 Вьетнам", callback_data="vn_menu"))
+    keyboard.add(InlineKeyboardButton("🇻🇳 Вьетнам", callback_data="vn_currency_menu"))
     keyboard.add(InlineKeyboardButton("📥Пополнить Bybit Card (🪙USDT)", callback_data="bybit_menu"))
     keyboard.add(InlineKeyboardButton("🛡 Гарантии и отзывы", callback_data="comment_menu"))
     keyboard.row(InlineKeyboardButton("📲Симкарта eSIM", callback_data="esim_main"), InlineKeyboardButton("💳 Зарубежная карта", callback_data="tr_card_menu"))
@@ -248,9 +264,6 @@ def handle_manager(message):
 
 def handle_queue():
 
-
-
-
     lines= qdb.get_from_queue(True)
     if lines:
         for i in lines:
@@ -268,135 +281,12 @@ def handle_queue():
     else:
         bot.send_message(manager_chat_id, "Заявок в очереди нет.")
         return
-@bot.message_handler(commands=['change_coef'], func=lambda message: message.from_user.id in ADMIN_IDS)# func=lambda message: message.from_user.id in admin_id)
-def change_coef(message):
-    global admin_change_coef_states
-    chat_id = message.chat.id
-
-    row = qdb.get_currencies()
-    rates = qdb.update_currency()
-    if chat_id in admin_change_coef_states:
-        del admin_change_coef_states[message.chat.id]
-
-
-    (_, usd_rub,
-     rub_usd,
-     usd_try,
-     cash_usd_try,
-     rub_try,
-     cash_rub_try,
-     try_rub,
-     usd_thb,
-     cash_usd_thb,
-     rub_thb,
-     cash_rub_thb,
-     rub_cny,
-     usd_cny,
-     cny_rub,
-     usd_krw,
-     krw_usd,
-     rub_krw,
-     krw_rub,
-     updated_at,a,s,d,d)=row
-    row1 = qdb.get_coef()
-
-    (_,c_usd_rub,
-     c_rub_usd,
-     c_usd_try,
-     c_cash_usd_try,
-     c_rub_try,
-     c_cash_rub_try,
-     c_try_rub,
-     c_usd_thb,
-     c_cash_usd_thb,
-     c_rub_thb,
-     c_cash_rub_thb,
-     c_rub_cny,
-     c_usd_cny,
-     c_cny_rub,
-     usd_krw_c,
-     krw_usd_c,
-     rub_krw_c,
-     krw_rub_c,
-     updated_at,a,d,a,d)=row1[0]
-
-    msg =(f""
-          f"(🏛) USDT/RUB : {rates["usd_rub"]:.2f} RUB\n"
-          f"Покупаем 1 USDT за {usd_rub:.2f} RUB ({c_usd_rub*100}%)\n"
-          f"Продаем 1 USDT за {rub_usd:.2f} RUB ({c_rub_usd*100}%)\n\n"
-          f""
-          
-        f"(🏛) USDT/TRY : {rates["usd_try"]:.2f} TRY\n" # ЛИРЫ ЗА 1 ДОЛЛАР
-          f"Продаем {usd_try:.2f} TRY💳 за 1 USDT ({c_usd_try*100}%)\n" #ПЕРЕВОДОМ ЛИРЫ ЗА 1 ДОЛЛАР
-          f"Продаем {cash_usd_try:.2f}💵 TRY за 1 USDT ({c_cash_usd_try*100}%)\n\n" #НАЛИЧНЫЕ ЛИРЫ ЗА 1 ДОЛЛАР
-          
-          f"(🏛) TRY/RUB : {rates["try_rub"]:.2f} RUB\n" #РУБЛЕЙ ЗА 1 ЛИРУ 
-          f"Продаем 1 TRY💳  за {rub_try:.2f} RUB ({c_rub_try*100}%)\n"
-          f"Продаем 1 TRY💵 за {cash_rub_try:.2f} RUB ({c_cash_rub_try*100}%)\n"
-          f"Покупаем 1 TRY💳 за {try_rub:.2f} RUB ({c_try_rub*100}%)\n\n"
-          f""
-          
-          
-           f"(🏛) USDT/THB : {rates["usd_thb"]:.2f} THB\n"
-          f"Продаем {usd_thb:.2f} THB💳 за 1 USDT ({c_usd_thb*100}%)\n"
-          f"Продаем {cash_usd_thb:.2f} THB💵 за 1 USDT ({c_cash_usd_thb*100}%)\n\n"
-           
-           f"(🏛) THB/RUB : {rates["thb_rub"]:.2f} RUB\n"
-          f"Продаем 1 THB💳 за {rub_thb:.2f} RUB ({c_rub_thb*100}%)\n"
-          f"Продаем 1 THB 💵 за {cash_rub_thb:.2f} RUB ({c_cash_rub_thb*100}%)\n\n"
-          f""
-          f"(🏛) USDT/CNY : {rates["usd_cny"]:.2f} CNY\n"
-          f"Покупаем 1 USDT за {usd_cny:.2f} CNY ({c_usd_cny*100}%)\n\n"
-          f"(🏛) CNY/RUB : {rates["rub_cny"]:.2f} CNY\n"
-          f"Продаем 1 CNY за {rub_cny:.2f} RUB ({c_rub_cny*100}%)\n"
-          f"Покупаем 1 CNY за {cny_rub:.2f} RUB ({c_cny_rub*100}%)\n\n"
-          f""
-          f"(🏛) KRW/RUB : {rates["krw_rub"]:.2f} KRW\n"
-          f"Продаем 1 RUB за {krw_rub:.2f} KRW ({krw_rub_c*100}%)\n"
-          f"Покупаем 1 RUB за {rub_krw:.2f} KRW ({rub_krw_c*100}%)\n\n"
-          f"(🏛) KRW/USDT : {rates["krw_usd"]:.2f} KRW\n"
-          f"Продаем 1 USDT за {krw_usd:.2f} KRW ({krw_usd_c*100}%)\n"
-          f"Покупаем 1 USDT за {usd_krw:.2f} KRW ({usd_krw_c*100}%)")
-    bot.send_message(chat_id=chat_id, text=msg, parse_mode="HTML")
-
-    msg1 = "Выберите курс для изменения наценки:"
-    keybord = InlineKeyboardMarkup(row_width=2)
-    keybord.row(InlineKeyboardButton("🪙USDT→🇷🇺", callback_data="chc/usd_rub_c"),
-                InlineKeyboardButton("🇷🇺→🪙USDT", callback_data="chc/rub_usd_c"))
-
-    keybord.row(InlineKeyboardButton("🇷🇺→🇹🇷 (IBAN)", callback_data="chc/rub_try_c"),
-                InlineKeyboardButton("🇷🇺→🇹🇷 (Наличные)", callback_data="chc/cash_rub_try_c"))
-
-    keybord.row(InlineKeyboardButton("🪙USDT→🇹🇷 (IBAN)", callback_data="chc/usd_try_c"),
-                InlineKeyboardButton("🪙USDT→🇹🇷 (Наличные)", callback_data="chc/cash_usd_try_c"))
-
-    keybord.add(InlineKeyboardButton("🇹🇷→🇷🇺 (Переводом)", callback_data="chc/try_rub_c"))
-
-    keybord.row(InlineKeyboardButton("🪙USDT→🇹🇭 (Переводом)", callback_data="chc/usd_thb_c"),
-                InlineKeyboardButton("🪙USDT→🇹🇭 (Наличные)", callback_data="chc/cash_usd_thb_c"))
-
-    keybord.row(InlineKeyboardButton("🇷🇺→🇹🇭 (Переводом)", callback_data="chc/rub_thb_c"),
-                InlineKeyboardButton("🇷🇺→🇹🇭 (Наличные)", callback_data="chc/cash_rub_thb_c"))
-    keybord.add(InlineKeyboardButton("🇷🇺→🇨🇳CNY (юань)", callback_data="chc/rub_cny_c"), )
-    keybord.row(InlineKeyboardButton("🪙USDT→🇨🇳CNY (юань)", callback_data="chc/usd_cny_c"), InlineKeyboardButton("🇨🇳CNY (юань)→🇷🇺", callback_data="chc/cny_rub_c"))
-
-    keybord.row(InlineKeyboardButton("🇰🇷 KRW → 🇷🇺RUB", callback_data="chc/krw_rub_c"), InlineKeyboardButton("🇰🇷 KRW  → 🪙 USDT", callback_data="chc/krw_usd_c"))
-    keybord.row(InlineKeyboardButton("🇷🇺RUB → 🇰🇷 KRW ", callback_data="chc/rub_krw_c"),InlineKeyboardButton("🪙 USDT → 🇰🇷 KRW ", callback_data="chc/usd_krw_c"))
-
-
-
-    bot.send_message(chat_id, msg1, reply_markup=keybord, parse_mode="HTML")
-
-
 
 
 @bot.callback_query_handler(func=lambda c: c.data == "main_menu")
 def handle_main_menu(call):
     bot.answer_callback_query(call.id)
     handle_start(call.message, True)
-
-
-
 
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith("request/"))
@@ -418,17 +308,7 @@ def handle_request(call):
 
 
 
-@bot.callback_query_handler(func=lambda c: c.data.startswith("chc"))
-def handle_change_coef(call):
-    bot.answer_callback_query(call.id)
-    chat_id = call.message.chat.id
-    _, table_name = call.data.split("/")
-    admin_change_coef_states[chat_id] = table_name
-    bot.send_message(chat_id,
-                     text="✏️Введите новую наценку в процентах в формате десятичной дроби (1.0 = 1%; 1.5=1.5%):\n\n"
-                          "<i>Число не должно быть меньше 0</i>\n", parse_mode="HTML")
-    bot.register_next_step_handler(call.message, process_coef_change)
-    return
+
 @bot.callback_query_handler(func=lambda c: c.data.startswith("apq"))
 def handle_application_confirm(call):
     bot.answer_callback_query(call.id)
@@ -489,6 +369,7 @@ def handle_other_callbacks(call):
     if call.data == "contact_client":
 
         _, client_id, client_ref = qdb.get_user_name(message_id)
+
         if client_id or client_ref:
             new_text = call.message.text + "\n" + f"\n✅<b>Взят в работу:</b>\n<i>{datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")}</i>\n\n💼Менеджер: {user_name} " + "\n" + f"\n<a href='tg://user?id={client_id}'>👉Cсылка на чат с клиентом👈</a> {f"@{client_ref}" if client_ref else ""}"
             bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=new_text, parse_mode="HTML", reply_markup=None)
@@ -498,34 +379,6 @@ def handle_other_callbacks(call):
             bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=new_text, parse_mode="HTML",
                                   reply_markup=None)
         return
-
-
-
-def process_coef_change(message):
-    chat_id = message.chat.id
-    try:
-        if not float(message.text):
-            keyboard = InlineKeyboardMarkup()
-            keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
-            bot.send_message(chat_id, "❌Введите, пожалуйста, только десятичную дробь (например, 1.0)", reply_markup=keyboard)
-            bot.register_next_step_handler(message, process_coef_change)
-            return
-        flmes = float(message.text)
-        if flmes <= 0:
-            keyboard = InlineKeyboardMarkup()
-            keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
-            bot.send_message(chat_id, f"❌Число не должно быть меньше <b>0</b>",parse_mode="HTML", reply_markup=keyboard)
-            bot.register_next_step_handler(message, process_coef_change)
-            return
-        flmes /= 100
-
-        qdb.set_coef(admin_change_coef_states[chat_id], flmes)
-        bot.send_message(chat_id, "✅Наценка изменена! Изменения появятся в течение 5 минут.")
-
-    except Exception as e:
-        bot.send_message(chat_id, f"Что-то пошло не так, уведомили программиста:\n\n"
-                                  f"{e}")
-
 
 
 

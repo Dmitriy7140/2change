@@ -404,13 +404,13 @@ class QueueDB:
 
         return api_courses
 
-    def set_currency(self, rates:tuple, time=datetime.datetime.now()):
+    def set_currency(self, rates:tuple):
         with self.get_connection() as conn:
             c = conn.cursor()
 
             c.execute('''INSERT INTO currency (usd_rub, rub_usd, usd_try,cash_usd_try, rub_try, cash_rub_try, try_rub, 
              usd_thb, cash_usd_thb, rub_thb, cash_rub_thb, rub_cny, usd_cny, cny_rub,krw_usd, krw_rub, usd_krw, rub_krw,usd_vnd, cash_usd_vnd, rub_vnd, cash_rub_vnd, updated_at) 
-             VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?)''', (*rates, time))
+             VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?)''', (*rates, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")))
 
             conn.commit()
 

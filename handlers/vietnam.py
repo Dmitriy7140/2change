@@ -53,6 +53,8 @@ class VietnamHandlers:
         msg = self.finstr.show_currency(country=7)
         keyboard = InlineKeyboardMarkup()
         keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_vn"))
+
         keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/7"))
+        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
         self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
         return
