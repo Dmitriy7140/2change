@@ -54,7 +54,7 @@ class FinInstr:
           4== China, 5== korea, 7 == Vietnam, 100 = Bybit Card"""
         self.ensure_fresh()
         if country == 1:
-            msg=(f"💱<b> Актуальный курс на сегодняшний день: </b>\n\n"
+            msg=(f"💱<b> Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")}: </b>\n\n"
                  
                  f"Отдаете:🇷🇺{self.rub_try:.2f} RUB\n"
                  f"Получаете:🇹🇷1 TRY (переводом IBAN)\n\n"
@@ -79,7 +79,7 @@ class FinInstr:
             logger.info("Сделали сообщение для Турции, выслали!")
             return msg
         elif country == 2:
-            msg=(f"💱<b> Актуальный курс на сегодняшний день: </b>\n\n"
+            msg=(f"💱<b> Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")}: </b>\n\n"
                  f""
                  f"Отдаете:🇷🇺{self.rub_usd:.2f} RUB\n"
                  f"Получаете:🪙1 USDT\n\n"
@@ -96,7 +96,7 @@ class FinInstr:
             logger.info("Сделали сообщение для РФ, выслали!")
             return msg
         elif country == 3:
-            msg=(f"💱<b> Актуальный курс на сегодняшний день: </b>\n\n"
+            msg=(f"💱<b> Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")}: </b>\n\n"
                  f""
                  f"Отдаете:🇷🇺{self.rub_thb:.2f} RUB\n"
                  f"Получаете:🇹🇭1 THB (на счет)\n\n"
@@ -113,7 +113,7 @@ class FinInstr:
             logger.info("Сделали сообщение для Тайланда, выслали!")
             return msg
         elif country == 4:
-            msg = (f"💱<b> Актуальный курс на сегодняшний день: </b>\n\n"
+            msg = (f"💱<b>Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")}: </b>\n\n"
                    f""
                    f"Отдаете:🇷🇺{self.rub_cny:.2f} RUB\n"
                    f"Получаете:🇨🇳1 CNY\n\n"
@@ -125,7 +125,7 @@ class FinInstr:
                    f"Получаете:🇷🇺{self.cny_rub:.2f}RUB\n\n")
             return msg
         elif country == 5:
-            msg = ("<b>Актуальный курс на сегодняшний день: </b>\n\n"
+            msg = (f"<b>Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")}: </b>\n\n"
                    ""
                    f"Отдаете: 🪙1 USDT\n"
                    f"Получаете: 🇰🇷  {self.usd_krw:.2f} KRW\n\n"
@@ -147,7 +147,7 @@ class FinInstr:
                    "Рассчитайте обмен или оставьте заявку 👇")
             return msg
         elif country == 7:
-            msg = (f"💱<b> Актуальный курс на сегодняшний день: </b>\n\n"
+            msg = (f"💱<b> Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")}: </b>\n\n"
                    f""
                    f"Отдаете:🇷🇺 1 RUB\n"
                    f"Получаете:🇻🇳{self.rub_vnd:.0f} VND (на счет)\n\n"
@@ -164,7 +164,7 @@ class FinInstr:
             logger.info("Сделали сообщение для Вьетнама, выслали!")
             return msg
         elif country == 100:
-            msg = (f"💱<b> Актуальный курс для пополнения карты: </b>\n\n"
+            msg = (f"💱<b> Актуальный курс для пополнения карты Bybit на {datetime.now().strftime("%d.%m.%Y %H:%M")}: </b>\n\n"
                    f""
                    f"Отдаете:🇷🇺{self.rub_usd:.2f} RUB\n"
                    f"Получаете:🪙1 USDT\n\n")

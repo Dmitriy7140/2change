@@ -363,20 +363,20 @@ class ExchangeService:
         if call.data == "calc_rf":
             msg = "💸<i>Выберите валюту для обмена:</i>"
             keybord1 = InlineKeyboardMarkup(row_width=2)
-            keybord1.row(InlineKeyboardButton("🪙USDT→🇷🇺", callback_data="exchange/usd/rub/2"),
-                         InlineKeyboardButton("🇷🇺→🪙USDT", callback_data="exchange/rub/usd/2"))
+            keybord1.row(InlineKeyboardButton("🪙USDT→🇷🇺 Рубли", callback_data="exchange/usd/rub/2"),
+                         InlineKeyboardButton("🇷🇺Рубли→🪙USDT", callback_data="exchange/rub/usd/2"))
             keybord1.row(InlineKeyboardButton("💰Иные валюты", callback_data="request/💰Обмен иных валют/2"),
                          InlineKeyboardButton("◀️Назад", callback_data="rf_menu"))
             self.bot.send_message(chat_id, msg, reply_markup=keybord1, parse_mode="HTML")
         elif call.data == "calc_thai":
             msg = "💸<i>Выберите валюту для обмена:</i>"
             keybord2 = InlineKeyboardMarkup(row_width=2)
-            keybord2.add(InlineKeyboardButton("🪙USDT→🇹🇭 (Наличные)", callback_data="exchange/usd/thb_cash/3"))
-            keybord2.add(InlineKeyboardButton("🪙USDT→🇹🇭 (Переводом)", callback_data="exchange/usd/thb/3"))
+            keybord2.add(InlineKeyboardButton("🪙USDT→🇹🇭 Наличные баты", callback_data="exchange/usd/thb_cash/3"))
+            keybord2.add(InlineKeyboardButton("🪙USDT→🇹🇭 Баты (Переводом)", callback_data="exchange/usd/thb/3"))
 
 
-            keybord2.add(InlineKeyboardButton("🇷🇺→🇹🇭 (Наличные)", callback_data="exchange/rub/thb_cash/3"))
-            keybord2.add(InlineKeyboardButton("🇷🇺→🇹🇭 (Переводом)", callback_data="exchange/rub/thb/3"))
+            keybord2.add(InlineKeyboardButton("🇷🇺Рубли→🇹🇭 Наличные баты", callback_data="exchange/rub/thb_cash/3"))
+            keybord2.add(InlineKeyboardButton("🇷🇺Рубли→🇹🇭 Баты (Переводом)", callback_data="exchange/rub/thb/3"))
 
             keybord2.row(InlineKeyboardButton("💰Иные валюты", callback_data="request/💰Обмен иных валют/3"),
                          InlineKeyboardButton("◀️Назад", callback_data="thai_menu"))
@@ -384,22 +384,22 @@ class ExchangeService:
         elif call.data == "calc_tr":
             msg = "💸<i>Выберите валюту для обмена:</i>"
             keybord3 = InlineKeyboardMarkup(row_width=2)
-            keybord3.add(InlineKeyboardButton("🇷🇺→🇹🇷 (IBAN)", callback_data="exchange/rub/try/1"))
-            keybord3.add(InlineKeyboardButton("🇷🇺→🇹🇷 (Наличные)", callback_data="exchange/rub/try_cash/1"))
+            keybord3.add(InlineKeyboardButton("🇷🇺Рубли→🇹🇷 Лиры (IBAN)", callback_data="exchange/rub/try/1"))
+            keybord3.add(InlineKeyboardButton("🇷🇺Рубли→🇹🇷 Наличные лиры", callback_data="exchange/rub/try_cash/1"))
 
-            keybord3.add(InlineKeyboardButton("🪙USDT→🇹🇷 (IBAN)", callback_data="exchange/usd/try/1"))
-            keybord3.add(InlineKeyboardButton("🪙USDT→🇹🇷 (Наличные)", callback_data="exchange/usd/try_cash/1"))
+            keybord3.add(InlineKeyboardButton("🪙USDT→🇹🇷 Лиры (IBAN)", callback_data="exchange/usd/try/1"))
+            keybord3.add(InlineKeyboardButton("🪙USDT→🇹🇷 Наличные лиры", callback_data="exchange/usd/try_cash/1"))
 
-            keybord3.add(InlineKeyboardButton("🇹🇷→🇷🇺 (Переводом)", callback_data="exchange/try/rub/1"))
+            keybord3.add(InlineKeyboardButton("🇹🇷Лиры →🇷🇺 Рубли (Переводом)", callback_data="exchange/try/rub/1"))
             keybord3.row(InlineKeyboardButton("💰Иные валюты", callback_data="request/💰Обмен иных валют/1"),
                          InlineKeyboardButton("◀️Назад", callback_data="tr_menu"))
             self.bot.send_message(chat_id, msg, reply_markup=keybord3, parse_mode="HTML")
         elif call.data == "calc_cn":
             msg = "💸<i>Выберите валюту для обмена:</i>"
             keybord4 = InlineKeyboardMarkup()
-            keybord4.add(InlineKeyboardButton("🇷🇺→🇨🇳CNY (юань)", callback_data="exchange/rub/cny/4"), )
-            keybord4.add(InlineKeyboardButton("🪙USDT→🇨🇳CNY (юань)", callback_data="exchange/usd/cny/4"))
-            keybord4.add(InlineKeyboardButton("🇨🇳CNY (юань)→🇷🇺", callback_data="exchange/cny/rub/4"))
+            keybord4.add(InlineKeyboardButton("🇷🇺 Рубли→🇨🇳 Юани", callback_data="exchange/rub/cny/4"), )
+            keybord4.add(InlineKeyboardButton("🪙USDT→🇨🇳 Юани", callback_data="exchange/usd/cny/4"))
+            keybord4.add(InlineKeyboardButton("🇨🇳 Юани →🇷🇺 Рубли", callback_data="exchange/cny/rub/4"))
             keybord4.row(InlineKeyboardButton("💰Иные валюты", callback_data="request/💰Обмен иных валют/4"),
                          InlineKeyboardButton("◀️Назад", callback_data="cn_menu"))
             self.bot.send_message(chat_id, msg, reply_markup=keybord4, parse_mode="HTML")
@@ -407,22 +407,22 @@ class ExchangeService:
             msg = ("<i>Выберите валюту для обмена:</i>\n\n"
                    "<b>🎁 При обмене от 2 000 000₩ – eSIM +3 ГБ в подарок!</b>")
             kb = InlineKeyboardMarkup()
-            kb.add(InlineKeyboardButton("🇰🇷 KRW (нал/перевод) → 🇷🇺RUB", callback_data="exchange/krw/rub/5"))
-            kb.add(InlineKeyboardButton("🇰🇷 KRW (нал/перевод) → 🪙 USDT", callback_data="exchange/krw/usd/5"))
-            kb.add(InlineKeyboardButton("🇷🇺RUB → 🇰🇷 KRW (нал/счет)", callback_data="exchange/rub/krw/5"))
-            kb.add(InlineKeyboardButton("🪙 USDT → 🇰🇷 KRW (нал/счет)", callback_data="exchange/usd/krw/5"))
+            kb.add(InlineKeyboardButton("🇰🇷 Воны (нал/перевод) → 🇷🇺 Рубли", callback_data="exchange/krw/rub/5"))
+            kb.add(InlineKeyboardButton("🇰🇷 Воны (нал/перевод) → 🪙 USDT", callback_data="exchange/krw/usd/5"))
+            kb.add(InlineKeyboardButton("🇷🇺 Рубли → 🇰🇷 Воны (нал/счет)", callback_data="exchange/rub/krw/5"))
+            kb.add(InlineKeyboardButton("🪙 USDT → 🇰🇷 Воны (нал/счет)", callback_data="exchange/usd/krw/5"))
             kb.row(InlineKeyboardButton("💰Иные валюты", callback_data="request/💰Обмен иных валют/5"),
                    InlineKeyboardButton("◀️Назад", callback_data="kr_menu"))
             self.bot.send_message(chat_id, msg, reply_markup=kb, parse_mode="HTML")
         elif call.data == "calc_vn":
             msg = "💸<i>Выберите валюту для обмена:</i>"
             keybord2 = InlineKeyboardMarkup(row_width=2)
-            keybord2.add(InlineKeyboardButton("🪙USDT→🇻🇳 (Наличные)", callback_data="exchange/usd/vnd_cash/7"))
-            keybord2.add(InlineKeyboardButton("🪙USDT→🇻🇳 (Переводом)", callback_data="exchange/usd/vnd/7"))
+            keybord2.add(InlineKeyboardButton("🪙USDT→🇻🇳 Наличные донги", callback_data="exchange/usd/vnd_cash/7"))
+            keybord2.add(InlineKeyboardButton("🪙USDT→🇻🇳 Донги (Переводом)", callback_data="exchange/usd/vnd/7"))
 
-            keybord2.add(InlineKeyboardButton("🇷🇺→🇻🇳 (Наличные)", callback_data="exchange/rub/vnd_cash/7"))
-            keybord2.add(InlineKeyboardButton("🇷🇺→🇻🇳 (Переводом)", callback_data="exchange/rub/vnd/7"))
-
+            keybord2.add(InlineKeyboardButton("🇷🇺Рубли→🇻🇳 Наличные донги", callback_data="exchange/rub/vnd_cash/7"))
+            keybord2.add(InlineKeyboardButton("🇷🇺Рубли→🇻🇳 Донги (Переводом)", callback_data="exchange/rub/vnd/7"))
+            keybord2.add(InlineKeyboardButton("🇷🇺Рубли→🪙USDT (Bybit Pay QR)", callback_data="bybit_menu"))
             keybord2.row(InlineKeyboardButton("💰Иные валюты", callback_data="request/💰Обмен иных валют/7"),
                          InlineKeyboardButton("◀️Назад", callback_data="vn_currency_menu"))
             self.bot.send_message(chat_id, msg, reply_markup=keybord2, parse_mode="HTML")
