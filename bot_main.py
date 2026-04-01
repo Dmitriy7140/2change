@@ -22,6 +22,7 @@ from handlers.russia import RussiaHandlers
 from handlers.thailand import ThailandHandlers
 from handlers.vietnam import VietnamHandlers
 from handlers.bybit import BybitHandlers
+from handlers.appstore import AppstoreHandlers
 
 from sheets.interest import Interest
 
@@ -158,6 +159,14 @@ vietnam_handlers = VietnamHandlers(
 )
 vietnam_handlers.register()
 
+appstore_handlers = AppstoreHandlers(
+    bot,
+    subscription_service,
+    sender_service.send_media,
+    state_manager,
+)
+appstore_handlers.register()
+
 
 
 
@@ -185,6 +194,7 @@ def handle_start(message, not_first:bool=None):
     keyboard.add(InlineKeyboardButton("🇷🇺 Россия (USDT)", callback_data="rf_menu"))
     keyboard.add(InlineKeyboardButton("🇻🇳 Вьетнам", callback_data="vn_currency_menu"))
     keyboard.add(InlineKeyboardButton("📥Пополнить Bybit Card (🪙USDT)", callback_data="bybit_menu"))
+    keyboard.add(InlineKeyboardButton("📱 Пополнить Appstore", callback_data="appstore_menu"))
     keyboard.add(InlineKeyboardButton("🛡 Гарантии и отзывы", callback_data="comment_menu"))
     keyboard.row(InlineKeyboardButton("📲Симкарта eSIM", callback_data="esim_main"), InlineKeyboardButton("💳 Зарубежная карта", callback_data="tr_card_menu"))
     user_id = message.from_user.id
