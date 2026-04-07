@@ -124,8 +124,8 @@ class ChinaHandlers:
 
         msg = self.finstr.show_currency(country=4)
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_cn"))
+        keyboard.add(InlineKeyboardButton("✏️Сделать расчет",style="success", callback_data="calc_cn"))
         keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="tr_card_menu"))
-        keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/4"))
+        keyboard.add(InlineKeyboardButton("👩‍💻 Позвать оператора", callback_data="request/❔вопрос про курсы валют/4"))
         self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
         return

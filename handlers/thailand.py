@@ -36,10 +36,10 @@ class ThailandHandlers:
 
         msg = self.finstr.show_currency(country=3)
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_thai"))
+        keyboard.add(InlineKeyboardButton("✏️Сделать расчет",style="success", callback_data="calc_thai"))
         keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="tr_card_menu"))
-        keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/3"))
-        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+        keyboard.add(InlineKeyboardButton("👩‍💻 Позвать оператора", callback_data="request/❔вопрос про курсы валют/3"))
+        keyboard.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))
         self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
 
         return

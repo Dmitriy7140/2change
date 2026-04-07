@@ -187,48 +187,38 @@ def handle_start(message, not_first:bool=None):
     state_manager.clear(message.chat.id)
     keyboard = InlineKeyboardMarkup(row_width=2)
     button1= InlineKeyboardButton( "🇹🇷 Турция", callback_data="tr_menu")
-    button2 = InlineKeyboardButton("🇹🇭 Тайланд", callback_data="thai_menu")
+    button2 = InlineKeyboardButton("🇹🇭 Таиланд", callback_data="thai_menu")
     keyboard.row(button1, button2)
     keyboard.row(InlineKeyboardButton("🇨🇳Китай", callback_data="cn_menu"), InlineKeyboardButton("🇰🇷Корея", callback_data="kr_menu"))
 
-    keyboard.add(InlineKeyboardButton("🇷🇺 Россия (USDT)", callback_data="rf_menu"))
-    keyboard.add(InlineKeyboardButton("🇻🇳 Вьетнам", callback_data="vn_currency_menu"))
-    keyboard.add(InlineKeyboardButton("📥Пополнить Bybit Card (🪙USDT)", callback_data="bybit_menu"))
-    keyboard.add(InlineKeyboardButton("📱 Пополнить Appstore", callback_data="appstore_menu"))
+    keyboard.row(InlineKeyboardButton("🇷🇺 Россия (USDT)", callback_data="rf_menu"),
+                 InlineKeyboardButton("🇻🇳 Вьетнам", callback_data="vn_currency_menu"))
+
+    keyboard.add(InlineKeyboardButton("📥Пополнить Bybit Card (USDT)", callback_data="bybit_menu"))
+    keyboard.add(InlineKeyboardButton("🔵Пополнить AppStore", callback_data="appstore_menu"))
     keyboard.add(InlineKeyboardButton("🛡 Гарантии и отзывы", callback_data="comment_menu"))
     keyboard.row(InlineKeyboardButton("📲Симкарта eSIM", callback_data="esim_main"), InlineKeyboardButton("💳 Зарубежная карта", callback_data="tr_card_menu"))
-    user_id = message.from_user.id
-    first_name = message.from_user.first_name
-    video_path = "img/intro.mp4"
+
+    photo_path = "img/intro.jpg"
     if not_first:
-        msg = (f'Чем еще могу помочь?\n'
-               f'Напомню, я — Ботя, помощник сервиса 2Change — ваш надежный финансовый партнер в поездках за границу: Турция, Тайиланд, Корея, ОАЭ и др (20+ стран)\n\n'
-               f"Обмен, переводы, eSIM, зарубежные карты и поддержка — всё быстро, удобно и с заботой.\n\n"
+        msg = ("💎Калькулятор 2Change — выберите услугу по кнопке ниже\n\n"
 
-               f"✅ Я помогу вам:\n"
-               f"▪️ Рассчитать сумму обмена\n"
-               f"▪️ Узнать актуальный курс\n"
-               f"▪️ Подключить eSIM\n"
-               f"▪️ Оставить заявку на обмен\n\n"
-
-               f"🕒 Пн–Сб 10:00-20:00 (по Мск)\n"
-               f"❗️@ALEXANDRA_2CHANGE - <i>единственный менеджер 2Change</i> — /manager")
-
+               "<blockquote>🕒График работы ПН–СБ 10:00-20:00 (МСК)\n"
+               "🙏<a href='https://t.me/review_2change/1014'>Отзывы (Более 11 500 отзывов за 5 лет работы)</a>\n "
+               "🏦 Нам доверяют: МТС, VK, Ozon Банк, Яндекс.Плюс\n"
+               "👩‍💻<a href='https://t.me/ALEXANDRA_2CHANGE'>Поддержка</a>\n"
+               "⚡️<a href='https://2change.pro/'>Официальный сайт</a>\n"
+               "❤️<a href='https://www.youtube.com/@2change_obmen_official'>Youtube канал</a> </blockquote>\n")
     else:
-        msg = (f'Здравствуйте, <a href="tg://user?id={user_id}">👋 {first_name}</a>!\n'
-              f'Я — Ботя, помощник сервиса 2Change — ваш надежный финансовый партнер в поездках за границу: Турция, Тайиланд, Корея, ОАЭ и др (20+ стран)\n\n'
-                f"Обмен, переводы, eSIM, зарубежные карты и поддержка — всё быстро, удобно и с заботой.\n\n"
+        msg = ("💎Калькулятор 2Change — выберите услугу по кнопке ниже\n\n"
 
-                f"✅ Я помогу вам:\n"
-                f"▪️ Рассчитать сумму обмена\n"
-                f"▪️ Узнать актуальный курс\n"
-                f"▪️ Подключить eSIM\n"
-                f"▪️ Оставить заявку на обмен\n\n"
-
-                f"🕒 Пн–Сб 10:00-20:00 (по Мск)\n"
-                f"❗️@ALEXANDRA_2CHANGE - <i>единственный менеджер 2Change</i> — /manager")
-
-    sender_service.send_media(path=video_path,chat_id=message.chat.id,reply_markup=keyboard,caption=msg)
+                    "<blockquote>🕒График работы ПН–СБ 10:00-20:00 (МСК)\n"
+                    "🙏<a href='https://t.me/review_2change/1014'>Отзывы (Более 11 500 отзывов за 5 лет работы)</a>\n "
+                    "🏦 Нам доверяют: МТС, VK, Ozon Банк, Яндекс.Плюс\n"
+                    "👩‍💻<a href='https://t.me/ALEXANDRA_2CHANGE'>Поддержка</a>\n"
+                    "⚡️<a href='https://2change.pro/'>Официальный сайт</a>\n"
+                    "❤️<a href='https://www.youtube.com/@2change_obmen_official'>Youtube канал</a> </blockquote>\n")
+    sender_service.send_media(path=photo_path,chat_id=message.chat.id,reply_markup=keyboard, caption=msg, parse_mode="HTML")
 
 @bot.message_handler(commands=['manager'])
 def handle_manager(message):
@@ -240,13 +230,9 @@ def handle_manager(message):
 
     if day_off():
         qdb.add_to_queue(tg_id=user_id, name=user_name, reason="🔔вызов менеджера")
-        msg = ("🏄‍♂️<b>К СОЖАЛЕНИЮ, МЫ СЕЙЧАС НЕ РАБОТАЕМ</b>🏄‍♀️\n\n"
-               "✅Добавили вашу заявку в очередь\n\n"
-               "⚡️В <b>рабочее</b> время менеджер получит вашу заявку и свяжется с вами\n"
-               "🕰<b>Наш график работы:</b>\n"
-               "Пн-Сб: 10:00 - 20:00\n"
-               "Воскресенье:\n"
-               "<b>выходной</b>"
+        msg = ("⚡️Ваша заявка уже в работе, скоро менеджер Александра с вами свяжется, ожидайте или напишите нам @alexandra_2change\n\n"
+               "<b>🕰Наш график работы:</b>\n"
+               "ПН-СБ: 10:00 - 20:00 (ВС выходной)"
                )
         bot.send_message(message.chat.id, msg, parse_mode="HTML")
     else:
@@ -257,11 +243,12 @@ def handle_manager(message):
         sent_msg = bot.send_message(manager_chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
 
         if qdb.set_user_name(sent_msg.message_id, user_id, user_ref):
-            bot.send_message(message.chat.id, "⚡️Позвали менеджера, скоро с вами свяжутся, ожидайте\n"
-                       "🕰<b>Наш график работы:</b>\n"
-                       "Пн-Сб: 10:00 - 20:00\n"
-                       "Воскресенье:\n"
-                       "<b>выходной</b>", parse_mode="HTML")
+            msg = (
+                "⚡️Ваша заявка уже в работе, скоро менеджер Александра с вами свяжется, ожидайте или напишите нам @alexandra_2change\n\n"
+                "<b>🕰Наш график работы:</b>\n"
+                "ПН-СБ: 10:00 - 20:00 (ВС выходной)"
+                )
+            bot.send_message(message.chat.id, text=msg, parse_mode="HTML")
         else:
             bot.send_message(message.chat.id, "⛔️Менеджер не сможет вам написать из-за ваших настроек приватности⛔️\n "
                                       "Включите видимость вашего аккаунта по ссылке в настройках приватности, или напишите @ALEXANDRA_2CHANGE",

@@ -40,9 +40,9 @@ class AppstoreHandlers:
                 "4) Оплачиваете подписки, приложения и игры как и раньше в 2-5 раз дешевле!</blockquote>\n\n"
                 "<b>Услуга бесплатная!</b>")
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="appstore_currency"))
+        keyboard.add(InlineKeyboardButton("✏️Сделать расчет", style="success", callback_data="appstore_currency"))
 
-        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+        keyboard.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))
         self.send_media("img/appstore.jpg",chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
 
         return
@@ -60,7 +60,7 @@ class AppstoreHandlers:
         keyboard.add(InlineKeyboardButton("🇹🇷+1000 лир", callback_data="request/📱 Appstore +1000 лир/1"))
         keyboard.add(InlineKeyboardButton("🇹🇷+5000 лир", callback_data="request/📱 Appstore +5000 лир/1"))
         keyboard.add(InlineKeyboardButton("💰Другая сумма", callback_data="request/📱 Appstore пополнение/1"))
-        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+        keyboard.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))
         self.bot.send_message( chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
 
         return

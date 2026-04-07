@@ -32,9 +32,9 @@ class BybitHandlers:
 
         msg = self.finstr.show_currency(country=100)
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="exchange/rub/usd/100"))
-        keyboard.add(InlineKeyboardButton("❔Что такое Bybit", callback_data="request/❔Что такое Bybit/100"))
-        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+        keyboard.add(InlineKeyboardButton("✏️Сделать расчет",style="success", callback_data="exchange/rub/usd/100"))
+        keyboard.add(InlineKeyboardButton("👩‍💻 Позвать оператора", callback_data="request/❔Что такое Bybit/100"))
+        keyboard.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))
         self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
 
         return

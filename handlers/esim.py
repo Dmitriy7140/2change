@@ -159,7 +159,7 @@ class EsimHandlers:
         keyboard.row(InlineKeyboardButton("🇨🇳Китай", callback_data="esim_cn"),
                      InlineKeyboardButton("🇰🇷Корея", callback_data="esim_kr"))
         keyboard.add(InlineKeyboardButton("🇦🇪ОАЭ (Дубай)", callback_data="esim_ae"))
-        keyboard.add(InlineKeyboardButton("📋Главное меню", callback_data="main_menu"))
+        keyboard.add(InlineKeyboardButton("📋Меню", callback_data="main_menu"))
         self.sender_service.send_media("img/esimmain.jpg", chat_id, msg, reply_markup=keyboard)
     def esim_tr(self, call):
 

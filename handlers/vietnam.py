@@ -40,10 +40,10 @@ class VietnamHandlers:
                "Пн-Сб 10:00 - 20:00 (Вс - выходной)")
 
         kb = InlineKeyboardMarkup()
-        kb.add(InlineKeyboardButton("✏️Калькулятор|Оставить заявку", callback_data="calc_vn"))
+        kb.add(InlineKeyboardButton("✏️Сделать расчет", style="success",callback_data="calc_vn"))
         kb.add(InlineKeyboardButton("📈Актуальный курс", callback_data="vn_currency_menu"))
         kb.add(InlineKeyboardButton("Зарубежная карта💳", callback_data="tr_card_menu"))
-        kb.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+        kb.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))
         self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=kb)
 
         return
@@ -52,9 +52,9 @@ class VietnamHandlers:
 
         msg = self.finstr.show_currency(country=7)
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_vn"))
+        keyboard.add(InlineKeyboardButton("✏️Сделать расчет", style="success",callback_data="calc_vn"))
 
-        keyboard.add(InlineKeyboardButton("❔Задать вопрос", callback_data="request/❔вопрос про курсы валют/7"))
-        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+        keyboard.add(InlineKeyboardButton("👩‍💻 Позвать оператора", callback_data="request/❔вопрос про курсы валют/7"))
+        keyboard.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))
         self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
         return

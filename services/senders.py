@@ -41,12 +41,11 @@ class SenderService:
 
     def send_application(self, user_id, user_name, chat_id, user_ref, reason=None, country=None, amount1=None, amount2=None,
                          currency1=None, currency2=None):
-        msg = ("⚡️Позвали менеджера, скоро с вами свяжутся, ожидайте\n"
-               "🕰<b>Наш график работы:</b>\n"
-               "Пн-Сб: 10:00 - 20:00\n"
-               "Воскресенье:\n"
-               "<b>выходной</b>"
-               )
+        msg = (
+            "⚡️Ваша заявка уже в работе, скоро менеджер Александра с вами свяжется, ожидайте или напишите нам @alexandra_2change\n\n"
+            "<b>🕰Наш график работы:</b>\n"
+            "ПН-СБ: 10:00 - 20:00 (ВС выходной)"
+            )
         if self.day_off():
             self.qdb.add_to_queue(country=country,
                                   tg_id=user_id,
@@ -56,14 +55,6 @@ class SenderService:
                                   amount2=amount2,
                                   currency1=currency1,
                                   currency2=currency2)
-            msg = ("🏄‍♂️<b>К СОЖАЛЕНИЮ, МЫ СЕЙЧАС НЕ РАБОТАЕМ</b>🏄‍♀️\n\n"
-                   "✅Добавили вашу заявку в очередь\n\n"
-                   "⚡️В <b>рабочее</b> время менеджер получит вашу заявку и свяжется с вами\n"
-                   "🕰<b>Наш график работы:</b>\n"
-                   "Пн-Сб: 10:00 - 20:00\n"
-                   "Воскресенье:\n"
-                   "<b>выходной</b>"
-                   )
             self.bot.send_message(chat_id, msg, parse_mode="HTML")
 
         else:

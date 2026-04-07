@@ -1,9 +1,9 @@
 import logging
 import calendar
-from datetime import datetime, timedelta, time
+from datetime import datetime, time
 import pytz
 from apscheduler.schedulers.background import BackgroundScheduler
-import os
+
 
 
 logging.basicConfig(
@@ -54,28 +54,7 @@ def start_scheduler(daily_task):
 
 
 
-def load_changes():
-    """Загружает изменения из changes.txt если файл существует"""
-    changes_file = "changes.txt"
 
-    if not os.path.exists(changes_file):
-        print("Файл changes.txt не найден")
-        return None
-
-    try:
-        with open(changes_file, 'r', encoding='utf-8') as f:
-            changes = f.read().strip()
-
-        if changes:
-            print(f"✅ Загружены изменения из changes.txt:\n{changes}")
-            return changes
-        else:
-            print("Файл changes.txt пустой")
-            return None
-
-    except Exception as e:
-        print(f"❌ Ошибка чтения changes.txt: {e}")
-        return None
 
 
 
