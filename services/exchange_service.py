@@ -5,7 +5,7 @@ class ExchangeService:
     def __init__(self, bot, logger, sender_service, fin_instr, state_manager):
         self.bot = bot
 
-        self.finstr = fin_instr()
+        self.finstr = fin_instr
         self.logger = logger
         self.sender_service = sender_service
 

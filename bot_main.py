@@ -5,7 +5,7 @@ import datetime, time
 from config import BOT_TOKEN, TEST_BOT_TOKEN, ADMIN_IDS, NOTIFICATION_CHAT, TEST_NOTIFICATION_CHAT, TEST_MODE, SUPPORT_CHAT_ID
 from utils import logger,  day_off
 from database_main import QueueDB
-from converter import FinInstr
+from services.converter import FinInstr
 
 from services.subscription import SubscriptionService
 from services.applications import ApplicationCreator
@@ -61,16 +61,15 @@ qdb=QueueDB()
 sheets_interest = Interest(logger)
 
 bot = telebot.TeleBot(BOT_TOKEN if not TEST_MODE else TEST_BOT_TOKEN, exception_handler=MyExceptionHandler())
-finstr = FinInstr()
 
 subscription_service = SubscriptionService(bot, logger, TEST_MODE)
+
 
 
 sender_service = SenderService(bot, qdb, manager_chat_id, day_off)
 
 state_manager = StateManager(logger)
-exchange_service = ExchangeService(bot, logger, sender_service, FinInstr, state_manager)
-exchange_service.register_handlers()
+
 
 interest_service = InterestService(
     bot,
@@ -83,6 +82,13 @@ interest_service = InterestService(
 
 )
 interest_service.register()
+finstr = FinInstr(
+    qdb,
+    logger,
+    interest_service
+)
+exchange_service = ExchangeService(bot, logger, sender_service, finstr, state_manager)
+exchange_service.register_handlers()
 
 
 turkey_handlers = TurkeyHandlers(
@@ -239,7 +245,7 @@ def handle_manager(message):
         apmake = ApplicationCreator(client_name=user_name, reason="🔔вызов менеджера")
         msg = apmake.create()
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client"))
+        keyboard.add(InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client", style="success"))
         sent_msg = bot.send_message(manager_chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
 
         if qdb.set_user_name(sent_msg.message_id, user_id, user_ref):
@@ -267,7 +273,7 @@ def handle_queue():
             _, tg_id, country, client_name, amount1, amount2, currency1, currency2, reason, created_at = i
 
             keyboard = InlineKeyboardMarkup()
-            keyboard.row(InlineKeyboardButton("✅",callback_data=f"apq/y/{tg_id}"), InlineKeyboardButton("❌",callback_data=f"apq/n/{tg_id}"))
+            keyboard.row(InlineKeyboardButton("✅",callback_data=f"apq/y/{tg_id}", style="success"), InlineKeyboardButton("❌",callback_data=f"apq/n/{tg_id}", style="danger"))
             bot.send_message(tg_id, f"Здравствуйте, {client_name}!\n\n"
                                     f"Подскажите, пожалуйста, актуальна ли Ваша заявка?\n\n"
                                     f"{reason if reason else f'<b>Обмен:</b> {currency1} → {currency2}\n\nСумма: {amount1} {currency1}'}",
@@ -317,7 +323,7 @@ def handle_application_confirm(call):
     _, tg_id, country, client_name, amount1, amount2, currency1, currency2, reason, created_at = qdb.get_from_queue(get_by_id=tg_id)
     if verdict == "y":
         keyboard= InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client"))
+        keyboard.add(InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client", style="success"))
         apmake = ApplicationCreator(country=country, client_name=client_name,reason=reason,currency1=currency1, currency2=currency2, amount1=amount1, amount2=amount2, time=created_at)
         msg = apmake.create()
         sent_msg = bot.send_message(manager_chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
@@ -333,11 +339,6 @@ def handle_application_confirm(call):
 
         bot.send_message(tg_id, "❌Заявка отменена")
     return
-
-
-
-
-
 @bot.callback_query_handler(func=lambda c: c.data in ("comment_menu","contact_client" ))
 def handle_other_callbacks(call):
     bot.answer_callback_query(call.id)
@@ -360,7 +361,7 @@ def handle_other_callbacks(call):
                'Смотрите больше отзывов в группе или оставьте свой')
         keyboard = InlineKeyboardMarkup()
         keyboard.add(InlineKeyboardButton("Смотреть отзывы🔎", url="https://t.me/review_2change"))
-        keyboard.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
+        keyboard.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))
         bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
         return
     if call.data == "contact_client":

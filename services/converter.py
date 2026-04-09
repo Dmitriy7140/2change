@@ -1,21 +1,14 @@
-
-
-from database_main import QueueDB
-
 from datetime import datetime
-from utils import logger
-qdb = QueueDB()
-
-
 class FinInstr:
-    def __init__(self):
+    def __init__(self, qdb, logger, interest_service):
+        self.qdb = qdb
+        self.logger = logger
+        self.interest_service = interest_service
 
-
-
-        raw=qdb.get_currencies()
+        raw=self.qdb.get_currencies()
         if not raw:
-            qdb.update_currency()
-            raw=qdb.get_currencies()
+            self.qdb.update_currency()
+            raw=self.qdb.get_currencies()
 
         (self._,
          self.usd_rub,
@@ -43,11 +36,6 @@ class FinInstr:
          self.updated_at_str) = raw
         logger.info("Финансист курсы принял...")
         self.ensure_fresh()
-
-
-
-
-
     def show_currency(self, country:int) ->str:
         """Countries: 1 == Turkey,
          2==Russia, 3== Thailand,
@@ -76,7 +64,7 @@ class FinInstr:
                  f""
                  f"<i>⭐️ Акция! При обмене от 20 000 лир через QR — симкарта eSIM на 10ГБ в подарок!</i>\n\n"
                  f"<b>Рассчитайте сумму или оставьте заявку 👇</b>")
-            logger.info("Сделали сообщение для Турции, выслали!")
+            self.logger.info("Сделали сообщение для Турции, выслали!")
             return msg
         elif country == 2:
             msg=(f"💱<b> Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")} </b>\n\n"
@@ -93,7 +81,7 @@ class FinInstr:
                  f"Отдаете:🇷🇺RUB\n"
                  f"Получаете:Другую валюту (по запросу)"
                  )
-            logger.info("Сделали сообщение для РФ, выслали!")
+            self.logger.info("Сделали сообщение для РФ, выслали!")
             return msg
         elif country == 3:
             msg=(f"💱<b> Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")} </b>\n\n"
@@ -110,7 +98,7 @@ class FinInstr:
                  f"Отдаете:🪙1 USDT\n"
                  f"Получаете:🇹🇭{self.cash_usd_thb:.2f} THB (наличными)"
                  )
-            logger.info("Сделали сообщение для Тайланда, выслали!")
+            self.logger.info("Сделали сообщение для Тайланда, выслали!")
             return msg
         elif country == 4:
             msg = (f"💱<b>Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")} </b>\n\n"
@@ -123,6 +111,7 @@ class FinInstr:
                    f""
                    f"Отдаете:🇨🇳1 CNY\n"
                    f"Получаете:🇷🇺{self.cny_rub:.2f}RUB\n\n")
+            self.logger.info("Сделали сообщение для Китая, выслали!")
             return msg
         elif country == 5:
             msg = (f"<b>Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")} </b>\n\n"
@@ -145,6 +134,7 @@ class FinInstr:
                    "🎁 При обмене от <b>2 000 000 ₩ — eSIM + 3Гб</b> интернета в подарок!\n\n"
 
                    "Рассчитайте обмен или оставьте заявку 👇")
+            self.logger.info("Сделали сообщение для Кореи, выслали!")
             return msg
         elif country == 7:
             msg = (f"💱<b> Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")} </b>\n\n"
@@ -161,7 +151,7 @@ class FinInstr:
                    f"Отдаете:🪙1 USDT\n"
                    f"Получаете:🇻🇳 {f'{self.cash_usd_vnd:,.0f}'.replace(',',' ')} VND (наличными)"
                    )
-            logger.info("Сделали сообщение для Вьетнама, выслали!")
+            self.logger.info("Сделали сообщение для Вьетнама, выслали!")
             return msg
         elif country == 100:
             msg = (f"💱<b> Актуальный курс для пополнения карты Bybit на {datetime.now().strftime("%d.%m.%Y %H:%M")} </b>\n\n"
@@ -171,7 +161,7 @@ class FinInstr:
             return msg
 
 
-        logger.error("Что-то поломалось с отправкой сообщения с курсами!!!")
+        self.logger.error("Что-то поломалось с отправкой сообщения с курсами!!!")
         return "Что-то пошло не так, попробуйте еще раз..."
     def convert_currencies(self, amount:int, currency1:str, currency2:str) -> float|None:
         self.ensure_fresh()
@@ -230,25 +220,22 @@ class FinInstr:
             elif currency2 == "usd":
                 return amount / self.krw_usd
         return None
-
     def ensure_fresh(self):
-        updated_at = qdb.get_latest_time()
+        updated_at = self.qdb.get_latest_time()
 
         now = datetime.now()
-        logger.info(f"Сейчас {now}, последнее обновление было {updated_at}...")
+        self.logger.info(f"Сейчас {now}, последнее обновление было {updated_at}...")
 
         # Разница во времени
         time_diff = now - updated_at
-        logger.info(f"С последнего обновления курсов прошло {time_diff.total_seconds()} секунд...")
+        self.logger.info(f"С последнего обновления курсов прошло {time_diff.total_seconds()} секунд...")
         if time_diff.total_seconds() > 7200:
             self._reload_currencies()
-
-
     def _reload_currencies(self):
 
-        logger.info("Обновляем курсы...")
-        qdb.update_currency()
-        raw = qdb.get_currencies()
+        self.logger.info("Обновляем курсы...")
+        self.interest_service.insert_currencies_into_table()
+        raw = self.qdb.get_currencies()
 
         (self._,
          self.usd_rub,
@@ -274,9 +261,5 @@ class FinInstr:
          self.rub_vnd,
          self.cash_rub_vnd,
          self.updated_at_str) = raw
-        logger.info("Курсы обновили! Успех!")
 
-
-
-
-
+        self.logger.info("Курсы обновили! Успех!")

@@ -297,17 +297,36 @@ class QueueDB:
             rows_list= self.get_coef()
             rows = rows_list[0]
 
-            api_courses= {"usd_try":api_usd_try,
-                          "usd_rub":api_usd_rub,
-                          "usd_thb":api_usd_thb,
-                          "try_rub":api_try_rub,
-                          "thb_rub":api_thb_rub,
-                          "usd_cny":api_usd_cny,
-                          "rub_cny":api_rub_cny,
-                          "krw_rub":api_krw_rub,
-                          "krw_usd":api_krw_usd,
-                          "vnd_usd":api_vnd_usd,
-                          "vnd_rub":api_vnd_rub,}
+
+            api_courses = {"usd_rub":api_usd_rub,
+                           "rub_usd":api_usd_rub,
+
+                           "usd_try":api_usd_try,
+                           "cash_usd_try":api_usd_try,
+                           "rub_try":api_try_rub,
+                           "cash_rub_try":api_try_rub,
+                           "try_rub":api_try_rub,
+
+                           "usd_thb": api_usd_thb,
+                           "cash_usd_thb": api_usd_thb,
+                           "rub_thb": api_thb_rub,
+                           "cash_rub_thb": api_thb_rub,
+
+                           "rub_cny": api_rub_cny,
+                           "usd_cny": api_usd_cny,
+                           "cny_rub": api_rub_cny,
+
+                           "usd_krw": api_krw_usd,
+                           "krw_usd": api_krw_usd,
+                           "rub_krw": api_krw_rub,
+                           "krw_rub": api_krw_rub,
+                           "usd_vnd": api_vnd_usd,
+                           "cash_usd_vnd": api_vnd_usd,
+                           "rub_vnd": api_vnd_rub,
+                           "cash_rub_vnd": api_vnd_rub,
+
+
+                           }
 
             we_sell = {"id": rows[0],
                        "usd_rub_c": rows[1],
@@ -402,7 +421,7 @@ class QueueDB:
             return None
         self.set_currency(rates)
 
-        return api_courses
+        return api_courses.values()
 
     def set_currency(self, rates:tuple):
         with self.get_connection() as conn:
@@ -492,7 +511,7 @@ class QueueDB:
 
 if __name__ == "__main__":
    qdb = QueueDB()
-   qdb.update_currency()
+
 
    
 

@@ -48,10 +48,51 @@ class InterestService:
             self.bot.send_message(chat_id, text)
             return False
         self._set_interest(res)
-        self.bot.send_message(chat_id, "Наценки получили, обновляем базу данных🕓")
-        self.qdb.update_currency()
-        self.bot.send_message(chat_id, "Наценки обновили!✅")
+        self.bot.send_message(chat_id, "Наценки получили, обновляем базу данных и данные в таблице🕓")
+        self.insert_currencies_into_table()
+        self.bot.send_message(chat_id, "Наценки обновили✅\n"
+                                       "Актуальные данные:")
+        data = self.sheets_interest.fetch_table()
+
+        self.bot.send_message(chat_id, self.form_message(data), parse_mode="HTML")
         return True
+
+    def insert_currencies_into_table(self):
+        self.logger.info("Вставляем курсы в гугл таблицу...")
+        raw_api_currencies = self.qdb.update_currency()
+        self.sheets_interest.set_raw_currencies(raw_api_currencies)
+        currencies = self.qdb.get_currencies()
+        self.sheets_interest.set_currencies_with_interest(currencies)
+        return
+
+    @staticmethod
+    def form_message(data):
+        result = []
+        current_country = None
+
+        for row in data[1:]:  # пропускаем заголовок
+            country = row[0]  # A
+            markup = row[1]  # B
+            pair = row[3]  # D
+            value = row[7]  # H
+
+            # пропускаем пустые строки
+            if not country and not pair:
+                continue
+
+            # новая страна
+            if country:
+                if current_country != country:
+                    current_country = country
+                    result.append(f"\n<b>{country}:</b>")
+
+            # строка валют
+            if pair and value:
+                result.append(f"{pair}: {value} ({markup}%)")
+
+        return "\n".join(result)
+
+
 
 
 

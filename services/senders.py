@@ -59,7 +59,7 @@ class SenderService:
 
         else:
             keybord = InlineKeyboardMarkup()
-            keybord.add(InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client"))
+            keybord.add(InlineKeyboardButton("💬Связаться с клиентом", callback_data="contact_client", style="success"))
             apmake = ApplicationCreator(country=country, client_name=user_name, reason=reason, amount1=amount1,
                                         amount2=amount2, currency1=currency1, currency2=currency2)
 
