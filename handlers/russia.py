@@ -17,7 +17,7 @@ class RussiaHandlers:
         }
     def register(self):
         @self.bot.callback_query_handler(lambda c: c.data.startswith("rf"))
-        @self.subscription_service.require_subscription(2)
+
         def handle_call(call):
             self.handle_russia(call)
 
