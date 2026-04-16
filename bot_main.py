@@ -189,9 +189,9 @@ exchange_service.register_handlers()
 
 @bot.message_handler(commands=['start'])
 def handle_start(message, not_first:bool=None):
-    bot.send_message(message.chat.id,"Бот временно на техническом обслуживании. Пожалуйста, напишите напрямую менеджеру, для получения расчета: @ALEXANDRA_2CHANGE\n\n",
+    bot.send_message(message.chat.id,("Бот временно на техническом обслуживании. Пожалуйста, напишите напрямую менеджеру, для получения расчета: @ALEXANDRA_2CHANGE\n\n"
 
-                        "Благодарим за понимание🙌🏻")
+                        "Благодарим за понимание🙌🏻"))
     state_manager.clear(message.chat.id)
     keyboard = InlineKeyboardMarkup(row_width=2)
     # button1= InlineKeyboardButton( "🇹🇷 Турция", callback_data="tr_menu")
