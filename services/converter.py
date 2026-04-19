@@ -1,63 +1,107 @@
 from datetime import datetime
+
 class FinInstr:
-    def __init__(self, qdb, logger, interest_service):
+    def __init__(self, qdb, logger):
+        # ✅ оставляем только зависимости
         self.qdb = qdb
         self.logger = logger
-        self.interest_service = interest_service
 
-        raw=self.qdb.get_currencies()
+    # ✅ ЕДИНАЯ точка получения курсов
+    def _get_rates(self) -> dict:
+        """
+        Забираем курсы из БД и сразу превращаем tuple в нормальный dict.
+        👉 Это убивает tuple-ад и делает код читаемым.
+        """
+        raw = self.qdb.get_currencies()
+
+        # если вдруг БД пустая — подстрахуемся
         if not raw:
+            self.logger.warning("Курсы не найдены, пробуем обновить...")
             self.qdb.update_currency()
-            raw=self.qdb.get_currencies()
+            raw = self.qdb.get_currencies()
 
-        (self._,
-         self.usd_rub,
-         self.rub_usd,
-         self.usd_try,
-         self.cash_usd_try,
-         self.rub_try,
-         self.cash_rub_try,
-         self.try_rub,
-         self.usd_thb,
-         self.cash_usd_thb,
-         self.rub_thb,
-         self.cash_rub_thb,
-         self.rub_cny,
-         self.usd_cny,
-         self.cny_rub,
-         self.usd_krw ,
-         self.krw_usd ,
-         self.rub_krw ,
-         self.krw_rub,
-         self.usd_vnd,
-         self.cash_usd_vnd,
-         self.rub_vnd,
-         self.cash_rub_vnd,
-         self.updated_at_str) = raw
-        logger.info("Финансист курсы принял...")
-        self.ensure_fresh()
-    def show_currency(self, country:int) ->str:
+        (
+            _,
+            usd_rub,
+            rub_usd,
+            usd_try,
+            cash_usd_try,
+            rub_try,
+            cash_rub_try,
+            try_rub,
+            usd_thb,
+            cash_usd_thb,
+            rub_thb,
+            cash_rub_thb,
+            rub_cny,
+            usd_cny,
+            cny_rub,
+            usd_krw,
+            krw_usd,
+            rub_krw,
+            krw_rub,
+            usd_vnd,
+            cash_usd_vnd,
+            rub_vnd,
+            cash_rub_vnd,
+            updated_at,
+        ) = raw
+
+        # ✅ превращаем в dict — дальше будет сильно проще
+        return {
+            "usd_rub": usd_rub,
+            "rub_usd": rub_usd,
+            "usd_try": usd_try,
+            "cash_usd_try": cash_usd_try,
+            "rub_try": rub_try,
+            "cash_rub_try": cash_rub_try,
+            "try_rub": try_rub,
+            "usd_thb": usd_thb,
+            "cash_usd_thb": cash_usd_thb,
+            "rub_thb": rub_thb,
+            "cash_rub_thb": cash_rub_thb,
+            "rub_cny": rub_cny,
+            "usd_cny": usd_cny,
+            "cny_rub": cny_rub,
+            "usd_krw": usd_krw,
+            "krw_usd": krw_usd,
+            "rub_krw": rub_krw,
+            "krw_rub": krw_rub,
+            "usd_vnd": usd_vnd,
+            "cash_usd_vnd": cash_usd_vnd,
+            "rub_vnd": rub_vnd,
+            "cash_rub_vnd": cash_rub_vnd,
+            "updated_at": updated_at,
+        }
+
+    # =========================
+    # 💱 ВЫВОД КУРСОВ
+    # =========================
+    def show_currency(self, country: int) -> str:
+        # ✅ каждый раз берем свежие данные
+        r = self._get_rates()
+        now = datetime.now().strftime("%d-%m-%Y %H:%M")
         """Countries: 1 == Turkey,
          2==Russia, 3== Thailand,
           4== China, 5== korea, 7 == Vietnam, 100 = Bybit Card"""
-        self.ensure_fresh()
+
         if country == 1:
-            msg=(f"💱<b> Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")} </b>\n\n"
+            msg=(f"💱<b> Актуальный курс на {now} </b>\n\n"
                  
-                 f"Отдаете:🇷🇺{self.rub_try:.2f} RUB\n"
+                 f"Отдаете:🇷🇺{r["rub_try"]:.2f} RUB\n"
                  f"Получаете:🇹🇷1 TRY (переводом IBAN)\n\n"
                  f""
-                 f"Отдаете:🇷🇺{self.cash_rub_try:.2f} RUB\n"
+                 f"Отдаете:🇷🇺{r["cash_rub_try"]:.2f} RUB\n"
                  f"Получаете:🇹🇷1 TRY (наличными лирами)\n\n"
                  f""
                  f"Отдаете:🇹🇷1 TRY\n"
-                 f"Получаете:🇷🇺{self.try_rub:.2f} RUB\n\n"
+                 f"Получаете:🇷🇺{r["try_rub"]:.2f} RUB\n\n"
                  f""
                  f"Отдаете:🪙1 USDT\n"
-                 f"Получаете:🇹🇷{self.usd_try:.2f} TRY (Переводом IBAN)\n\n"
+                 f"Получаете:🇹🇷{r["usd_try"]:.2f} TRY (Переводом IBAN)\n\n"
                  f""
                  f"Отдаете:🪙1 USDT\n"
-                 f"Получаете:🇹🇷{self.cash_usd_try:.2f} TRY (Наличными лирами)\n\n"
+                 f"Получаете:🇹🇷{r["cash_usd_try"]:.2f} TRY (Наличными лирами)\n\n"
                  f""
                  f"Отдаете:🪙USDT\n"
                  f"Получаете: Другую валюту (по запросу)\n\n"
@@ -67,13 +111,13 @@ class FinInstr:
             self.logger.info("Сделали сообщение для Турции, выслали!")
             return msg
         elif country == 2:
-            msg=(f"💱<b> Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")} </b>\n\n"
+            msg=(f"💱<b> Актуальный курс на {now} </b>\n\n"
                  f""
-                 f"Отдаете:🇷🇺{self.rub_usd:.2f} RUB\n"
+                 f"Отдаете:🇷🇺{r["rub_usd"]:.2f} RUB\n"
                  f"Получаете:🪙1 USDT\n\n"
                  f""
                  f"Отдаете:🪙1 USDT\n"
-                 f"Получаете:🇷🇺{self.usd_rub:.2f} RUB\n\n"
+                 f"Получаете:🇷🇺{r["usd_rub"]:.2f} RUB\n\n"
                  f""
                  f"Отдаете:🪙USDT\n"
                  f"Получаете:Другую валюту (по запросу)\n\n"
@@ -84,48 +128,48 @@ class FinInstr:
             self.logger.info("Сделали сообщение для РФ, выслали!")
             return msg
         elif country == 3:
-            msg=(f"💱<b> Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")} </b>\n\n"
+            msg=(f"💱<b> Актуальный курс на {now} </b>\n\n"
                  f""
-                 f"Отдаете:🇷🇺{self.rub_thb:.2f} RUB\n"
+                 f"Отдаете:🇷🇺{r["rub_thb"]:.2f} RUB\n"
                  f"Получаете:🇹🇭1 THB (на счет)\n\n"
                  f""
-                 f"Отдаете:🇷🇺{self.cash_rub_thb:.2f} RUB\n"
+                 f"Отдаете:🇷🇺{r["cash_rub_thb"]:.2f} RUB\n"
                  f"Получаете:🇹🇭1 THB (наличными)\n\n"
                  f""
                  f"Отдаете:🪙1 USDT\n"
-                 f"Получаете:🇹🇭{self.usd_thb:.2f} THB (на счет)\n\n"
+                 f"Получаете:🇹🇭{r["usd_thb"]:.2f} THB (на счет)\n\n"
                  f""
                  f"Отдаете:🪙1 USDT\n"
-                 f"Получаете:🇹🇭{self.cash_usd_thb:.2f} THB (наличными)"
+                 f"Получаете:🇹🇭{r["cash_usd_thb"]:.2f} THB (наличными)"
                  )
             self.logger.info("Сделали сообщение для Тайланда, выслали!")
             return msg
         elif country == 4:
-            msg = (f"💱<b>Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")} </b>\n\n"
+            msg = (f"💱<b>Актуальный курс на {now} </b>\n\n"
                    f""
-                   f"Отдаете:🇷🇺{self.rub_cny:.2f} RUB\n"
+                   f"Отдаете:🇷🇺{r["rub_cny"]:.2f} RUB\n"
                    f"Получаете:🇨🇳1 CNY\n\n"
                    f""
                    f"Отдаете:🪙1 USDT\n"
-                   f"Получаете:🇨🇳{self.usd_cny:.2f} CNY\n\n"
+                   f"Получаете:🇨🇳{r["usd_cny"]:.2f} CNY\n\n"
                    f""
                    f"Отдаете:🇨🇳1 CNY\n"
-                   f"Получаете:🇷🇺{self.cny_rub:.2f}RUB\n\n")
+                   f"Получаете:🇷🇺{r["cny_rub"]:.2f}RUB\n\n")
             self.logger.info("Сделали сообщение для Китая, выслали!")
             return msg
         elif country == 5:
-            msg = (f"<b>Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")} </b>\n\n"
+            msg = (f"<b>Актуальный курс на {now} </b>\n\n"
                    ""
                    f"Отдаете: 🪙1 USDT\n"
-                   f"Получаете: 🇰🇷  {self.usd_krw:.0f} KRW\n\n"
+                   f"Получаете: 🇰🇷  {r["usd_krw"]:.2f} KRW\n\n"
                    f""
                    f"Отдаете: 🇷🇺 1 RUB\n"
-                   f"Получаете: 🇰🇷  {self.rub_krw:.0f} KRW\n\n"
+                   f"Получаете: 🇰🇷  {r["rub_krw"]:.2f} KRW\n\n"
                    f""
-                   f"Отдаете: 🇰🇷 {self.krw_rub:.0f} KRW\n"
+                   f"Отдаете: 🇰🇷 {r["krw_rub"]:.2f} KRW\n"
                    f"Получаете: 🇷🇺 1 RUB\n\n"
                    f""
-                   f"Отдаете: 🇰🇷 {self.krw_usd:.0f} KRW\n"
+                   f"Отдаете: 🇰🇷 {r["krw_usd"]:.2f} KRW\n"
                    f"Получаете:🪙 1 USDT\n\n"
                    f""
                    
@@ -137,129 +181,91 @@ class FinInstr:
             self.logger.info("Сделали сообщение для Кореи, выслали!")
             return msg
         elif country == 7:
-            msg = (f"💱<b> Актуальный курс на {datetime.now().strftime("%d.%m.%Y %H:%M")} </b>\n\n"
+            msg = (f"💱<b> Актуальный курс на {now} </b>\n\n"
                    f""
                    f"Отдаете:🇷🇺 1 RUB\n"
-                   f"Получаете:🇻🇳{f'{self.rub_vnd:,.0f}'.replace(',',' ')} VND (на счет)\n\n"
+                   f"Получаете:🇻🇳{f'{r["rub_vnd"]:,.2f}'.replace(',',' ')} VND (на счет)\n\n"
                    f""
                    f"Отдаете:🇷🇺 1 RUB\n"
-                   f"Получаете:🇻🇳 {f'{self.cash_rub_vnd:,.0f}'.replace(',',' ')} VND (наличными)\n\n"
+                   f"Получаете:🇻🇳 {f'{r["cash_rub_vnd"]:,.2f}'.replace(',',' ')} VND (наличными)\n\n"
                    f""
                    f"Отдаете:🪙1 USDT\n"
-                   f"Получаете:🇻🇳 {f'{self.usd_vnd:,.0f}'.replace(',',' ')} VND (на счет)\n\n"
+                   f"Получаете:🇻🇳 {f'{r["usd_vnd"]:,.2f}'.replace(',',' ')} VND (на счет)\n\n"
                    f""
                    f"Отдаете:🪙1 USDT\n"
-                   f"Получаете:🇻🇳 {f'{self.cash_usd_vnd:,.0f}'.replace(',',' ')} VND (наличными)"
+                   f"Получаете:🇻🇳 {f'{r["cash_usd_vnd"]:,.2f}'.replace(',',' ')} VND (наличными)"
                    )
             self.logger.info("Сделали сообщение для Вьетнама, выслали!")
             return msg
         elif country == 100:
-            msg = (f"💱<b> Актуальный курс для пополнения карты Bybit на {datetime.now().strftime("%d.%m.%Y %H:%M")} </b>\n\n"
+            msg = (f"💱<b> Актуальный курс для пополнения карты Bybit на {now} </b>\n\n"
                    f""
-                   f"Отдаете:🇷🇺{self.rub_usd:.2f} RUB\n"
+                   f"Отдаете:🇷🇺{r["rub_usd"]:.2f} RUB\n"
                    f"Получаете:🪙1 USDT\n\n")
             return msg
 
 
         self.logger.error("Что-то поломалось с отправкой сообщения с курсами!!!")
         return "Что-то пошло не так, попробуйте еще раз..."
-    def convert_currencies(self, amount:int, currency1:str, currency2:str) -> float|None:
-        self.ensure_fresh()
-        if currency1 == 'usd':
-            if currency2 == "rub":
-                return amount* self.usd_rub
-            elif currency2 == "try":
-                return amount * self.usd_try
-            elif currency2 == "try_cash":
-                return amount* self.cash_usd_try
 
-            elif currency2 == "thb":
-                return amount * self.usd_thb
-            elif currency2 == "thb_cash":
-                return amount* self.cash_usd_thb
+    def convert_currencies(
+            self,
+            amount: float,
+            currency1: str,
+            currency2: str
+    ) -> float | None:
 
-            elif currency2 == "cny":
-                return amount* self.usd_cny
-            elif currency2 == "krw":
-                return amount* self.usd_krw
-            elif currency2 == "vnd":
-                return amount* self.usd_vnd
-            elif currency2 == "vnd_cash":
-                return amount*self.cash_usd_vnd
+        # ✅ всегда берем свежие курсы
+        r = self._get_rates()
 
-        if currency1 == "rub":
-            if currency2 == "usd":
-                return amount / self.rub_usd
-            elif currency2 == "try_cash":
-                return amount / self.cash_rub_try
-            elif currency2 == "try":
-                return amount / self.rub_try
-            elif currency2 == 'thb_cash':
-                return amount/ self.cash_rub_thb
-            elif currency2 == "thb":
-                return amount / self.rub_thb
-            elif currency2 == "cny":
-                return amount / self.rub_cny
-            elif currency2 == "krw":
-                return amount * self.rub_krw
-            elif currency2 == "vnd":
-                return amount * self.rub_vnd
-            elif currency2 == "vnd_cash":
-                return amount * self.cash_rub_vnd
-        if currency1 == "cny":
-            if currency2 == "rub":
-                return amount * self.cny_rub
+        # ✅ нормализуем ввод (на будущее — защита от мусора)
+        currency1 = currency1.lower()
+        currency2 = currency2.lower()
 
-        if currency1 == "try":
-            if currency2 == "rub":
-                return amount * self.try_rub
+        # ✅ таблица конвертаций
+        rates_map = {
+            # ===== USD =====
+            ("usd", "rub"): lambda: amount * r["usd_rub"],
+            ("usd", "try"): lambda: amount * r["usd_try"],
+            ("usd", "try_cash"): lambda: amount * r["cash_usd_try"],
+            ("usd", "thb"): lambda: amount * r["usd_thb"],
+            ("usd", "thb_cash"): lambda: amount * r["cash_usd_thb"],
+            ("usd", "cny"): lambda: amount * r["usd_cny"],
+            ("usd", "krw"): lambda: amount * r["usd_krw"],
+            ("usd", "vnd"): lambda: amount * r["usd_vnd"],
+            ("usd", "vnd_cash"): lambda: amount * r["cash_usd_vnd"],
 
-        if currency1 == "krw":
-            if currency2 == "rub":
-                return amount / self.krw_rub
-            elif currency2 == "usd":
-                return amount / self.krw_usd
+            # ===== RUB =====
+            ("rub", "usd"): lambda: amount / r["rub_usd"],
+            ("rub", "try"): lambda: amount / r["rub_try"],
+            ("rub", "try_cash"): lambda: amount / r["cash_rub_try"],
+            ("rub", "thb"): lambda: amount / r["rub_thb"],
+            ("rub", "thb_cash"): lambda: amount / r["cash_rub_thb"],
+            ("rub", "cny"): lambda: amount / r["rub_cny"],
+            ("rub", "krw"): lambda: amount * r["rub_krw"],
+            ("rub", "vnd"): lambda: amount * r["rub_vnd"],
+            ("rub", "vnd_cash"): lambda: amount * r["cash_rub_vnd"],
+
+            # ===== CNY =====
+            ("cny", "rub"): lambda: amount * r["cny_rub"],
+
+            # ===== TRY =====
+            ("try", "rub"): lambda: amount * r["try_rub"],
+
+            # ===== KRW =====
+            ("krw", "rub"): lambda: amount / r["krw_rub"],
+            ("krw", "usd"): lambda: amount / r["krw_usd"],
+        }
+
+        func = rates_map.get((currency1, currency2))
+
+        if func:
+            return func()
+
+        # ✅ логируем, если кейс не покрыт
+        self.logger.warning(
+            f"Неизвестная конвертация: {currency1} -> {currency2}"
+        )
+
         return None
-    def ensure_fresh(self):
-        updated_at = self.qdb.get_latest_time()
 
-        now = datetime.now()
-        self.logger.info(f"Сейчас {now}, последнее обновление было {updated_at}...")
-
-        # Разница во времени
-        time_diff = now - updated_at
-        self.logger.info(f"С последнего обновления курсов прошло {time_diff.total_seconds()} секунд...")
-        if time_diff.total_seconds() > 7200:
-            self._reload_currencies()
-    def _reload_currencies(self):
-
-        self.logger.info("Обновляем курсы...")
-        self.interest_service.insert_currencies_into_table()
-        raw = self.qdb.get_currencies()
-
-        (self._,
-         self.usd_rub,
-         self.rub_usd,
-         self.usd_try,
-         self.cash_usd_try,
-         self.rub_try,
-         self.cash_rub_try,
-         self.try_rub,
-         self.usd_thb,
-         self.cash_usd_thb,
-         self.rub_thb,
-         self.cash_rub_thb,
-         self.rub_cny,
-         self.usd_cny,
-         self.cny_rub,
-         self.usd_krw,
-         self.krw_usd,
-         self.rub_krw,
-         self.krw_rub,
-         self.usd_vnd,
-         self.cash_usd_vnd,
-         self.rub_vnd,
-         self.cash_rub_vnd,
-         self.updated_at_str) = raw
-
-        self.logger.info("Курсы обновили! Успех!")

@@ -1,8 +1,11 @@
 pytelegrambotapi
 python-dotenv
-
+aiohttp
 coinoxr
 apscheduler
 pytz
 
 gspread
+
+requests
+pybit

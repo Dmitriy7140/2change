@@ -4,6 +4,10 @@ import sqlite3
 from contextlib import contextmanager
 from utils import logger
 from config import API_KEY
+from datetime import datetime, timedelta
+
+from api.rapira import RapiraAPI
+rapira = RapiraAPI()
 
 
 
@@ -181,8 +185,12 @@ class QueueDB:
 
             conn.close()
 
-    def add_to_queue(self,  tg_id, name, country=1,reason=None, amount1=None, amount2=None, currency1=None,
-                     currency2=None, time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")):
+    def add_to_queue(self, tg_id, name, country=1, reason=None,
+                     amount1=None, amount2=None, currency1=None,
+                     currency2=None, time=None):
+
+        if time is None:
+            time = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         with self.get_connection() as conn:
             c = conn.cursor()  # ✅ Исправлено
             c.execute('SELECT 1 FROM queue WHERE tg_id = ?', (tg_id,))
@@ -260,6 +268,36 @@ class QueueDB:
             logger.info(f"Посчитали, что осталось {count} заявок!")
         return count
 
+    def ensure_currency_fresh(self):
+        """
+        🔹 Проверяет, нужно ли обновить курсы
+        🔹 Обновляет, если прошло > 3 часов
+        """
+
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute('''SELECT updated_at
+                         FROM currency
+                         ORDER BY id DESC LIMIT 1''')
+
+            row = c.fetchone()
+
+        # 🔹 1. Если курсов вообще нет
+        if not row:
+            logger.info("Курсов нет — обновляем")
+            self.update_currency()
+            return
+
+        updated_at = datetime.strptime(row[0], "%d-%m-%Y %H:%M:%S.%f")
+        now = datetime.now()
+
+        # 🔹 2. Проверка на устаревание
+        if now - updated_at > timedelta(hours=3):
+            logger.info("Курсы устарели (>3ч) — обновляем")
+            self.update_currency()
+        else:
+            logger.info("Курсы свежие — обновление не требуется")
+
     def update_currency(self):
 
         """:return api_courses= {"usd_try":api_usd_try,
@@ -273,7 +311,8 @@ class QueueDB:
 
             all_courses = coinoxr.Latest().get(base=f"USD", show_alternative=True)
             api_usd_try = all_courses.body["rates"]["TRY"]
-            api_usd_rub = all_courses.body["rates"]["RUB"]
+            api_rub_usd = rapira.get_usdt_rub()["askPrice"]
+            api_usd_rub = rapira.get_usdt_rub()["bidPrice"]
             api_usd_thb = all_courses.body["rates"]["THB"]
             api_vnd_usd = all_courses.body["rates"]["VND"]
             api_usd_cny = all_courses.body["rates"]["CNY"]
@@ -299,7 +338,7 @@ class QueueDB:
 
 
             api_courses = {"usd_rub":api_usd_rub,
-                           "rub_usd":api_usd_rub,
+                           "rub_usd":api_rub_usd,
 
                            "usd_try":api_usd_try,
                            "cash_usd_try":api_usd_try,
@@ -361,7 +400,7 @@ class QueueDB:
 
             #РУБЛИ
             usd_rub= api_usd_rub -(api_usd_rub*we_sell["usd_rub_c"])
-            rub_usd = api_usd_rub *(1+we_sell["rub_usd_c"])
+            rub_usd = api_rub_usd *(1+we_sell["rub_usd_c"])
 
 
 
@@ -381,8 +420,8 @@ class QueueDB:
             #донги
             usd_vnd = api_vnd_usd - (api_vnd_usd * we_sell["usd_vnd_c"])
             cash_usd_vnd = api_vnd_usd - (api_vnd_usd * we_sell["cash_usd_vnd_c"])
-            rub_vnd = api_vnd_rub - (api_vnd_rub* we_sell["rub_vnd_c"])
-            cash_rub_vnd = api_vnd_rub - (api_vnd_rub *we_sell["cash_rub_vnd_c"])
+            rub_vnd = api_vnd_rub * (1+ we_sell["rub_vnd_c"])
+            cash_rub_vnd = api_vnd_rub * (1+we_sell["cash_rub_vnd_c"])
 
             #ЮАНИ
             rub_cny = api_rub_cny *(1 + we_sell["rub_cny_c"])
@@ -390,8 +429,8 @@ class QueueDB:
             cny_rub = api_rub_cny -(api_rub_cny* we_sell["cny_rub_c"])
 
             #ВОНЫ
-            krw_usd = api_krw_usd +(api_krw_usd * we_sell["krw_usd_c"])
-            krw_rub = api_krw_rub +(api_krw_rub * we_sell["krw_rub_c"])
+            krw_usd = api_krw_usd *(1 + we_sell["krw_usd_c"])
+            krw_rub = api_krw_rub *(1 + we_sell["krw_rub_c"])
             usd_krw =api_krw_usd -(api_krw_usd* we_sell["usd_krw_c"])
             rub_krw = api_krw_rub -(api_krw_rub* we_sell["krw_rub_c"])
             rates = (usd_rub,
@@ -429,24 +468,21 @@ class QueueDB:
 
             c.execute('''INSERT INTO currency (usd_rub, rub_usd, usd_try,cash_usd_try, rub_try, cash_rub_try, try_rub, 
              usd_thb, cash_usd_thb, rub_thb, cash_rub_thb, rub_cny, usd_cny, cny_rub,krw_usd, krw_rub, usd_krw, rub_krw,usd_vnd, cash_usd_vnd, rub_vnd, cash_rub_vnd, updated_at) 
-             VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?)''', (*rates, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")))
+             VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?)''', (*rates, datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")))
 
             conn.commit()
 
 
     def get_currencies(self):
         """returns: latest currency row (list) + api currencies (dict)"""
+        self.ensure_currency_fresh()
+
         with self.get_connection() as conn:
             c = conn.cursor()
-
             c.execute("SELECT * FROM currency ORDER BY id DESC LIMIT 1")
-
             row = c.fetchone()
-            if not row:
-                self.update_currency()
-                self.get_currencies()
 
-            return row
+        return row
 
     def get_coef(self):
         with self.get_connection() as conn:
@@ -461,7 +497,7 @@ class QueueDB:
         with self.get_connection() as conn:
             c = conn.cursor()
             c.execute(f'''UPDATE coef SET {column} = ?, updated_at = ? WHERE id = 1''',
-                      (value, datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")))
+                      (value, datetime.now().strftime("%d-%m-%Y %H:%M:%S")))
 
             logger.info(f"Коэффициент таблицы {column} изменен. Теперь он {value}")
             conn.commit()
@@ -505,7 +541,7 @@ class QueueDB:
             if not result:
                 qdb.update_currency()
                 self.get_latest_time()
-            updated_at = datetime.datetime.strptime(result[0], "%Y-%m-%d %H:%M:%S.%f")
+            updated_at = datetime.strptime(result[0], "%d-%m-%Y %H:%M:%S.%f")
             return updated_at
 
 

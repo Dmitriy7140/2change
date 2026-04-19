@@ -19,7 +19,7 @@ class ApplicationCreator:
         self.currency2 = currency2
         self.amount1 = amount1
         self.amount2 = amount2
-        self.time = time if time else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.time = time if time else datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 
 
 
