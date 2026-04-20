@@ -7,6 +7,8 @@ from config import API_KEY
 from datetime import datetime, timedelta
 
 from api.rapira import RapiraAPI
+from api.btcturk import get_usdt_try
+from api.bitkub import get_usdt_thb
 rapira = RapiraAPI()
 
 
@@ -310,26 +312,26 @@ class QueueDB:
             logger.info("Подсосались к апи...")
 
             all_courses = coinoxr.Latest().get(base=f"USD", show_alternative=True)
-            api_usd_try = all_courses.body["rates"]["TRY"]
+            api_usd_try = get_usdt_try()
             api_rub_usd = rapira.get_usdt_rub()["askPrice"]
             api_usd_rub = rapira.get_usdt_rub()["bidPrice"]
-            api_usd_thb = all_courses.body["rates"]["THB"]
+            api_usd_thb = get_usdt_thb()
             api_vnd_usd = all_courses.body["rates"]["VND"]
             api_usd_cny = all_courses.body["rates"]["CNY"]
             api_krw_usd = all_courses.body["rates"]["KRW"]
-            logger.info("Подтянули доллар...")
-            all_courses = coinoxr.Latest().get(base=f"TRY", show_alternative=True)
-            api_try_rub = all_courses.body["rates"]["RUB"]
-            logger.info("Подтянули лиры...")
-            all_courses = coinoxr.Latest().get(base=f"THB", show_alternative=True)
-            api_thb_rub = all_courses.body["rates"]["RUB"]
-            logger.info("Подтянули баты!")
-            all_courses = coinoxr.Latest().get(base=f"CNY", show_alternative=True)
-            api_rub_cny = all_courses.body["rates"]["RUB"]
-            logger.info("Подтянули юани!")
-            all_courses = coinoxr.Latest().get(base=f"RUB", show_alternative=True)
-            api_krw_rub = all_courses.body["rates"]["KRW"]
-            api_vnd_rub = all_courses.body["rates"]["VND"]
+            logger.info("Подтянули доллар!")
+            # all_courses = coinoxr.Latest().get(base=f"TRY", show_alternative=True)
+            # api_try_rub = all_courses.body["rates"]["RUB"]
+
+            # all_courses = coinoxr.Latest().get(base=f"THB", show_alternative=True)
+            # api_thb_rub = all_courses.body["rates"]["RUB"]
+
+            # all_courses = coinoxr.Latest().get(base=f"CNY", show_alternative=True)
+            # api_rub_cny = all_courses.body["rates"]["RUB"]
+
+            # all_courses = coinoxr.Latest().get(base=f"RUB", show_alternative=True)
+            # api_krw_rub = all_courses.body["rates"]["KRW"]
+            # api_vnd_rub = all_courses.body["rates"]["VND"]
 
 
 
@@ -337,32 +339,34 @@ class QueueDB:
             rows = rows_list[0]
 
 
-            api_courses = {"usd_rub":api_usd_rub,
+            r = {"usd_rub":api_usd_rub,
                            "rub_usd":api_rub_usd,
 
                            "usd_try":api_usd_try,
                            "cash_usd_try":api_usd_try,
-                           "rub_try":api_try_rub,
-                           "cash_rub_try":api_try_rub,
-                           "try_rub":api_try_rub,
+                           "rub_try":api_rub_usd/api_usd_try,
+                           "cash_rub_try":api_rub_usd/api_usd_try,
+                           "try_rub":api_rub_usd/api_usd_try,
 
                            "usd_thb": api_usd_thb,
                            "cash_usd_thb": api_usd_thb,
-                           "rub_thb": api_thb_rub,
-                           "cash_rub_thb": api_thb_rub,
+                           "rub_thb": api_rub_usd/api_usd_thb,
+                           "cash_rub_thb": api_rub_usd/api_usd_thb,
 
-                           "rub_cny": api_rub_cny,
+
                            "usd_cny": api_usd_cny,
-                           "cny_rub": api_rub_cny,
+                           "rub_cny": api_rub_usd / api_usd_cny,
+                           "cny_rub": api_rub_usd/api_usd_cny,
 
                            "usd_krw": api_krw_usd,
                            "krw_usd": api_krw_usd,
-                           "rub_krw": api_krw_rub,
-                           "krw_rub": api_krw_rub,
+                           "rub_krw": api_krw_usd/api_rub_usd,
+                           "krw_rub": api_krw_usd/api_rub_usd,
+
                            "usd_vnd": api_vnd_usd,
                            "cash_usd_vnd": api_vnd_usd,
-                           "rub_vnd": api_vnd_rub,
-                           "cash_rub_vnd": api_vnd_rub,
+                           "rub_vnd": api_vnd_usd/api_rub_usd,
+                           "cash_rub_vnd": api_vnd_usd/api_rub_usd,
 
 
                            }
@@ -396,43 +400,82 @@ class QueueDB:
                        "cash_rub_vnd_c": rows[22],
 
                        }
-
-
             #РУБЛИ
-            usd_rub= api_usd_rub -(api_usd_rub*we_sell["usd_rub_c"])
-            rub_usd = api_rub_usd *(1+we_sell["rub_usd_c"])
+            # usd_rub= api_usd_rub -(api_usd_rub*we_sell["usd_rub_c"])
+            # rub_usd = api_rub_usd *(1+we_sell["rub_usd_c"])
+            #
+            #
+            #
+            # #ЛИРЫ
+            # usd_try = api_usd_try-(api_usd_try* we_sell["usd_try_c"])
+            # cash_usd_try = api_usd_try - (api_usd_try*we_sell["cash_usd_try_c"])
+            # rub_try = api_try_rub * (1 + we_sell["rub_try_c"])
+            # cash_rub_try = api_try_rub * (1 + we_sell["cash_rub_try_c"])
+            # try_rub=api_try_rub-(api_try_rub*we_sell["try_rub_c"]) #ЧЕЛ ДАЕТ ЛИРУ, ПОЛУЧАЕТ РУБЛЬ. НАША ВЫГОДА ОСТАВИТЬ БОЛЬШЕ РУБЛЕЙ
+            #
+            # #БАТЫ
+            # usd_thb = api_usd_thb - (api_usd_thb * we_sell["usd_thb_c"])
+            # cash_usd_thb = api_usd_thb - (api_usd_thb * we_sell["cash_usd_thb_c"])
+            # rub_thb= api_thb_rub *(1 + we_sell["rub_thb_c"])
+            # cash_rub_thb= api_thb_rub *(1 + we_sell["cash_rub_thb_c"])
+            #
+            # #донги
+            # usd_vnd = api_vnd_usd - (api_vnd_usd * we_sell["usd_vnd_c"])
+            # cash_usd_vnd = api_vnd_usd - (api_vnd_usd * we_sell["cash_usd_vnd_c"])
+            # rub_vnd = api_vnd_rub * (1+ we_sell["rub_vnd_c"])
+            # cash_rub_vnd = api_vnd_rub * (1+we_sell["cash_rub_vnd_c"])
+            #
+            # #ЮАНИ
+            # rub_cny = api_rub_cny *(1 + we_sell["rub_cny_c"])
+            # usd_cny = api_usd_cny -(api_usd_cny* we_sell["usd_cny_c"])
+            # cny_rub = api_rub_cny -(api_rub_cny* we_sell["cny_rub_c"])
+            #
+            # #ВОНЫ
+            # krw_usd = api_krw_usd *(1 + we_sell["krw_usd_c"])
+            # krw_rub = api_krw_rub *(1 + we_sell["krw_rub_c"])
+            # usd_krw =api_krw_usd -(api_krw_usd* we_sell["usd_krw_c"])
+            # rub_krw = api_krw_rub -(api_krw_rub* we_sell["krw_rub_c"])
+
+            # РУБЛИ
+            usd_rub = r["usd_rub"] * (1 - we_sell["usd_rub_c"])
+            rub_usd = r["rub_usd"] * (1 + we_sell["rub_usd_c"])
+
+            # ЛИРЫ
+            usd_try = r["usd_try"] * (1 - we_sell["usd_try_c"])
+            cash_usd_try = r["cash_usd_try"] * (1 - we_sell["cash_usd_try_c"])
+            rub_try = r["rub_try"] * (1 + we_sell["rub_try_c"])
+            cash_rub_try = r["cash_rub_try"] * (1 + we_sell["cash_rub_try_c"])
+            try_rub = r["try_rub"] * (1 - we_sell["try_rub_c"])
+            logger.info("Посчитали лиры...")
+
+            # БАТЫ
+            usd_thb = r["usd_thb"] * (1 - we_sell["usd_thb_c"])
+            cash_usd_thb = r["cash_usd_thb"] * (1 - we_sell["cash_usd_thb_c"])
+            rub_thb = r["rub_thb"] * (1 + we_sell["rub_thb_c"])
+            cash_rub_thb = r["cash_rub_thb"] * (1 + we_sell["cash_rub_thb_c"])
+            logger.info("Посчитали баты...")
+            # ЮАНИ
+            rub_cny = r["rub_cny"] * (1 + we_sell["rub_cny_c"])
+            usd_cny = r["usd_cny"] * (1 - we_sell["usd_cny_c"])
+            cny_rub = r["cny_rub"] * (1 - we_sell["cny_rub_c"])
+            logger.info("Посчитали юани...")
+            # ВОНЫ
+            krw_usd = r["krw_usd"] * (1 + we_sell["krw_usd_c"])
+            krw_rub = r["krw_rub"] * (1 + we_sell["krw_rub_c"])
+            usd_krw = r["usd_krw"] * (1 - we_sell["usd_krw_c"])
+            rub_krw = r["rub_krw"] * (1 - we_sell["krw_rub_c"])
+            logger.info("Посчитали воны...")
+
+
+            # ДОНГИ
+            usd_vnd = r["usd_vnd"] * (1 - we_sell["usd_vnd_c"])
+            cash_usd_vnd = r["cash_usd_vnd"] * (1 - we_sell["cash_usd_vnd_c"])
+            rub_vnd = r["rub_vnd"] * (1 + we_sell["rub_vnd_c"])
+            cash_rub_vnd = r["cash_rub_vnd"] * (1 + we_sell["cash_rub_vnd_c"])
+            logger.info("Посчитали донги...")
 
 
 
-            #ЛИРЫ
-            usd_try = api_usd_try-(api_usd_try* we_sell["usd_try_c"])
-            cash_usd_try = api_usd_try - (api_usd_try*we_sell["cash_usd_try_c"])
-            rub_try = api_try_rub * (1 + we_sell["rub_try_c"])
-            cash_rub_try = api_try_rub * (1 + we_sell["cash_rub_try_c"])
-            try_rub=api_try_rub-(api_try_rub*we_sell["try_rub_c"]) #ЧЕЛ ДАЕТ ЛИРУ, ПОЛУЧАЕТ РУБЛЬ. НАША ВЫГОДА ОСТАВИТЬ БОЛЬШЕ РУБЛЕЙ
-
-            #БАТЫ
-            usd_thb = api_usd_thb - (api_usd_thb * we_sell["usd_thb_c"])
-            cash_usd_thb = api_usd_thb - (api_usd_thb * we_sell["cash_usd_thb_c"])
-            rub_thb= api_thb_rub *(1 + we_sell["rub_thb_c"])
-            cash_rub_thb= api_thb_rub *(1 + we_sell["cash_rub_thb_c"])
-
-            #донги
-            usd_vnd = api_vnd_usd - (api_vnd_usd * we_sell["usd_vnd_c"])
-            cash_usd_vnd = api_vnd_usd - (api_vnd_usd * we_sell["cash_usd_vnd_c"])
-            rub_vnd = api_vnd_rub * (1+ we_sell["rub_vnd_c"])
-            cash_rub_vnd = api_vnd_rub * (1+we_sell["cash_rub_vnd_c"])
-
-            #ЮАНИ
-            rub_cny = api_rub_cny *(1 + we_sell["rub_cny_c"])
-            usd_cny = api_usd_cny -(api_usd_cny* we_sell["usd_cny_c"])
-            cny_rub = api_rub_cny -(api_rub_cny* we_sell["cny_rub_c"])
-
-            #ВОНЫ
-            krw_usd = api_krw_usd *(1 + we_sell["krw_usd_c"])
-            krw_rub = api_krw_rub *(1 + we_sell["krw_rub_c"])
-            usd_krw =api_krw_usd -(api_krw_usd* we_sell["usd_krw_c"])
-            rub_krw = api_krw_rub -(api_krw_rub* we_sell["krw_rub_c"])
             rates = (usd_rub,
                      rub_usd,
                      usd_try,
@@ -460,7 +503,7 @@ class QueueDB:
             return None
         self.set_currency(rates)
 
-        return api_courses.values()
+        return r.values()
 
     def set_currency(self, rates:tuple):
         with self.get_connection() as conn:

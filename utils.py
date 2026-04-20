@@ -59,5 +59,3 @@ def start_scheduler(daily_task):
 
 
 
-
-
