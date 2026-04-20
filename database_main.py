@@ -353,9 +353,8 @@ class QueueDB:
                            "rub_thb": api_rub_usd/api_usd_thb,
                            "cash_rub_thb": api_rub_usd/api_usd_thb,
 
-
-                           "usd_cny": api_usd_cny,
                            "rub_cny": api_rub_usd / api_usd_cny,
+                           "usd_cny": api_usd_cny,
                            "cny_rub": api_rub_usd/api_usd_cny,
 
                            "usd_krw": api_krw_usd,
@@ -463,15 +462,15 @@ class QueueDB:
             krw_usd = r["krw_usd"] * (1 + we_sell["krw_usd_c"])
             krw_rub = r["krw_rub"] * (1 + we_sell["krw_rub_c"])
             usd_krw = r["usd_krw"] * (1 - we_sell["usd_krw_c"])
-            rub_krw = r["rub_krw"] * (1 - we_sell["krw_rub_c"])
+            rub_krw = r["rub_krw"] * (1 - we_sell["rub_krw_c"])
             logger.info("Посчитали воны...")
 
 
             # ДОНГИ
             usd_vnd = r["usd_vnd"] * (1 - we_sell["usd_vnd_c"])
             cash_usd_vnd = r["cash_usd_vnd"] * (1 - we_sell["cash_usd_vnd_c"])
-            rub_vnd = r["rub_vnd"] * (1 + we_sell["rub_vnd_c"])
-            cash_rub_vnd = r["cash_rub_vnd"] * (1 + we_sell["cash_rub_vnd_c"])
+            rub_vnd = r["rub_vnd"] * (1 - we_sell["rub_vnd_c"])
+            cash_rub_vnd = r["cash_rub_vnd"] * (1 - we_sell["cash_rub_vnd_c"])
             logger.info("Посчитали донги...")
 
 
