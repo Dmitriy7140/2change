@@ -7,7 +7,7 @@ class CurrencyOrchestrator:
         self.qdb = qdb
         self.interest_service = interest_service
         self.logger = logger
-        self.interval = 1 * 60 * 60
+        self.interval = 20 * 60
 
         self._stop_flag = False
         self.thread = None
