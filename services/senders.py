@@ -6,24 +6,16 @@ from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from config import TEST_MODE, ADMIN_CHANNEL
 from services.applications import ApplicationCreator
 
-# CHANNELS = {
-#     "turkey" : -1001606763790,
-#     "thailand" :-1003114769509,
-#     "china": -1003446339439,
-#     "korea" : -1001290060134,
-#     "vietnam":-1003683646201,
-#
-#
-# }
 CHANNELS = {
-    "turkey" : ADMIN_CHANNEL,
-    "thailand" : ADMIN_CHANNEL,
-    "china": ADMIN_CHANNEL,
-    "korea" : ADMIN_CHANNEL,
-    "vietnam":ADMIN_CHANNEL,
+    "turkey" : -1001606763790,
+    "thailand" :-1003114769509,
+    "china": -1003446339439,
+    "korea" : -1001290060134,
+    "vietnam":-1003683646201,
 
 
 }
+
 
 class SenderService:
 
@@ -188,7 +180,7 @@ class SenderService:
         }
         for country, message in messages_dict.items():
             try:
-                self.bot.send_message(text=f"{country} {message}",chat_id=CHANNELS[country], parse_mode="HTML")
+                self.bot.send_message(text=message,chat_id=CHANNELS[country] if not TEST_MODE else ADMIN_CHANNEL, parse_mode="HTML")
                 time.sleep(0.04)
             except Exception as e:
                 errors[country] = e
@@ -198,5 +190,5 @@ class SenderService:
             msg = ("При ежедневной рассылке возникли проблемы:\n"
                    f"<code>{errors}</code>")
         else:
-            msg = f"<b>{'[ТЕСТ]' if TEST_MODE else "[ТЕСТ] 🤖:"}</b> Отправили курсы во все каналы, проблем не возникло🥝!"
+            msg = f"<b>{'[ТЕСТ]' if TEST_MODE else "🤖:"}</b> Отправили курсы во все каналы, проблем не возникло🥝!"
         self.bot.send_message(text=msg, chat_id=ADMIN_CHANNEL, parse_mode="HTML")
