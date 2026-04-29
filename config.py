@@ -13,6 +13,7 @@ ADMIN_IDS = [int(x) for x in os.getenv("ADMIN_IDS", "").split(",") if x]
 NOTIFICATION_CHAT = int(os.getenv("NOTIFICATION_CHAT", 0))
 TEST_NOTIFICATION_CHAT = int(os.getenv("TEST_NOTIFICATION_CHAT", 0))
 SUPPORT_CHAT_ID = int(os.getenv("SUPPORT_CHAT_ID", 0))
+ADMIN_CHANNEL = int(os.getenv("ADMIN_CHANNEL", 0))
 
 TEST_BOT_TOKEN=os.getenv("TEST_BOT_TOKEN")
 

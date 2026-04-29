@@ -68,7 +68,7 @@ subscription_service = SubscriptionService(bot, logger, TEST_MODE)
 
 
 
-sender_service = SenderService(bot, qdb, manager_chat_id, day_off)
+sender_service = SenderService(bot, qdb, manager_chat_id, day_off, logger)
 
 state_manager = StateManager(logger)
 

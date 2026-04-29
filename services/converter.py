@@ -20,59 +20,10 @@ class FinInstr:
             self.qdb.update_currency()
             raw = self.qdb.get_currencies()
 
-        (
-            _,
-            usd_rub,
-            rub_usd,
-            usd_try,
-            cash_usd_try,
-            rub_try,
-            cash_rub_try,
-            try_rub,
-            usd_thb,
-            cash_usd_thb,
-            rub_thb,
-            cash_rub_thb,
-            rub_cny,
-            usd_cny,
-            cny_rub,
-            usd_krw,
-            krw_usd,
-            rub_krw,
-            krw_rub,
-            usd_vnd,
-            cash_usd_vnd,
-            rub_vnd,
-            cash_rub_vnd,
-            updated_at,
-        ) = raw
+
 
         # ✅ превращаем в dict — дальше будет сильно проще
-        return {
-            "usd_rub": usd_rub,
-            "rub_usd": rub_usd,
-            "usd_try": usd_try,
-            "cash_usd_try": cash_usd_try,
-            "rub_try": rub_try,
-            "cash_rub_try": cash_rub_try,
-            "try_rub": try_rub,
-            "usd_thb": usd_thb,
-            "cash_usd_thb": cash_usd_thb,
-            "rub_thb": rub_thb,
-            "cash_rub_thb": cash_rub_thb,
-            "rub_cny": rub_cny,
-            "usd_cny": usd_cny,
-            "cny_rub": cny_rub,
-            "usd_krw": usd_krw,
-            "krw_usd": krw_usd,
-            "rub_krw": rub_krw,
-            "krw_rub": krw_rub,
-            "usd_vnd": usd_vnd,
-            "cash_usd_vnd": cash_usd_vnd,
-            "rub_vnd": rub_vnd,
-            "cash_rub_vnd": cash_rub_vnd,
-            "updated_at": updated_at,
-        }
+        return raw
 
     # =========================
     # 💱 ВЫВОД КУРСОВ

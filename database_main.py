@@ -1,3 +1,5 @@
+from typing import Any
+
 import coinoxr
 import datetime
 import sqlite3
@@ -294,7 +296,7 @@ class QueueDB:
         now = datetime.now()
 
         # 🔹 2. Проверка на устаревание
-        if now - updated_at > timedelta(hours=3):
+        if now - updated_at > timedelta(minutes=20):
             logger.info("Курсы устарели (>3ч) — обновляем")
             self.update_currency()
         else:
@@ -320,19 +322,6 @@ class QueueDB:
             api_usd_cny = all_courses.body["rates"]["CNY"]
             api_krw_usd = all_courses.body["rates"]["KRW"]
             logger.info("Подтянули доллар!")
-            # all_courses = coinoxr.Latest().get(base=f"TRY", show_alternative=True)
-            # api_try_rub = all_courses.body["rates"]["RUB"]
-
-            # all_courses = coinoxr.Latest().get(base=f"THB", show_alternative=True)
-            # api_thb_rub = all_courses.body["rates"]["RUB"]
-
-            # all_courses = coinoxr.Latest().get(base=f"CNY", show_alternative=True)
-            # api_rub_cny = all_courses.body["rates"]["RUB"]
-
-            # all_courses = coinoxr.Latest().get(base=f"RUB", show_alternative=True)
-            # api_krw_rub = all_courses.body["rates"]["KRW"]
-            # api_vnd_rub = all_courses.body["rates"]["VND"]
-
 
 
             rows_list= self.get_coef()
@@ -399,43 +388,7 @@ class QueueDB:
                        "cash_rub_vnd_c": rows[22],
 
                        }
-            #РУБЛИ
-            # usd_rub= api_usd_rub -(api_usd_rub*we_sell["usd_rub_c"])
-            # rub_usd = api_rub_usd *(1+we_sell["rub_usd_c"])
-            #
-            #
-            #
-            # #ЛИРЫ
-            # usd_try = api_usd_try-(api_usd_try* we_sell["usd_try_c"])
-            # cash_usd_try = api_usd_try - (api_usd_try*we_sell["cash_usd_try_c"])
-            # rub_try = api_try_rub * (1 + we_sell["rub_try_c"])
-            # cash_rub_try = api_try_rub * (1 + we_sell["cash_rub_try_c"])
-            # try_rub=api_try_rub-(api_try_rub*we_sell["try_rub_c"]) #ЧЕЛ ДАЕТ ЛИРУ, ПОЛУЧАЕТ РУБЛЬ. НАША ВЫГОДА ОСТАВИТЬ БОЛЬШЕ РУБЛЕЙ
-            #
-            # #БАТЫ
-            # usd_thb = api_usd_thb - (api_usd_thb * we_sell["usd_thb_c"])
-            # cash_usd_thb = api_usd_thb - (api_usd_thb * we_sell["cash_usd_thb_c"])
-            # rub_thb= api_thb_rub *(1 + we_sell["rub_thb_c"])
-            # cash_rub_thb= api_thb_rub *(1 + we_sell["cash_rub_thb_c"])
-            #
-            # #донги
-            # usd_vnd = api_vnd_usd - (api_vnd_usd * we_sell["usd_vnd_c"])
-            # cash_usd_vnd = api_vnd_usd - (api_vnd_usd * we_sell["cash_usd_vnd_c"])
-            # rub_vnd = api_vnd_rub * (1+ we_sell["rub_vnd_c"])
-            # cash_rub_vnd = api_vnd_rub * (1+we_sell["cash_rub_vnd_c"])
-            #
-            # #ЮАНИ
-            # rub_cny = api_rub_cny *(1 + we_sell["rub_cny_c"])
-            # usd_cny = api_usd_cny -(api_usd_cny* we_sell["usd_cny_c"])
-            # cny_rub = api_rub_cny -(api_rub_cny* we_sell["cny_rub_c"])
-            #
-            # #ВОНЫ
-            # krw_usd = api_krw_usd *(1 + we_sell["krw_usd_c"])
-            # krw_rub = api_krw_rub *(1 + we_sell["krw_rub_c"])
-            # usd_krw =api_krw_usd -(api_krw_usd* we_sell["usd_krw_c"])
-            # rub_krw = api_krw_rub -(api_krw_rub* we_sell["krw_rub_c"])
 
-            # РУБЛИ
             usd_rub = r["usd_rub"] * (1 - we_sell["usd_rub_c"])
             rub_usd = r["rub_usd"] * (1 + we_sell["rub_usd_c"])
 
@@ -502,7 +455,7 @@ class QueueDB:
             return None
         self.set_currency(rates)
 
-        return r.values()
+        return  r
 
     def set_currency(self, rates:tuple):
         with self.get_connection() as conn:
@@ -515,15 +468,67 @@ class QueueDB:
             conn.commit()
 
 
-    def get_currencies(self):
-        """returns: latest currency row (list) + api currencies (dict)"""
+    def get_currencies(self, should_be_dict:bool=True) -> dict[str | Any, Any] | Any:
+
+        """returns: latest currency row (tuple) + api currencies (dict)"""
         self.ensure_currency_fresh()
 
         with self.get_connection() as conn:
             c = conn.cursor()
             c.execute("SELECT * FROM currency ORDER BY id DESC LIMIT 1")
             row = c.fetchone()
-
+        if should_be_dict:
+            (
+                _,
+                usd_rub,
+                rub_usd,
+                usd_try,
+                cash_usd_try,
+                rub_try,
+                cash_rub_try,
+                try_rub,
+                usd_thb,
+                cash_usd_thb,
+                rub_thb,
+                cash_rub_thb,
+                rub_cny,
+                usd_cny,
+                cny_rub,
+                usd_krw,
+                krw_usd,
+                rub_krw,
+                krw_rub,
+                usd_vnd,
+                cash_usd_vnd,
+                rub_vnd,
+                cash_rub_vnd,
+                updated_at,
+            ) = row
+            return {
+            "usd_rub": usd_rub,
+            "rub_usd": rub_usd,
+            "usd_try": usd_try,
+            "cash_usd_try": cash_usd_try,
+            "rub_try": rub_try,
+            "cash_rub_try": cash_rub_try,
+            "try_rub": try_rub,
+            "usd_thb": usd_thb,
+            "cash_usd_thb": cash_usd_thb,
+            "rub_thb": rub_thb,
+            "cash_rub_thb": cash_rub_thb,
+            "rub_cny": rub_cny,
+            "usd_cny": usd_cny,
+            "cny_rub": cny_rub,
+            "usd_krw": usd_krw,
+            "krw_usd": krw_usd,
+            "rub_krw": rub_krw,
+            "krw_rub": krw_rub,
+            "usd_vnd": usd_vnd,
+            "cash_usd_vnd": cash_usd_vnd,
+            "rub_vnd": rub_vnd,
+            "cash_rub_vnd": cash_rub_vnd,
+            "updated_at": updated_at,
+                                }
         return row
 
     def get_coef(self):
