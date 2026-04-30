@@ -3,7 +3,7 @@ from datetime import datetime
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from config import TEST_MODE, ADMIN_CHANNEL, ADMIN_IDS
+from config import TEST_MODE, ADMIN_CHANNEL
 from services.applications import ApplicationCreator
 
 CHANNELS = {
@@ -117,7 +117,7 @@ class SenderService:
                      "<tg-emoji emoji-id='5370638904640676079'>➡️</tg-emoji><b>Акция!</b> Бесплатная симкарта на 1ГБ всем подписчикам. А при обмене от 20 000 лир через QR - eSIM на 10ГБ в подарок!\n"
                      "⚜️<a href='https://t.me/turkey_2change/31568'>Подробные условия</a>\n\n"
                      ""
-                     "<tg-emoji emoji-id='5471978009449731768'></tg-emoji>Пишите <a href='https://t.me/ALEXANDRA_2CHANGE?text=🙌Добрый%день!%Мне%необходимо%обменять%валюту%в%Турции'>\"ОБМЕН\"</a> @alexandra_2change либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте</a>")
+                     "<tg-emoji emoji-id='5471978009449731768'></tg-emoji>Пишите <a href='https://t.me/ALEXANDRA_2CHANGE?text=🙌Добрый%20день!%20Мне%20необходимо%20обменять%20валюту%20в%20Турции'>\"ОБМЕН\" @alexandra_2change </a>либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте</a>")
         msg_thailand = (f"{title}"
                      f"▪️Рубль<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Бат нал {r["cash_rub_thb"]:.2f}₽ (QR банкомат)\n"
                      f"▪️Рубль<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Бат безнал {r["rub_thb"]:.2f}₽\n"                     
@@ -129,14 +129,14 @@ class SenderService:
                      "<tg-emoji emoji-id='5370638904640676079'></tg-emoji><b>Акция!</b> Бесплатная симкарта при обмене от 20 000 бат через QR - eSIM на 3ГБ в подарок!\n"
                      "⚜️<a href='https://t.me/thailand_2change/471'>Подробные условия</a>\n\n"
                      ""
-                     "<tg-emoji emoji-id='5471978009449731768'></tg-emoji>Пишите <a href='https://t.me/ALEXANDRA_2CHANGE?text=🙌Добрый%день!%Мне%необходимо%обменять%валюту%в%Тайланде'>\"ОБМЕН\"</a> @alexandra_2change либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте</a>")
+                     "<tg-emoji emoji-id='5471978009449731768'></tg-emoji>Пишите <a href='https://t.me/ALEXANDRA_2CHANGE?text=🙌Добрый%20день!%20Мне%20необходимо%20обменять%20валюту%20в%20Тайланде'>\"ОБМЕН\" @alexandra_2change</a> либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте</a>")
 
         msg_china = (f"{title}"
                      f"▪️Рубль<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Юань {r["rub_cny"]:.2f} ₽ (AliPay/WeChat)\n"
                      f"▪️USDT<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Юань {r["usd_cny"]:.2f}  ¥\n"
                      f"▪️Юань<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Рубль {r["cny_rub"]:.2f} ₽\n"                     
                      "▪️Рубль<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Другие валюты по запросу\n\n"
-                     "<tg-emoji emoji-id='5471978009449731768'></tg-emoji>Пишите <a href='https://t.me/ALEXANDRA_2CHANGE?text=🙌Добрый%день!%Мне%необходимо%обменять%валюту%в%Китае'>\"ОБМЕН\"</a> @alexandra_2change либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте</a>\n\n"
+                     "<tg-emoji emoji-id='5471978009449731768'></tg-emoji>Пишите <a href='https://t.me/ALEXANDRA_2CHANGE?text=🙌Добрый%20день!%20Мне%20необходимо%20обменять%20валюту%20в%20Китае'>\"ОБМЕН\" @alexandra_2change</a> либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте</a>\n\n"
                      ""
                      "<tg-emoji emoji-id='5370638904640676079'></tg-emoji><b>Акция!</b> Индивидуальный курс от 100 000₽\n"                    
                      "⚜️<a href='https://t.me/china_2change/10'>Подробные условия</a>\n\n"
@@ -164,7 +164,7 @@ class SenderService:
                      "<tg-emoji emoji-id='5370638904640676079'></tg-emoji><b>Акция!</b> Бесплатная симкарта при обмене от 20 млн донгов через QR - eSIM на 10ГБ в подарок!\n"
                      "⚜️<a href='https://t.me/vietnam_2change/210'>Подробные условия</a>\n\n"
                      ""
-                     "<tg-emoji emoji-id='5471978009449731768'></tg-emoji>Пишите <a href='https://t.me/ALEXANDRA_2CHANGE?text=🙌Добрый%день!%Мне%необходимо%обменять%валюту%во%Вьетнаме'>\"ОБМЕН\"</a> @alexandra_2change либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте</a>")
+                     "<tg-emoji emoji-id='5471978009449731768'></tg-emoji>Пишите <a href='https://t.me/ALEXANDRA_2CHANGE?text=🙌Добрый%20день!%20Мне%20необходимо%20обменять%20валюту%20во%20Вьетнаме'>\"ОБМЕН\" @alexandra_2change</a>  либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте</a>")
         return {
             "turkey" : msg_turkey,
             "thailand": msg_thailand,
