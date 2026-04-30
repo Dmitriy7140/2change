@@ -52,8 +52,8 @@ def start_scheduler(daily_task1, sender_service):
         sender_service.send_channel_notification,
         'cron',
         day_of_week='mon-sat',
-        hour='10,15',
-        minute=0,
+        hour='9,15',
+        minute=36,
         timezone=msk_tz
     )
     scheduler.start()
