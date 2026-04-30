@@ -180,7 +180,7 @@ class SenderService:
         }
         for country, message in messages_dict.items():
             try:
-                self.bot.send_message(text=message,chat_id=ADMIN_IDS[0] if not TEST_MODE else ADMIN_CHANNEL, parse_mode="HTML")
+                self.bot.send_message(text=message,chat_id=CHANNELS[country] if not TEST_MODE else ADMIN_CHANNEL, parse_mode="HTML")
                 time.sleep(0.04)
             except Exception as e:
                 errors[country] = e
