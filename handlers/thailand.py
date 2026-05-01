@@ -4,9 +4,10 @@ from typing import Callable
 
 
 class ThailandHandlers:
-    def __init__(self, bot, subscription_service, send_media, fin_instr_class_obj, state_manager):
+    def __init__(self, bot, subscription_service, send_media, fin_instr_class_obj, state_manager, track_user):
         self.bot = bot
         self.subscription_service = subscription_service
+        self.track= track_user
         self.send_media = send_media
         self.finstr = fin_instr_class_obj
         self.clearstate = state_manager.clear
@@ -17,6 +18,8 @@ class ThailandHandlers:
 
     def register(self):
         @self.bot.callback_query_handler(func=lambda c: c.data.startswith("thai"))
+        @self.track(state="thailand")
+
         @self.subscription_service.require_subscription(3)
         def handle_call(call):
             self.handle_thai(call)

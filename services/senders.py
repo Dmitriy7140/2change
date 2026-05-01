@@ -4,7 +4,7 @@ from datetime import datetime
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from config import TEST_MODE, ADMIN_CHANNEL
-from services.applications import ApplicationCreator
+from services.application_creator_service import ApplicationCreator
 
 CHANNELS = {
     "turkey" : -1001606763790,

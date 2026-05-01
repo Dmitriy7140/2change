@@ -18,6 +18,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+
 def day_off():
     """:returns True if it is day off  """
 
@@ -31,9 +32,9 @@ def day_off():
         return True
 
     logger.info("Не выходной, увы!")
-    return False#if not day off
+    return False   #false if not day off
 
-def start_scheduler(daily_task1, sender_service):
+def start_scheduler(queue_service, sender_service, anal_sheets):
 
     scheduler = BackgroundScheduler()
 
@@ -41,11 +42,11 @@ def start_scheduler(daily_task1, sender_service):
 
     # Ежедневно в 10:00 MSK, кроме воскресенья (mon-fri = 1-5)
     scheduler.add_job(
-        daily_task1,
+        queue_service.run,
         'cron',
         day_of_week='mon-sat',
         hour=10,
-        minute=1,
+        minute=2,
         timezone=msk_tz
     )
     scheduler.add_job(
@@ -56,7 +57,13 @@ def start_scheduler(daily_task1, sender_service):
         minute=0,
         timezone=msk_tz
     )
+    scheduler.add_job(
+        anal_sheets.sync_links,
+        'interval',
+        minutes=30
+    )
     scheduler.start()
+
 
 
 

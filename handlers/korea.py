@@ -2,12 +2,13 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from typing import Callable
 
 class KoreaHandlers:
-    def __init__(self, bot, subscription_service, send_media, fin_instr_class_obj, state_manager):
+    def __init__(self, bot, subscription_service, send_media, fin_instr_class_obj, state_manager, track_user):
         self.bot = bot
         self.subscription_service = subscription_service
         self.send_media = send_media
         self.finstr = fin_instr_class_obj
         self.clearstate = state_manager.clear
+        self.track = track_user
 
         self.routes : dict[str, Callable] = {
             "kr_menu": self.kr_menu,
@@ -17,6 +18,8 @@ class KoreaHandlers:
         }
     def register(self):
         @self.bot.callback_query_handler(func=lambda c: c.data.startswith("kr"))
+        @self.track(state="korea")
+
         @self.subscription_service.require_subscription(5)
         def handle_call(call):
             self.handle_korea(call)

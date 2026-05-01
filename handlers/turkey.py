@@ -4,12 +4,13 @@ from typing import Callable
 
 class TurkeyHandlers:
 
-    def __init__(self, bot, subscription_service, send_media, fin_instr_class_obj, state_manager):
+    def __init__(self, bot, subscription_service, send_media, fin_instr_class_obj, state_manager, track_user):
         self.bot = bot
         self.subscription_service = subscription_service
         self.send_media = send_media
         self.finstr = fin_instr_class_obj
         self.clearstate = state_manager.clear
+        self.track = track_user
 
         self.routes : dict[str, Callable] = {
             "tr_menu": self.tr_menu,
@@ -25,6 +26,8 @@ class TurkeyHandlers:
 
     def register(self):
         @self.bot.callback_query_handler(lambda c: c.data.startswith("tr"))
+        @self.track(state="turkey")
+
         @self.subscription_service.require_subscription(1)
         def handle_call(call):
             self.handle_turkey(call)

@@ -2,11 +2,11 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from typing import Callable
 
 class AppstoreHandlers:
-    def __init__(self, bot, subscription_service, send_media, state_manager):
+    def __init__(self, bot, subscription_service, send_media, state_manager, track_user):
         self.bot = bot
         self.subscription_service = subscription_service
         self.send_media = send_media
-
+        self.track = track_user
         self.clearstate = state_manager.clear
 
         self.routes : dict[str, Callable] = {
@@ -15,7 +15,7 @@ class AppstoreHandlers:
         }
     def register(self):
         @self.bot.callback_query_handler(lambda c: c.data.startswith("appstore"))
-
+        @self.track()
         def handle_call(call):
             self.handle_appstore(call)
 

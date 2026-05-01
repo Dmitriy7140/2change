@@ -7,10 +7,11 @@ from typing import Callable
 
 class EsimHandlers:
 
-    def __init__(self, bot, subscription_service, sender_service, state_manager):
+    def __init__(self, bot, subscription_service, sender_service, state_manager, track_user):
         self.bot = bot
         self.subscription_service = subscription_service
         self.sender_service = sender_service
+        self.track = track_user
 
         self.to_edit = {}
         self.img_cache = {}
@@ -39,6 +40,7 @@ class EsimHandlers:
         self.clearstate = state_manager.clear
     def register(self):
         @self.bot.callback_query_handler(func=lambda c: c.data.startswith("esim"))
+        @self.track()
         def handle(call):
             self.handle_esim(call)
 
