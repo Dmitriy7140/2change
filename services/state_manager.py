@@ -11,7 +11,7 @@ class StateManager:
             "data": data,
             "created_at": time.time()
         }
-        self.logger.info(f"Состояние чата {chat_id} добавлено. Data: {data}")
+
     def get(self, chat_id):
         state = self.states.get(chat_id)
         if not state:
@@ -20,14 +20,14 @@ class StateManager:
 
         # проверка TTL
         if time.time() - state["created_at"] > self.total:
-            self.logger.info(f"Сессия для чата {chat_id} истекла")
+
             del self.states[chat_id]
             return None
 
         return state["data"]
 
     def clear(self, chat_id):
-        self.logger.info(f"Удалено состояние для чата {chat_id}")
+
         self.states.pop(chat_id, None)
 
     def exists(self, chat_id):

@@ -199,7 +199,7 @@ class SpamService:
         # -------------------------
         # 📌 DEBUG LOG
         # -------------------------
-        self.logger.info(f"[ANNOUNCE] group={group} db_state={db_state} users={len(users) if users else 0}")
+
 
         # -------------------------
         # 📌 SAFETY CHECK
@@ -237,7 +237,7 @@ class SpamService:
             f"✅ Успешно: {sent}\n"
             f"❌ Ошибок: {failed}"
         )
-
+        self.logger.info(f"{call.from_user.id} разослал сообщения пользователям")
     # -------------------------
     # 📌 CANCEL
     # -------------------------
