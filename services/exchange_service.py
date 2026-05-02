@@ -13,14 +13,14 @@ class ExchangeService:
 
         self.currency_names = {"rub": "RUB🇷🇺",
                                "usd": "USDT🪙",
-                               "try": "TRY🇹🇷",
-                               "try_cash": "нал. TRY🇹🇷",
-                               "thb": "THB🇹🇭",
-                               "thb_cash": "нал. THB🇹🇭",
+                               "try": "IBAN TRY🇹🇷",
+                               "try_cash": "НАЛ. TRY🇹🇷",
+                               "thb": "БЕЗНАЛ. THB🇹🇭",
+                               "thb_cash": "НАЛ. THB🇹🇭",
                                "cny": "CNY🇨🇳",
                                "krw": "KRW🇰🇷",
-                               "vnd":"VND🇻🇳",
-                               "vnd_cash":"нал. VND🇻🇳"}
+                               "vnd":"БЕЗНАЛ. VND🇻🇳",
+                               "vnd_cash":"НАЛ. VND🇻🇳"}
         self.min_amount = {"rub/try_cash": 10750,
                       "rub/try": 5000,
                       "usd/try_cash": 132,
@@ -385,11 +385,12 @@ class ExchangeService:
         elif call.data == "calc_tr":
             msg = "💸<i>Выберите валюту для обмена:</i>"
             keybord3 = InlineKeyboardMarkup(row_width=2)
-            keybord3.add(InlineKeyboardButton("🇷🇺Рубли→🇹🇷 Лиры (IBAN)", callback_data="exchange/rub/try/1"))
             keybord3.add(InlineKeyboardButton("🇷🇺Рубли→🇹🇷 Наличные лиры", callback_data="exchange/rub/try_cash/1"))
+            keybord3.add(InlineKeyboardButton("🇷🇺Рубли→🇹🇷 Лиры (IBAN)", callback_data="exchange/rub/try/1"))
 
-            keybord3.add(InlineKeyboardButton("🪙USDT→🇹🇷 Лиры (IBAN)", callback_data="exchange/usd/try/1"))
             keybord3.add(InlineKeyboardButton("🪙USDT→🇹🇷 Наличные лиры", callback_data="exchange/usd/try_cash/1"))
+            keybord3.add(InlineKeyboardButton("🪙USDT→🇹🇷 Лиры (IBAN)", callback_data="exchange/usd/try/1"))
+
 
             keybord3.add(InlineKeyboardButton("🇹🇷Лиры →🇷🇺 Рубли (Переводом)", callback_data="exchange/try/rub/1"))
             keybord3.row(InlineKeyboardButton("💰Иные валюты", callback_data="request/💰Обмен иных валют/1"),
