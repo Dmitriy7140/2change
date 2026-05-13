@@ -107,7 +107,7 @@ finstr = FinInstr(
     logger,
 
 )
-exchange_service = ExchangeService(bot, logger, sender_service, finstr, state_manager)
+exchange_service = ExchangeService(bot, logger, sender_service, finstr, state_manager, user_db)
 exchange_service.register_handlers()
 
 

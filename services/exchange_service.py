@@ -2,13 +2,13 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 class ExchangeService:
 
-    def __init__(self, bot, logger, sender_service, fin_instr, state_manager):
+    def __init__(self, bot, logger, sender_service, fin_instr, state_manager, userdb):
         self.bot = bot
 
         self.finstr = fin_instr
         self.logger = logger
         self.sender_service = sender_service
-
+        self.update_state = userdb.update_state
         self.state_manager = state_manager
 
         self.currency_names = {"rub": "RUB🇷🇺",
@@ -235,6 +235,8 @@ class ExchangeService:
         chat_id = call.message.chat.id
 
         _, currency1, currency2, country = call.data.split("/")
+        if currency1 == 'try' or currency2 == 'try':
+            self.update_state(call.from_user.id, f"iban")
         self.bot.delete_message(chat_id, call.message.message_id)
         msg = ("⚙️Выберите режим калькулятора:\n\n"
                f"<b>Обмен : {self.currency_names[currency1]} → {self.currency_names[currency2]}\n\n</b>"

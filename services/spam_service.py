@@ -46,8 +46,9 @@ class SpamService:
 
         kb.row(
             InlineKeyboardButton("🇹🇷 Турция", callback_data="announce_tr"),
-            InlineKeyboardButton("🇻🇳 Вьетнам", callback_data="announce_vn"),
+            InlineKeyboardButton("🇹🇷ИБАН", callback_data="announce_iban"),
         )
+        kb.add(InlineKeyboardButton("🇻🇳 Вьетнам", callback_data="announce_vn"))
         kb.row(
             InlineKeyboardButton("🇰🇷 Корея", callback_data="announce_kr"),
             InlineKeyboardButton("🇷🇺 Россия", callback_data="announce_ru"),
@@ -139,6 +140,7 @@ class SpamService:
             "announce_kr": "Корея",
             "announce_ru": "Россия",
             "announce_cn": "Китай",
+            "announce_iban":"ИБАН",
             "announce_all": "ВСЕ"
         }
 
@@ -178,6 +180,7 @@ class SpamService:
             "announce_kr": "korea",
             "announce_ru": "russia",
             "announce_cn": "china",
+            "announce_iban": "iban",
         }
 
         # -------------------------
