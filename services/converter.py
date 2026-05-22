@@ -81,17 +81,19 @@ class FinInstr:
         elif country == 3:
             msg=(f"💱<b> Актуальный курс на {now} </b>\n\n"
                  f""
-                 f"Отдаете:🇷🇺{r["rub_thb"]:.2f} RUB\n"
-                 f"Получаете:🇹🇭1 THB (на счет)\n\n"
-                 f""
                  f"Отдаете:🇷🇺{r["cash_rub_thb"]:.2f} RUB\n"
                  f"Получаете:🇹🇭1 THB (наличными)\n\n"
                  f""
+                 f"Отдаете:🇷🇺{r["rub_thb"]:.2f} RUB\n"
+                 f"Получаете:🇹🇭1 THB (на счет)\n\n"
+                 f""
+                 
+                 f"Отдаете:🪙1 USDT\n"
+                 f"Получаете:🇹🇭{r["cash_usd_thb"]:.2f} THB (наличными)\n\n"
                  f"Отдаете:🪙1 USDT\n"
                  f"Получаете:🇹🇭{r["usd_thb"]:.2f} THB (на счет)\n\n"
                  f""
-                 f"Отдаете:🪙1 USDT\n"
-                 f"Получаете:🇹🇭{r["cash_usd_thb"]:.2f} THB (наличными)"
+
                  )
             self.logger.info("Сделали сообщение для Тайланда, выслали!")
             return msg
@@ -111,20 +113,21 @@ class FinInstr:
         elif country == 5:
             msg = (f"<b>Актуальный курс на {now} </b>\n\n"
                    ""
-                   f"Отдаете: 🪙1 USDT\n"
-                   f"Получаете: 🇰🇷  {r["usd_krw"]:.2f} KRW\n\n"
                    f""
                    f"Отдаете: 🇷🇺 1 RUB\n"
                    f"Получаете: 🇰🇷  {r["rub_krw"]:.2f} KRW\n\n"
                    f""
+                   f"Отдаете: 🪙1 USDT\n"
+                   f"Получаете: 🇰🇷  {r["usd_krw"]:.2f} KRW\n\n"
+                   
                    f"Отдаете: 🇰🇷 {r["krw_rub"]:.2f} KRW\n"
                    f"Получаете: 🇷🇺 1 RUB\n\n"
                    f""
-                   f"Отдаете: 🇰🇷 {r["krw_usd"]:.2f} KRW\n"
-                   f"Получаете:🪙 1 USDT\n\n"
+                   f"Отдаете: 🪙 1 USDT\n"
+                   f"Получаете:{r["usd_rub"]:.2f} RUB\n\n"
                    f""
                    
-                   "🪙 USDT/ 🇷🇺 RUB/другие валюты - по запросу\n\n"
+                   "Другие валюты - по запросу\n\n"
 
                    "🎁 При обмене от <b>2 000 000 ₩ — eSIM + 3Гб</b> интернета в подарок!\n\n"
 
@@ -135,16 +138,20 @@ class FinInstr:
             msg = (f"💱<b> Актуальный курс на {now} </b>\n\n"
                    f""
                    f"Отдаете:🇷🇺 1 RUB\n"
+                   f"Получаете:🇻🇳 {f'{r["cash_rub_vnd"]:,.2f}'.replace(',',' ')} VND (наличными)\n\n"
+                   f"Отдаете:🇷🇺 1 RUB\n"
                    f"Получаете:🇻🇳{f'{r["rub_vnd"]:,.2f}'.replace(',',' ')} VND (на счет)\n\n"
                    f""
-                   f"Отдаете:🇷🇺 1 RUB\n"
-                   f"Получаете:🇻🇳 {f'{r["cash_rub_vnd"]:,.2f}'.replace(',',' ')} VND (наличными)\n\n"
+                   
                    f""
+                   f"Отдаете:🪙1 USDT\n"
+                   f"Получаете:🇻🇳 {f'{r["cash_usd_vnd"]:,.2f}'.replace(',',' ')} VND (наличными)\n\n"
                    f"Отдаете:🪙1 USDT\n"
                    f"Получаете:🇻🇳 {f'{r["usd_vnd"]:,.2f}'.replace(',',' ')} VND (на счет)\n\n"
                    f""
-                   f"Отдаете:🪙1 USDT\n"
-                   f"Получаете:🇻🇳 {f'{r["cash_usd_vnd"]:,.2f}'.replace(',',' ')} VND (наличными)"
+                   f"Отдаете:🇷🇺{r["rub_usd"]:.2f} RUB\n"
+                   f"Получаете:🪙1 USDT (Bybit Pay)\n\n"
+
                    )
             self.logger.info("Сделали сообщение для Вьетнама, выслали!")
             return msg

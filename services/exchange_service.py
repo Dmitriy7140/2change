@@ -35,10 +35,10 @@ class ExchangeService:
                       "rub/cny": 26129,
                       "usd/cny": 290,
                       "cny/rub": 300,
-                      "krw/rub": 200000,
-                      "krw/usd": 200000,
-                      "usd/krw": 135,
-                      "rub/krw": 11000,
+                      "krw/rub": 300000,
+                      "krw/usd": 300000,
+                      "usd/krw": 197,
+                      "rub/krw": 14100,
                        "usd/vnd": 283,
                        "usd/vnd_cash":283,
                        "rub/vnd": 24500,
@@ -57,10 +57,10 @@ class ExchangeService:
                            "rub/cny": 2000,
                            "usd/cny": 2000,
                            "cny/rub": 3800,
-                           "krw/rub": 11000,
-                           "krw/usd": 135,
-                           "usd/krw": 200000,
-                           "rub/krw": 200000,
+                           "krw/rub": 14100,
+                           "krw/usd": 197,
+                           "usd/krw": 300000,
+                           "rub/krw": 300000,
                             "usd/vnd": 7000000,
                             "usd/vnd_cash": 7000000,
                             "rub/vnd": 7000000,
@@ -374,12 +374,15 @@ class ExchangeService:
         elif call.data == "calc_thai":
             msg = "💸<i>Выберите валюту для обмена:</i>"
             keybord2 = InlineKeyboardMarkup(row_width=2)
+
+            keybord2.add(InlineKeyboardButton("🇷🇺Рубли→🇹🇭 Наличные баты", callback_data="exchange/rub/thb_cash/3"))
+            keybord2.add(InlineKeyboardButton("🇷🇺Рубли→🇹🇭 Баты (Переводом)", callback_data="exchange/rub/thb/3"))
+
             keybord2.add(InlineKeyboardButton("🪙USDT→🇹🇭 Наличные баты", callback_data="exchange/usd/thb_cash/3"))
             keybord2.add(InlineKeyboardButton("🪙USDT→🇹🇭 Баты (Переводом)", callback_data="exchange/usd/thb/3"))
 
 
-            keybord2.add(InlineKeyboardButton("🇷🇺Рубли→🇹🇭 Наличные баты", callback_data="exchange/rub/thb_cash/3"))
-            keybord2.add(InlineKeyboardButton("🇷🇺Рубли→🇹🇭 Баты (Переводом)", callback_data="exchange/rub/thb/3"))
+
 
             keybord2.row(InlineKeyboardButton("💰Иные валюты", callback_data="request/💰Обмен иных валют/3"),
                          InlineKeyboardButton("◀️Назад", callback_data="thai_menu"))
@@ -411,21 +414,22 @@ class ExchangeService:
             msg = ("<i>Выберите валюту для обмена:</i>\n\n"
                    "<b>🎁 При обмене от 2 000 000₩ – eSIM +3 ГБ в подарок!</b>")
             kb = InlineKeyboardMarkup()
-            kb.add(InlineKeyboardButton("🇰🇷 Воны (нал/перевод) → 🇷🇺 Рубли", callback_data="exchange/krw/rub/5"))
-            kb.add(InlineKeyboardButton("🇰🇷 Воны (нал/перевод) → 🪙 USDT", callback_data="exchange/krw/usd/5"))
             kb.add(InlineKeyboardButton("🇷🇺 Рубли → 🇰🇷 Воны (нал/счет)", callback_data="exchange/rub/krw/5"))
             kb.add(InlineKeyboardButton("🪙 USDT → 🇰🇷 Воны (нал/счет)", callback_data="exchange/usd/krw/5"))
+            kb.add(InlineKeyboardButton("🇰🇷 Воны (нал/перевод) → 🇷🇺 Рубли", callback_data="exchange/krw/rub/5"))
+            # kb.add(InlineKeyboardButton("🇰🇷 Воны (нал/перевод) → 🪙 USDT", callback_data="exchange/krw/usd/5"))
+            kb.add(InlineKeyboardButton("🪙 USDT → 🇷🇺 Рубли", callback_data="exchange/usd/rub/5"))
+
             kb.row(InlineKeyboardButton("💰Иные валюты", callback_data="request/💰Обмен иных валют/5"),
                    InlineKeyboardButton("◀️Назад", callback_data="kr_menu"))
             self.bot.send_message(chat_id, msg, reply_markup=kb, parse_mode="HTML")
         elif call.data == "calc_vn":
             msg = "💸<i>Выберите валюту для обмена:</i>"
             keybord2 = InlineKeyboardMarkup(row_width=2)
-            keybord2.add(InlineKeyboardButton("🪙USDT→🇻🇳 Наличные донги", callback_data="exchange/usd/vnd_cash/7"))
-            keybord2.add(InlineKeyboardButton("🪙USDT→🇻🇳 Донги (Переводом)", callback_data="exchange/usd/vnd/7"))
-
             keybord2.add(InlineKeyboardButton("🇷🇺Рубли→🇻🇳 Наличные донги", callback_data="exchange/rub/vnd_cash/7"))
             keybord2.add(InlineKeyboardButton("🇷🇺Рубли→🇻🇳 Донги (Переводом)", callback_data="exchange/rub/vnd/7"))
+            keybord2.add(InlineKeyboardButton("🪙USDT→🇻🇳 Наличные донги", callback_data="exchange/usd/vnd_cash/7"))
+            keybord2.add(InlineKeyboardButton("🪙USDT→🇻🇳 Донги (Переводом)", callback_data="exchange/usd/vnd/7"))
             keybord2.add(InlineKeyboardButton("🇷🇺Рубли→🪙USDT (Bybit Pay QR)", callback_data="bybit_menu"))
             keybord2.row(InlineKeyboardButton("💰Иные валюты", callback_data="request/💰Обмен иных валют/7"),
                          InlineKeyboardButton("◀️Назад", callback_data="vn_currency_menu"))
