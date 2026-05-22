@@ -124,7 +124,7 @@ class FinInstr:
                    f"Получаете: 🇷🇺 1 RUB\n\n"
                    f""
                    f"Отдаете: 🪙 1 USDT\n"
-                   f"Получаете:{r["usd_rub"]:.2f} RUB\n\n"
+                   f"Получаете: 🇷🇺 {r["usd_rub"]:.2f} RUB\n\n"
                    f""
                    
                    "Другие валюты - по запросу\n\n"
