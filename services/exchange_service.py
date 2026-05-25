@@ -417,8 +417,8 @@ class ExchangeService:
             kb.add(InlineKeyboardButton("🇷🇺 Рубли → 🇰🇷 Воны (нал/счет)", callback_data="exchange/rub/krw/5"))
             kb.add(InlineKeyboardButton("🪙 USDT → 🇰🇷 Воны (нал/счет)", callback_data="exchange/usd/krw/5"))
             kb.add(InlineKeyboardButton("🇰🇷 Воны (нал/перевод) → 🇷🇺 Рубли", callback_data="exchange/krw/rub/5"))
-            # kb.add(InlineKeyboardButton("🇰🇷 Воны (нал/перевод) → 🪙 USDT", callback_data="exchange/krw/usd/5"))
-            kb.add(InlineKeyboardButton("🪙 USDT → 🇷🇺 Рубли", callback_data="exchange/usd/rub/5"))
+            kb.add(InlineKeyboardButton("🇰🇷 Воны (нал/перевод) → 🪙 USDT", callback_data="exchange/krw/usd/5"))
+
 
             kb.row(InlineKeyboardButton("💰Иные валюты", callback_data="request/💰Обмен иных валют/5"),
                    InlineKeyboardButton("◀️Назад", callback_data="kr_menu"))

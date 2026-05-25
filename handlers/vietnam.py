@@ -47,7 +47,7 @@ class VietnamHandlers:
         kb.add(InlineKeyboardButton("📈Актуальный курс", callback_data="vn_currency_menu"))
         kb.add(InlineKeyboardButton("Зарубежная карта💳", callback_data="tr_card_menu"))
         kb.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))
-        self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=kb)
+        self.send_media(path='img/vietnam.jpg', chat_id=chat_id, caption=msg, parse_mode="HTML", reply_markup=kb)
 
         return
     def vn_currency_menu(self, call):

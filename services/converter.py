@@ -123,8 +123,8 @@ class FinInstr:
                    f"Отдаете: 🇰🇷 {r["krw_rub"]:.2f} KRW\n"
                    f"Получаете: 🇷🇺 1 RUB\n\n"
                    f""
-                   f"Отдаете: 🪙 1 USDT\n"
-                   f"Получаете: 🇷🇺 {r["usd_rub"]:.2f} RUB\n\n"
+                   f"Отдаете: 🇰🇷 {r["krw_usd"]:.2f} KRW\n"
+                   f"Получаете: 🪙1 USDT\n\n"
                    f""
                    
                    "Другие валюты - по запросу\n\n"

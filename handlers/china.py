@@ -60,13 +60,13 @@ class ChinaHandlers:
                "<b>👉 Напишите @ALEXANDRA_2CHANGE или оставьте заявку на услугу</b>")
 
         kb = InlineKeyboardMarkup()
-        kb.add(InlineKeyboardButton("✏️Калькулятор|Оставить заявку", callback_data="calc_cn"))
+        kb.add(InlineKeyboardButton("✏️Калькулятор|Оставить заявку", callback_data="calc_cn", style='success'))
         kb.add(InlineKeyboardButton("📈Актуальный курс", callback_data="cn_currency_menu"))
         kb.add(InlineKeyboardButton("📲Cимкарта eSIM", callback_data="esim_cn"))
         kb.add(InlineKeyboardButton("💳Регистрация Alipay", callback_data="cn_alipay"))
         kb.add(InlineKeyboardButton("❓Как пополнить Alipay/Wechat", callback_data="cn_faq"))
         kb.add(InlineKeyboardButton("Главное меню📋", callback_data="main_menu"))
-        self.send_media("img/cn_main.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML",
+        self.send_media("img/china.jpg", chat_id=chat_id, caption=msg, parse_mode="HTML",
                                   reply_markup=kb)
 
         return

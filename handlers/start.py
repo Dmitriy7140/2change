@@ -29,7 +29,7 @@ class StartHandlers:
             )
             keyboard.row(
                 InlineKeyboardButton("🇷🇺 Россия (USDT)", callback_data="rf_menu"),
-                InlineKeyboardButton("🇻🇳 Вьетнам", callback_data="vn_currency_menu")
+                InlineKeyboardButton("🇻🇳 Вьетнам", callback_data="vn_menu")
             )
 
             keyboard.add(InlineKeyboardButton("📥Пополнить Bybit Card (USDT)", callback_data="bybit_menu"))
