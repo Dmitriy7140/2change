@@ -23,7 +23,7 @@ class ExchangeService:
                                "vnd_cash":"НАЛ. VND🇻🇳"}
         self.min_amount = {"rub/try_cash": 20000,#in rubles
                       "rub/try": 10000,
-                      "usd/try_cash": 200,
+                      "usd/try_cash": 220,
                       "usd/try": 100,
                       "try/rub": 5000,
                       "rub/thb_cash": 20000,
