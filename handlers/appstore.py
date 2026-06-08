@@ -40,7 +40,7 @@ class AppstoreHandlers:
                 "4) Оплачиваете подписки, приложения и игры как и раньше в 2-5 раз дешевле!</blockquote>\n\n"
                 "<b>Услуга бесплатная!</b>")
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Сделать расчет", style="success", url='https://t.me/Official_2paybot'))
+        keyboard.add(InlineKeyboardButton("✏️Перейти к инструкции", style="success", url='https://t.me/Official_2paybot'))
 
         keyboard.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))
         self.send_media("img/appstore.jpg",chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
