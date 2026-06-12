@@ -241,7 +241,8 @@ class SpamService:
                 self.bot.copy_message(
                     chat_id=u["telegram_id"],
                     from_chat_id=payload["from_chat"],
-                    message_id=payload["message_id"]
+                    message_id=payload["message_id"],
+                    disable_notification=True
                 )
                 sent += 1
                 time.sleep(0.03)
