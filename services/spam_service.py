@@ -22,7 +22,10 @@ class SpamService:
 
             self.start_announce(message)
 
-        @self.bot.message_handler(content_types=['text', 'photo', 'video', 'document', 'animation'])
+        @self.bot.message_handler(content_types=[
+            'text', 'photo', 'video', 'document', 'animation',
+            'contact', 'sticker', 'voice', 'video_note', 'audio', 'location'
+        ])
         def catch_message(message):
             self.catch_payload(message)
 
@@ -171,6 +174,21 @@ class SpamService:
         if not payload:
             self.bot.send_message(chat_id, "Сессия истекла")
             return
+
+        # -------------------------
+        # 📌 ANTI-DOUBLE-CLICK
+        # очищаем состояние и убираем кнопки СРАЗУ, до длинного цикла рассылки,
+        # иначе повторный клик "Отправить" во время отправки разошлёт всё заново
+        # -------------------------
+        self.state.clear(chat_id)
+        try:
+            self.bot.edit_message_reply_markup(
+                chat_id=chat_id,
+                message_id=call.message.message_id,
+                reply_markup=None
+            )
+        except Exception:
+            pass
 
         group = payload.get("group")
 
