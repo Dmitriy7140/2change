@@ -5,11 +5,12 @@ from services.senders import SenderService
 
 
 class StartHandlers:
-    def __init__(self, bot, user_db, state_manager, sender_service: SenderService):
+    def __init__(self, bot, user_db, state_manager, sender_service: SenderService, deeplinks=None):
         self.bot = bot
         self.user_db = user_db
         self.send_media = sender_service.send_media
         self.clearstate = state_manager.clear
+        self.deeplinks = deeplinks
 
     def register(self):
 
@@ -58,6 +59,15 @@ class StartHandlers:
         @self.bot.message_handler(commands=['start'])
         @self.user_db.track_start()
         def handle_start(message):
+            # deep-link на конкретное меню: payload = <menu_key>__<источник>
+            parts = (message.text or "").split(maxsplit=1)
+            payload = parts[1].strip() if len(parts) > 1 else None
+            if self.deeplinks and self.deeplinks.logger:
+                self.deeplinks.logger.info(f"/start payload={payload!r}")
+            if payload and self.deeplinks and "__" in payload:
+                menu_key = payload.split("__", 1)[0]
+                if self.deeplinks.open(message, menu_key):
+                    return
             build_start(message)
 
         # 👉 main_menu callback

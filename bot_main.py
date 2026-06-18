@@ -19,6 +19,8 @@ from services.state_manager import StateManager
 from services.interest_service import InterestService
 from services.orchestrator import CurrencyOrchestrator
 from services.spam_service import SpamService
+from services.menulink_service import MenuLinkService
+from handlers.deeplinks import DeepLinkRouter
 
 from handlers.turkey import TurkeyHandlers
 from handlers.korea import KoreaHandlers
@@ -71,11 +73,13 @@ subscription_service = SubscriptionService(bot, logger, TEST_MODE)
 sender_service = SenderService(bot, qdb, manager_chat_id, day_off, logger)
 
 state_manager = StateManager(logger)
+deeplink_router = DeepLinkRouter(logger)
 start = StartHandlers(
     bot,
     user_db,
     state_manager,
     sender_service,
+    deeplinks=deeplink_router,
 )
 start.register()
 
@@ -214,6 +218,18 @@ application_request_service.register()
 queue_service = QueueHandler(bot, qdb, logger)
 application_confirm_service = ApplicationConfirmService(bot, qdb, manager_chat_id, ApplicationCreator)
 application_confirm_service.register()
+
+# реестр deep-link'ов: собираем routes всех хендлеров для навигации по /start
+for _h in (
+    turkey_handlers, russia_handlers, bybit_handlers, korea_handlers,
+    thailand_handlers, china_handlers, esim_handlers, vietnam_handlers,
+):
+    deeplink_router.register(getattr(_h, "routes", {}))
+
+# ВАЖНО: регистрируем ДО spam_service — у того глобальный catch-all на text,
+# который иначе перехватит команду /menulink (telebot отдаёт первому хендлеру)
+menulink_service = MenuLinkService(bot, logger)
+menulink_service.register()
 
 spam_service = SpamService(
     bot,

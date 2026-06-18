@@ -60,7 +60,7 @@ class ChinaHandlers:
                "<b>👉 Напишите @ALEXANDRA_2CHANGE или оставьте заявку на услугу</b>")
 
         kb = InlineKeyboardMarkup()
-        kb.add(InlineKeyboardButton("✏️Калькулятор|Оставить заявку", callback_data="calc_cn", style='success'))
+        kb.add(InlineKeyboardButton("✏️Сделать расчет", callback_data="calc_cn", style='success'))
         kb.add(InlineKeyboardButton("📈Актуальный курс", callback_data="cn_currency_menu"))
         kb.add(InlineKeyboardButton("📲Cимкарта eSIM", callback_data="esim_cn"))
         kb.add(InlineKeyboardButton("💳Регистрация Alipay", callback_data="cn_alipay"))

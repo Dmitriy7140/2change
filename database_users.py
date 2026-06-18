@@ -209,6 +209,10 @@ class UserDB:
                     parts = message.text.split()
                     if len(parts) > 1:
                         source = parts[1]
+                        # deep-link из /menulink: payload = <menu_key>__<источник>
+                        # в аналитику пишем только источник (часть после "__")
+                        if source and "__" in source:
+                            source = source.split("__", 1)[1]
 
                 self.add_user(
                     telegram_id=user_id,
