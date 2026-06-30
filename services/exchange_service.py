@@ -21,9 +21,9 @@ class ExchangeService:
                                "krw": "KRW🇰🇷",
                                "vnd":"БЕЗНАЛ. VND🇻🇳",
                                "vnd_cash":"НАЛ. VND🇻🇳"}
-        self.min_amount = {"rub/try_cash": 20000,#in rubles
+        self.min_amount = {"rub/try_cash": 10700,#in rubles
                       "rub/try": 10000,
-                      "usd/try_cash": 220,
+                      "usd/try_cash": 114,
                       "usd/try": 100,
                       "try/rub": 5000,
                       "rub/thb_cash": 20000,
@@ -43,9 +43,9 @@ class ExchangeService:
                        "usd/vnd_cash":283,
                        "rub/vnd": 24500,
                        "rub/vnd_cash":24500,}
-        self.min_amount_reversed = {"rub/try_cash": 10000,
+        self.min_amount_reversed = {"rub/try_cash": 5000,
                            "rub/try": 5000, # in liras
-                           "usd/try_cash": 10000,
+                           "usd/try_cash": 5000,
                            "usd/try": 5000, #in liras
                            "try/rub": 10000,
                            "rub/thb_cash": 8000,
