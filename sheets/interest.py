@@ -33,7 +33,10 @@ class Interest:
             [format(v, ".2f") if isinstance(v, (int, float)) else v]
             for v in naeb_currencies
         ]
-        sheet.update("H2", column_data[1:]) # type: ignore
+        # пишем без id (первый) и без updated_at (последний) — таймстамп в таблицу не нужен;
+        # пустая ячейка в конце затирает старую дату, оставшуюся от прошлых записей
+        payload = column_data[1:-1] + [[""]]
+        sheet.update("H2", payload) # type: ignore
         self.logger.info("Установили курсы с наценками в гугл док")
         return
     def set_raw_currencies(self, raw_currencies:tuple):

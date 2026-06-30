@@ -42,7 +42,8 @@ class ExchangeService:
                        "usd/vnd": 283,
                        "usd/vnd_cash":283,
                        "rub/vnd": 24500,
-                       "rub/vnd_cash":24500,}
+                       "rub/vnd_cash":24500,
+                       "vnd/rub": 2000000,}
         self.min_amount_reversed = {"rub/try_cash": 5000,
                            "rub/try": 5000, # in liras
                            "usd/try_cash": 5000,
@@ -65,6 +66,7 @@ class ExchangeService:
                             "usd/vnd_cash": 7000000,
                             "rub/vnd": 7000000,
                             "rub/vnd_cash": 7000000,
+                            "vnd/rub": 6000,  # ≈ 2 000 000 VND в рублях
                                     }
 
 
@@ -91,6 +93,7 @@ class ExchangeService:
                                  "usd/vnd_cash": True,
                                  "rub/vnd": True,
                                  "rub/vnd_cash": True,
+                                 "vnd/rub": False,  # донгов на 1 рубль больше, чем рублей
                                  }
                                 #true если второй валюты как правило больше чем первой при конвертации
 
@@ -430,6 +433,8 @@ class ExchangeService:
             keybord2.add(InlineKeyboardButton("🇷🇺Рубли→🇻🇳 Донги (Переводом)", callback_data="exchange/rub/vnd/7"))
             keybord2.add(InlineKeyboardButton("🪙USDT→🇻🇳 Наличные донги", callback_data="exchange/usd/vnd_cash/7"))
             keybord2.add(InlineKeyboardButton("🪙USDT→🇻🇳 Донги (Переводом)", callback_data="exchange/usd/vnd/7"))
+            keybord2.add(InlineKeyboardButton("🇻🇳Донги→🇷🇺 Рубли", callback_data="exchange/vnd/rub/7"))
+            keybord2.add(InlineKeyboardButton("🇻🇳Донги→🪙USDT (по запросу)", callback_data="request/Донги → USDT/7"))
             keybord2.add(InlineKeyboardButton("🇷🇺Рубли→🪙USDT (Bybit Pay QR)", callback_data="bybit_menu"))
             keybord2.row(InlineKeyboardButton("💰Иные валюты", callback_data="request/💰Обмен иных валют/7"),
                          InlineKeyboardButton("◀️Назад", callback_data="vn_currency_menu"))

@@ -207,6 +207,9 @@ class FinInstr:
             # ===== CNY =====
             ("cny", "rub"): lambda: amount * r["cny_rub"],
 
+            # ===== VND =====
+            ("vnd", "rub"): lambda: amount * r["vnd_rub"],
+
             # ===== TRY =====
             ("try", "rub"): lambda: amount * r["try_rub"],
 
