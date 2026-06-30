@@ -142,7 +142,8 @@ class FinInstr:
                    f"Отдаете:🇷🇺 1 RUB\n"
                    f"Получаете:🇻🇳{f'{r["rub_vnd"]:,.2f}'.replace(',',' ')} VND (на счет)\n\n"
                    f""
-                   
+                   f"Отдаете:🇻🇳 {f'{1 / r["vnd_rub"]:,.2f}'.replace(',',' ')} VND\n"
+                   f"Получаете:🇷🇺 1 RUB\n\n"
                    f""
                    f"Отдаете:🪙1 USDT\n"
                    f"Получаете:🇻🇳 {f'{r["cash_usd_vnd"]:,.2f}'.replace(',',' ')} VND (наличными)\n\n"
