@@ -7,14 +7,17 @@ class Interest:
         self.logger = logger
 
     @staticmethod
-    def _fmt(v):
-        """Числа форматируем под таблицу. Мелкий курс (<1 — это только vnd_rub≈0.003,
-        рублей за 1 донг) показываем как обратный — донгов за 1 рубль (≈348), иначе .2f
-        округлил бы в 0.00. Столбцы F/H только для просмотра, бот их обратно не читает."""
+    def _fmt_named(name, v):
+        """Формат под таблицу (по имени курса, столбцы F/H — только для просмотра).
+        vnd_rub (рублей за 1 донг ≈0.003) показываем обратным — донгов за 1 рубль (≈348).
+        Прочие мелкие курсы (<1, напр. usd_eur, rub_eur) — с доп. знаками, иначе .2f
+        округлит в 0.00. Строки (updated_at) — как есть."""
         if not isinstance(v, (int, float)):
             return v
+        if name == "vnd_rub":
+            return format(1 / v, ".2f") if v else "0"  # донгов за 1 рубль
         if 0 < abs(v) < 1:
-            return format(1 / v, ".2f")  # донгов за 1 рубль
+            return format(v, ".4f")
         return format(v, ".2f")
     def get_interest(self):
         sheet = self.gc.open("interest").sheet1
@@ -38,18 +41,22 @@ class Interest:
             self.logger.error("Есть ошибки в таблице")
         return errors if errors else res
 
-    def set_currencies_with_interest(self, naeb_currencies:tuple):
+    def set_currencies_with_interest(self, marked: dict):
+        """marked — словарь курсов с наценкой (из get_currencies), включая updated_at."""
         sheet = self.gc.open("interest").sheet1
-        column_data = [[self._fmt(v)] for v in naeb_currencies]
-        # пишем без id (первый) и без updated_at (последний) — таймстамп в таблицу не нужен;
-        # пустая ячейка в конце затирает старую дату, оставшуюся от прошлых записей
-        payload = column_data[1:-1] + [[""]]
+        rates = [(k, v) for k, v in marked.items() if k != "updated_at"]
+        column_data = [[self._fmt_named(k, v)] for k, v in rates]
+        # курсы в H (в порядке ключей = порядок строк в таблице), пустая ячейка
+        # затирает старую дату под списком, а сам updated_at кладём в I2
+        payload = column_data + [[""]]
         sheet.update("H2", payload) # type: ignore
+        sheet.update("I2", [[marked.get("updated_at", "")]])  # время последнего обновления
         self.logger.info("Установили курсы с наценками в гугл док")
         return
-    def set_raw_currencies(self, raw_currencies:tuple):
+    def set_raw_currencies(self, raw: dict):
+        """raw — словарь сырых курсов (из update_currency)."""
         sheet = self.gc.open("interest").sheet1
-        column_data = [[self._fmt(v)] for v in raw_currencies]
+        column_data = [[self._fmt_named(k, v)] for k, v in raw.items()]
         sheet.update("F2", column_data)# type: ignore
         self.logger.info("Установили сырые курсы в гугл док")
         return

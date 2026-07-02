@@ -156,6 +156,7 @@ class SenderService:
                      f"▪️Рубль<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Донги нал {r["rub_vnd"]:.0f} VND\n"
                      f"▪️Рубль<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Донги безнал {r["cash_rub_vnd"]:.0f} VND\n"
                      f"▪️USDT<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Донги {r["usd_vnd"]:.0f} VND\n"
+                     f"▪️Донги<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Рубль {1/r["vnd_rub"]:.0f} VND\n"
                      f"▪️Рубли<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>USDT Bybit Pay по запросу\n"
                      "▪️USDT<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Рубль, €$ и обратно по запросу\n"
                      "▪️Рубль<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Другие валюты по запросу\n\n"

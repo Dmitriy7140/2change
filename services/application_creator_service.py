@@ -10,6 +10,7 @@ class ApplicationCreator:
                      5: "🇰🇷Корея",
                      6: "🇦🇪ОАЭ",
                      7:"🇻🇳Вьетнам",
+                     8:"🇪🇺Европа",
                      100:"💳Пополнение Bybit"}
     def __init__(self, country:int=None,client_name=None, reason:str=None, currency1=None, currency2=None,amount1=None, amount2=None, time=None):#AMOUNT2 БУДЕТ ВЫСЧИТЫВАТЬСЯ ИСХОДЯ ИЗ ФУНКЦИИ ИНВЕСТИНГА
         self.country = int(country) if country else None

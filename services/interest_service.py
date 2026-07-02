@@ -60,9 +60,9 @@ class InterestService:
 
     def insert_currencies_into_table(self):
         self.logger.info("Вставляем курсы в гугл таблицу...")
-        raw_api_currencies = self.qdb.update_currency().values()
+        raw_api_currencies = self.qdb.update_currency()
         self.sheets_interest.set_raw_currencies(raw_api_currencies)
-        currencies = self.qdb.get_currencies(should_be_dict=False)
+        currencies = self.qdb.get_currencies()
         self.sheets_interest.set_currencies_with_interest(currencies)
         return
 

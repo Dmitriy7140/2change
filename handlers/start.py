@@ -32,6 +32,7 @@ class StartHandlers:
                 InlineKeyboardButton("🇷🇺 Россия (USDT)", callback_data="rf_menu"),
                 InlineKeyboardButton("🇻🇳 Вьетнам", callback_data="vn_menu")
             )
+            keyboard.add(InlineKeyboardButton("🇪🇺 Европа", callback_data="eu_menu"))
 
             keyboard.add(InlineKeyboardButton("📥Пополнить Bybit Card (USDT)", callback_data="bybit_menu"))
             keyboard.add(InlineKeyboardButton("🔵Пополнить AppStore", callback_data="appstore_menu"))

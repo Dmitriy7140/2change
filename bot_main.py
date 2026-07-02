@@ -33,6 +33,7 @@ from handlers.bybit import BybitHandlers
 from handlers.appstore import AppstoreHandlers
 from handlers.start import StartHandlers
 from handlers.manager import ManagerHandlers
+from handlers.europe import EuropeHandlers
 
 
 from sheets.interest import Interest
@@ -205,6 +206,14 @@ appstore_handlers = AppstoreHandlers(
     track_user=user_db.track_user,
 )
 appstore_handlers.register()
+
+europe_handlers = EuropeHandlers(
+    bot,
+    finstr,
+    state_manager,
+    track_user=user_db.track_user,
+)
+europe_handlers.register()
 info_handlers = InfoHandlers(bot,
     track_user=user_db.track_user,)
 info_handlers.register()
@@ -223,6 +232,7 @@ application_confirm_service.register()
 for _h in (
     turkey_handlers, russia_handlers, bybit_handlers, korea_handlers,
     thailand_handlers, china_handlers, esim_handlers, vietnam_handlers,
+    europe_handlers,
 ):
     deeplink_router.register(getattr(_h, "routes", {}))
 

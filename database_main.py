@@ -11,7 +11,9 @@ from datetime import datetime, timedelta
 from api.rapira import RapiraAPI
 from api.btcturk import get_usdt_try
 from api.bitkub import get_usdt_thb
+from api.kraken import KrakenAPI
 rapira = RapiraAPI()
+kraken = KrakenAPI()
 
 
 
@@ -70,6 +72,10 @@ class QueueDB:
                 rub_vnd REAL,
                 cash_rub_vnd REAL,
                 vnd_rub REAL,
+                rub_eur REAL,
+                eur_rub REAL,
+                usd_eur REAL,
+                eur_usd REAL,
                 updated_at TIMESTAMP)''')
             logger.info("Таблица с курсами загружена...")
 
@@ -103,6 +109,10 @@ class QueueDB:
                             rub_vnd_c REAL,
                             cash_rub_vnd_c REAL,
                             vnd_rub_c REAL,
+                            rub_eur_c REAL,
+                            eur_rub_c REAL,
+                            usd_eur_c REAL,
+                            eur_usd_c REAL,
                             updated_at TEXT)''')
             logger.info("Таблица с наценкой загружена...")
 
@@ -110,6 +120,8 @@ class QueueDB:
             # ALTER TABLE в SQLite добавляет столбец только в конец, что ломает
             # позиционное чтение и порядок в таблице interest, поэтому пересоздаём.
             self._migrate_add_vnd_rub(c)
+            # --- МИГРАЦИЯ: евро-курсы перед updated_at ---
+            self._migrate_add_eur(c)
 
             c.execute("SELECT COUNT(*) FROM coef")
             count = c.fetchone()[0]
@@ -148,6 +160,10 @@ class QueueDB:
                 rub_vnd_c,
                 cash_rub_vnd_c,
                 vnd_rub_c,
+                rub_eur_c,
+                eur_rub_c,
+                usd_eur_c,
+                eur_usd_c,
                 updated_at)
                  VALUES (0.04,
                      0.075,
@@ -177,6 +193,10 @@ class QueueDB:
                      0.10,
                      0.10,
                      0.04,
+                     0.01,
+                     0.01,
+                     0.01,
+                     0.01,
                         ?)''', ("default",))
 
                 logger.info("Начальные коэффициенты добавлены")
@@ -273,6 +293,44 @@ class QueueDB:
                 vnd_rub REAL,
                 updated_at TIMESTAMP)''')
             logger.info("Миграция currency завершена")
+
+    def _migrate_add_eur(self, c):
+        """Добавляет евро-курсы (usd_eur/eur_usd/rub_eur/eur_rub + коэффициенты)
+        перед updated_at. Значения коэффициентов сохраняются (читаем строку как
+        словарь), новые = 0.04. currency эфемерна — просто пересоздаём. Идемпотентно."""
+        eur_coef = ["rub_eur_c", "eur_rub_c", "usd_eur_c", "eur_usd_c"]
+        eur_cur = ["rub_eur", "eur_rub", "usd_eur", "eur_usd"]
+
+        # --- coef: пересоздаём, сохраняя все текущие коэффициенты ---
+        c.execute("PRAGMA table_info(coef)")
+        cols = [row[1] for row in c.fetchall()]
+        if "usd_eur_c" not in cols:
+            logger.info("Миграция coef: добавляем евро-коэффициенты")
+            c.execute("SELECT * FROM coef LIMIT 1")
+            row = c.fetchone()
+            old = dict(zip(cols, row)) if row else {}
+            base = [x for x in cols if x not in ("id", "updated_at")]
+            final = base + eur_coef
+            c.execute("DROP TABLE coef")
+            c.execute("CREATE TABLE coef (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                      + ", ".join(f"{n} REAL" for n in final) + ", updated_at TEXT)")
+            values = [old.get(n, 0.01) for n in final]  # старые из old, евро = 0.01
+            c.execute("INSERT INTO coef (id, " + ", ".join(final) + ", updated_at) VALUES (1, "
+                      + ", ".join("?" for _ in final) + ", ?)",
+                      (*values, old.get("updated_at", "migrated")))
+            logger.info("Миграция coef (евро) завершена, наценки 0.01 по умолчанию")
+
+        # --- currency: эфемерна, пересоздаём в актуальном виде ---
+        c.execute("PRAGMA table_info(currency)")
+        ccols = [row[1] for row in c.fetchall()]
+        if "usd_eur" not in ccols:
+            logger.info("Миграция currency: добавляем евро-курсы")
+            base = [x for x in ccols if x not in ("id", "updated_at")]
+            final = base + eur_cur
+            c.execute("DROP TABLE currency")
+            c.execute("CREATE TABLE currency (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                      + ", ".join(f"{n} REAL" for n in final) + ", updated_at TIMESTAMP)")
+            logger.info("Миграция currency (евро) завершена")
 
     @contextmanager
     def get_connection(self):
@@ -421,6 +479,7 @@ class QueueDB:
             # отдельный запрос base=VND — прямой сырой курс донг→рубль из OXR (RUB за 1 донг ≈ 0.0030)
             vnd_courses = coinoxr.Latest().get(base="VND", show_alternative=True)
             api_vnd_rub = vnd_courses.body["rates"]["RUB"]
+            api_usd_eur = kraken.get_usdt_eur()["last"]  # EUR за 1 USDT (~0.87), Kraken
             logger.info("Подтянули доллар!")
 
 
@@ -458,7 +517,12 @@ class QueueDB:
                            # прямой сырой курс из OXR (base=VND): RUB за 1 донг
                            "vnd_rub": api_vnd_rub,
 
-
+                           # ЕВРО (USDT-мост: api_usd_eur = EUR за 1 USDT, api_rub_usd = RUB за 1 USDT)
+                           # RUB↔EUR считаем в РУБЛЯХ ЗА 1 ЕВРО (≈90), чтобы не возиться с нулями
+                           "rub_eur": api_rub_usd / api_usd_eur,   # RUB→EUR: руб за 1 евро (делится)
+                           "eur_rub": api_rub_usd / api_usd_eur,   # EUR→RUB: руб за 1 евро
+                           "usd_eur": api_usd_eur,                 # USDT→EUR: EUR за 1 USDT
+                           "eur_usd": api_usd_eur,                 # EUR→USDT: EUR за 1 USDT (делится)
                            }
 
             we_sell = {"id": rows[0],
@@ -489,6 +553,10 @@ class QueueDB:
                        "rub_vnd_c": rows[21],
                        "cash_rub_vnd_c": rows[22],
                        "vnd_rub_c": rows[23],
+                       "rub_eur_c": rows[24],
+                       "eur_rub_c": rows[25],
+                       "usd_eur_c": rows[26],
+                       "eur_usd_c": rows[27],
 
                        }
 
@@ -531,6 +599,15 @@ class QueueDB:
             vnd_rub = r["vnd_rub"] * (1 - we_sell["vnd_rub_c"])
             logger.info("Посчитали донги...")
 
+            # ЕВРО. rub_eur (руб за евро, покупка евро — дороже): +c, в конвертере делится.
+            # eur_rub (руб за евро, продажа евро — дешевле): -c, в конвертере умножается.
+            # usd_eur — умножаем (даём меньше EUR); eur_usd — делится (даём меньше USDT).
+            rub_eur = r["rub_eur"] * (1 + we_sell["rub_eur_c"])
+            eur_rub = r["eur_rub"] * (1 - we_sell["eur_rub_c"])
+            usd_eur = r["usd_eur"] * (1 - we_sell["usd_eur_c"])
+            eur_usd = r["eur_usd"] * (1 + we_sell["eur_usd_c"])
+            logger.info("Посчитали евро...")
+
 
 
             rates = (usd_rub,
@@ -555,7 +632,11 @@ class QueueDB:
                      cash_usd_vnd,
                      rub_vnd,
                      cash_rub_vnd,
-                     vnd_rub,)
+                     vnd_rub,
+                     rub_eur,
+                     eur_rub,
+                     usd_eur,
+                     eur_usd,)
         except Exception as e:
             logger.error(f"Ошибка с добавлением курса:{e}!!!")
             return None
@@ -568,8 +649,8 @@ class QueueDB:
             c = conn.cursor()
 
             c.execute('''INSERT INTO currency (usd_rub, rub_usd, usd_try,cash_usd_try, rub_try, cash_rub_try, try_rub,
-             usd_thb, cash_usd_thb, rub_thb, cash_rub_thb, rub_cny, usd_cny, cny_rub,krw_usd, krw_rub, usd_krw, rub_krw,usd_vnd, cash_usd_vnd, rub_vnd, cash_rub_vnd, vnd_rub, updated_at)
-             VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?,?)''', (*rates, datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")))
+             usd_thb, cash_usd_thb, rub_thb, cash_rub_thb, rub_cny, usd_cny, cny_rub,krw_usd, krw_rub, usd_krw, rub_krw,usd_vnd, cash_usd_vnd, rub_vnd, cash_rub_vnd, vnd_rub, rub_eur, eur_rub, usd_eur, eur_usd, updated_at)
+             VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', (*rates, datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")))
 
             conn.commit()
 
@@ -609,6 +690,10 @@ class QueueDB:
                 rub_vnd,
                 cash_rub_vnd,
                 vnd_rub,
+                rub_eur,
+                eur_rub,
+                usd_eur,
+                eur_usd,
                 updated_at,
             ) = row
             return {
@@ -635,6 +720,10 @@ class QueueDB:
             "rub_vnd": rub_vnd,
             "cash_rub_vnd": cash_rub_vnd,
             "vnd_rub": vnd_rub,
+            "rub_eur": rub_eur,
+            "eur_rub": eur_rub,
+            "usd_eur": usd_eur,
+            "eur_usd": eur_usd,
             "updated_at": updated_at,
                                 }
         return row

@@ -156,6 +156,23 @@ class FinInstr:
                    )
             self.logger.info("Сделали сообщение для Вьетнама, выслали!")
             return msg
+        elif country == 8:
+            msg = (f"💱<b> Актуальный курс на {now} </b>\n\n"
+                   f""
+                   f"Отдаете:🇷🇺 {f'{r["rub_eur"]:,.2f}'.replace(',',' ')} RUB\n"
+                   f"Получаете:🇪🇺 1 EUR\n\n"
+                   f""
+                   f"Отдаете:🇪🇺 1 EUR\n"
+                   f"Получаете:🇷🇺 {f'{r["eur_rub"]:,.2f}'.replace(',',' ')} RUB\n\n"
+                   f""
+                   f"Отдаете:🪙 1 USDT\n"
+                   f"Получаете:🇪🇺 {r["usd_eur"]:.2f} EUR\n\n"
+                   f""
+                   f"Отдаете:🇪🇺 1 EUR\n"
+                   f"Получаете:🪙 {1 / r["eur_usd"]:.2f} USDT\n\n"
+                   )
+            self.logger.info("Сделали сообщение для Европы, выслали!")
+            return msg
         elif country == 100:
             msg = (f"💱<b> Актуальный курс для пополнения карты Bybit на {now} </b>\n\n"
                    f""
@@ -210,6 +227,12 @@ class FinInstr:
 
             # ===== VND =====
             ("vnd", "rub"): lambda: amount * r["vnd_rub"],
+
+            # ===== EUR =====
+            ("rub", "eur"): lambda: amount / r["rub_eur"],   # руб / (руб за евро) = евро
+            ("eur", "rub"): lambda: amount * r["eur_rub"],   # евро * (руб за евро) = руб
+            ("usd", "eur"): lambda: amount * r["usd_eur"],
+            ("eur", "usd"): lambda: amount / r["eur_usd"],
 
             # ===== TRY =====
             ("try", "rub"): lambda: amount * r["try_rub"],

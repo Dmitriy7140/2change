@@ -20,7 +20,8 @@ class ExchangeService:
                                "cny": "CNY🇨🇳",
                                "krw": "KRW🇰🇷",
                                "vnd":"БЕЗНАЛ. VND🇻🇳",
-                               "vnd_cash":"НАЛ. VND🇻🇳"}
+                               "vnd_cash":"НАЛ. VND🇻🇳",
+                               "eur":"EUR🇪🇺"}
         self.min_amount = {"rub/try_cash": 10700,#in rubles
                       "rub/try": 10000,
                       "usd/try_cash": 114,
@@ -43,7 +44,11 @@ class ExchangeService:
                        "usd/vnd_cash":283,
                        "rub/vnd": 24500,
                        "rub/vnd_cash":24500,
-                       "vnd/rub": 2000000,}
+                       "vnd/rub": 2000000,
+                       "rub/eur": 90000,
+                       "eur/rub": 1000,
+                       "usd/eur": 1100,
+                       "eur/usd": 1000,}
         self.min_amount_reversed = {"rub/try_cash": 5000,
                            "rub/try": 5000, # in liras
                            "usd/try_cash": 5000,
@@ -67,6 +72,10 @@ class ExchangeService:
                             "rub/vnd": 7000000,
                             "rub/vnd_cash": 7000000,
                             "vnd/rub": 6000,  # ≈ 2 000 000 VND в рублях
+                            "rub/eur": 1000,   # хочет получить EUR
+                            "eur/rub": 90000,  # хочет получить RUB
+                            "usd/eur": 1000,   # хочет получить EUR
+                            "eur/usd": 1100,   # хочет получить USDT
                                     }
 
 
@@ -94,6 +103,10 @@ class ExchangeService:
                                  "rub/vnd": True,
                                  "rub/vnd_cash": True,
                                  "vnd/rub": False,  # донгов на 1 рубль больше, чем рублей
+                                 "rub/eur": False,  # 1 RUB = 0.01 EUR (второй меньше)
+                                 "eur/rub": True,   # 1 EUR = 92 RUB (второй больше)
+                                 "usd/eur": False,  # 1 USDT = 0.87 EUR (второй меньше)
+                                 "eur/usd": True,   # 1 EUR = 1.14 USDT (второй больше)
                                  }
                                 #true если второй валюты как правило больше чем первой при конвертации
 
@@ -278,7 +291,7 @@ class ExchangeService:
         currency1 = state["currency1"]
         currency2 = state["currency2"]
         country = state["country"]
-        countries_menu = {"1": "tr_menu", "2": "rf_menu", "3": "thai_menu", "4": "cn_menu", "5": "kr_menu", "7":"vn_menu", "100":"bybit_menu"}
+        countries_menu = {"1": "tr_menu", "2": "rf_menu", "3": "thai_menu", "4": "cn_menu", "5": "kr_menu", "7":"vn_menu", "8":"eu_menu", "100":"bybit_menu"}
         self.state_manager.set(chat_id, {
 
             'currency1': currency1,
@@ -439,6 +452,16 @@ class ExchangeService:
             keybord2.row(InlineKeyboardButton("💰Иные валюты", callback_data="request/💰Обмен иных валют/7"),
                          InlineKeyboardButton("◀️Назад", callback_data="vn_currency_menu"))
             self.bot.send_message(chat_id, msg, reply_markup=keybord2, parse_mode="HTML")
+        elif call.data == "calc_eu":
+            msg = "💸<i>Выберите направление обмена:</i>"
+            kb = InlineKeyboardMarkup(row_width=2)
+            kb.add(InlineKeyboardButton("🇷🇺Рубли→🇪🇺 Евро", callback_data="exchange/rub/eur/8"))
+            kb.add(InlineKeyboardButton("🇪🇺Евро→🇷🇺 Рубли", callback_data="exchange/eur/rub/8"))
+            kb.add(InlineKeyboardButton("🪙USDT→🇪🇺 Евро", callback_data="exchange/usd/eur/8"))
+            kb.add(InlineKeyboardButton("🇪🇺Евро→🪙USDT", callback_data="exchange/eur/usd/8"))
+            kb.row(InlineKeyboardButton("💰Иные валюты", callback_data="request/💰Обмен иных валют/8"),
+                   InlineKeyboardButton("◀️Назад", callback_data="eu_menu"))
+            self.bot.send_message(chat_id, msg, reply_markup=kb, parse_mode="HTML")
 
         return
 
