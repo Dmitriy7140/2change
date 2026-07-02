@@ -45,7 +45,7 @@ class ExchangeService:
                        "rub/vnd": 24500,
                        "rub/vnd_cash":24500,
                        "vnd/rub": 2000000,
-                       "rub/eur": 90000,
+                       "rub/eur": 95000,
                        "eur/rub": 1000,
                        "usd/eur": 1100,
                        "eur/usd": 1000,}
@@ -73,7 +73,7 @@ class ExchangeService:
                             "rub/vnd_cash": 7000000,
                             "vnd/rub": 6000,  # ≈ 2 000 000 VND в рублях
                             "rub/eur": 1000,   # хочет получить EUR
-                            "eur/rub": 90000,  # хочет получить RUB
+                            "eur/rub": 95000,  # хочет получить RUB
                             "usd/eur": 1000,   # хочет получить EUR
                             "eur/usd": 1100,   # хочет получить USDT
                                     }
