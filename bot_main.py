@@ -1,7 +1,7 @@
 import telebot
 
 
-from config import BOT_TOKEN, TEST_BOT_TOKEN, ADMIN_IDS, NOTIFICATION_CHAT, TEST_NOTIFICATION_CHAT, TEST_MODE, SUPPORT_CHAT_ID
+from config import BOT_TOKEN, TEST_BOT_TOKEN, ADMIN_IDS, NOTIFICATION_CHAT, TEST_NOTIFICATION_CHAT, TEST_MODE, SUPPORT_CHAT_ID, FEEDBACK_CHAT_ID
 from handlers.info import InfoHandlers
 from services.take_application_service import ContactHandlers
 from services.application_request_service import RequestHandler
@@ -34,6 +34,7 @@ from handlers.appstore import AppstoreHandlers
 from handlers.start import StartHandlers
 from handlers.manager import ManagerHandlers
 from handlers.europe import EuropeHandlers
+from handlers.survey import SurveyHandler
 
 
 from sheets.interest import Interest
@@ -214,6 +215,14 @@ europe_handlers = EuropeHandlers(
     track_user=user_db.track_user,
 )
 europe_handlers.register()
+
+survey_handler = SurveyHandler(
+    bot,
+    state_manager,
+    logger,
+    FEEDBACK_CHAT_ID,
+)
+survey_handler.register()
 info_handlers = InfoHandlers(bot,
     track_user=user_db.track_user,)
 info_handlers.register()

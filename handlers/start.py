@@ -37,6 +37,7 @@ class StartHandlers:
             keyboard.add(InlineKeyboardButton("📥Пополнить Bybit Card (USDT)", callback_data="bybit_menu"))
             keyboard.add(InlineKeyboardButton("🔵Пополнить AppStore", callback_data="appstore_menu"))
             keyboard.add(InlineKeyboardButton("🛡 Гарантии и отзывы", callback_data="comment_menu"))
+            keyboard.add(InlineKeyboardButton("💬 Есть что сказать?", callback_data="survey_start"))
 
             keyboard.row(
                 InlineKeyboardButton("📲Симкарта eSIM", callback_data="esim_main"),
