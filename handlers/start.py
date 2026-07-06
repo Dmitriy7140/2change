@@ -2,6 +2,7 @@
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from services.senders import SenderService
+from handlers.webapp import calc_button
 
 
 class StartHandlers:
@@ -20,29 +21,14 @@ class StartHandlers:
             self.clearstate(chat_id)
 
             keyboard = InlineKeyboardMarkup(row_width=2)
-            keyboard.row(
-                InlineKeyboardButton("🇹🇷 Турция", callback_data="tr_menu"),
-                InlineKeyboardButton("🇹🇭 Таиланд", callback_data="thai_menu")
-            )
-            keyboard.row(
-                InlineKeyboardButton("🇨🇳Китай", callback_data="cn_menu"),
-                InlineKeyboardButton("🇰🇷Корея", callback_data="kr_menu")
-            )
-            keyboard.row(
-                InlineKeyboardButton("🇷🇺 Россия (USDT)", callback_data="rf_menu"),
-                InlineKeyboardButton("🇻🇳 Вьетнам", callback_data="vn_menu")
-            )
-            keyboard.add(InlineKeyboardButton("🇪🇺 Европа", callback_data="eu_menu"))
-
-            keyboard.add(InlineKeyboardButton("📥Пополнить Bybit Card (USDT)", callback_data="bybit_menu"))
-            keyboard.add(InlineKeyboardButton("🔵Пополнить AppStore", callback_data="appstore_menu"))
+            keyboard.add(calc_button("💱 Обменять"))
+            keyboard.add(InlineKeyboardButton("💳 Зарубежная карта", callback_data="tr_card_menu"))
             keyboard.add(InlineKeyboardButton("🛡 Гарантии и отзывы", callback_data="comment_menu"))
-            keyboard.add(InlineKeyboardButton("💬 Есть что сказать?", callback_data="survey_start"))
-
             keyboard.row(
                 InlineKeyboardButton("📲Симкарта eSIM", callback_data="esim_main"),
-                InlineKeyboardButton("💳 Зарубежная карта", callback_data="tr_card_menu")
+                InlineKeyboardButton("🔵Пополнить AppStore", callback_data="appstore_menu")
             )
+            keyboard.add(InlineKeyboardButton("💬 Есть что сказать?", callback_data="survey_start"))
 
             msg = (
         "<b>💎Калькулятор 2Change — выберите услугу по кнопке ниже</b>\n\n"
