@@ -2,6 +2,8 @@
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from typing import Callable
 
+from handlers.webapp import calc_button
+
 
 class ThailandHandlers:
     def __init__(self, bot, subscription_service, send_media, fin_instr_class_obj, state_manager, track_user):
@@ -40,7 +42,7 @@ class ThailandHandlers:
 
 
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Сделать расчет",style="success", callback_data="calc_thai"))
+        keyboard.add(calc_button())
         keyboard.add(InlineKeyboardButton("📈Курс", callback_data="thai_currencies"))
         keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="tr_card_menu"))
         keyboard.add(InlineKeyboardButton("👩‍💻 Позвать оператора", callback_data="request/❔вопрос про курсы валют/3"))
@@ -53,7 +55,7 @@ class ThailandHandlers:
 
         msg = self.finstr.show_currency(country=3)
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Сделать расчет", style="success", callback_data="calc_thai"))
+        keyboard.add(calc_button())
         keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="tr_card_menu"))
         keyboard.add(InlineKeyboardButton("👩‍💻 Позвать оператора", callback_data="request/❔вопрос про курсы валют/3"))
         keyboard.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))

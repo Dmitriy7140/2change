@@ -1,6 +1,8 @@
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from typing import Callable
 
+from handlers.webapp import calc_button
+
 
 class TurkeyHandlers:
 
@@ -48,7 +50,7 @@ class TurkeyHandlers:
         self.clearstate(chat_id)
 
         keyboard = InlineKeyboardMarkup(row_width=2)
-        keyboard.add(InlineKeyboardButton("✏️Сделать расчет", style="success",callback_data="calc_tr"))
+        keyboard.add(calc_button())
         keyboard.add(InlineKeyboardButton("📈Актуальный курс", callback_data="tr_currency_menu"))
         keyboard.add(InlineKeyboardButton("🎁Получить бесплатно eSim", callback_data="esim_tr"))
         button2 = InlineKeyboardButton("📋Меню", callback_data="main_menu")
@@ -123,7 +125,7 @@ class TurkeyHandlers:
                "<b>📊 Рассчитайте обмен или оставьте заявку 👇</b>"
                )
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Сделать расчет", style="success",callback_data="calc"))
+        keyboard.add(calc_button())
         keyboard.add(InlineKeyboardButton("👩‍💻 Позвать оператора", callback_data="request/🏧Выдача через банкомат по QR/1"))
         keyboard.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))
         self.send_media("img/turkey_qr.MP4", chat_id, msg, keyboard)
@@ -145,7 +147,7 @@ class TurkeyHandlers:
                "<a href='https://telegra.ph/IBAN-05-21'>📎Подробнее и FAQ </a>\n\n"
                "👇 Рассчитайте обмен или задайте вопрос")
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Сделать расчет",style="success", callback_data="calc"))
+        keyboard.add(calc_button())
         keyboard.add(InlineKeyboardButton("👩‍💻 Позвать оператора", callback_data="request/🔄IBAN-перевод/1"))
         keyboard.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))
         self.send_media("img/tr_iban.jpg", chat_id, msg, keyboard)
@@ -169,7 +171,7 @@ class TurkeyHandlers:
                ""
                "<b>Рассчитайте обмен или оставьте заявку 👇</b>")
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Сделать расчет",style="success", callback_data="calc"))
+        keyboard.add(calc_button())
         keyboard.add(InlineKeyboardButton("👩‍💻 Позвать оператора", callback_data="request/💰Выдача наличных в офисе/1"))
         keyboard.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))
         self.bot.send_message(chat_id=chat_id, text=msg, reply_markup=keyboard, parse_mode="HTML")
@@ -240,7 +242,7 @@ class TurkeyHandlers:
 
         msg = self.finstr.show_currency(country=1)
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму",style="success", callback_data="calc_tr"))
+        keyboard.add(calc_button("✏️Рассчитать сумму"))
         keyboard.add(InlineKeyboardButton("👩‍💻 Позвать оператора", callback_data="request/❔вопрос про курсы валют/1"))
         self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
         return

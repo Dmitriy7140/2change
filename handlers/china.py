@@ -1,6 +1,8 @@
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from typing import Callable
 
+from handlers.webapp import calc_button
+
 
 
 
@@ -60,7 +62,7 @@ class ChinaHandlers:
                "<b>👉 Напишите @ALEXANDRA_2CHANGE или оставьте заявку на услугу</b>")
 
         kb = InlineKeyboardMarkup()
-        kb.add(InlineKeyboardButton("✏️Сделать расчет", callback_data="calc_cn", style='success'))
+        kb.add(calc_button())
         kb.add(InlineKeyboardButton("📈Актуальный курс", callback_data="cn_currency_menu"))
         kb.add(InlineKeyboardButton("📲Cимкарта eSIM", callback_data="esim_cn"))
         kb.add(InlineKeyboardButton("💳Регистрация Alipay", callback_data="cn_alipay"))
@@ -126,7 +128,7 @@ class ChinaHandlers:
 
         msg = self.finstr.show_currency(country=4)
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Сделать расчет",style="success", callback_data="calc_cn"))
+        keyboard.add(calc_button())
         keyboard.add(InlineKeyboardButton("💳Зарубежная карта", callback_data="tr_card_menu"))
         keyboard.add(InlineKeyboardButton("👩‍💻 Позвать оператора", callback_data="request/❔вопрос про курсы валют/4"))
         self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)

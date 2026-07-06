@@ -15,6 +15,7 @@ TEST_NOTIFICATION_CHAT = int(os.getenv("TEST_NOTIFICATION_CHAT", 0))
 SUPPORT_CHAT_ID = int(os.getenv("SUPPORT_CHAT_ID", 0))
 ADMIN_CHANNEL = int(os.getenv("ADMIN_CHANNEL", 0))
 FEEDBACK_CHAT_ID = int(os.getenv("FEEDBACK_CHAT_ID", 0))  # канал «Обратная связь 2Change»
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://2change-tma.vercel.app")  # мини-апп (TMA)
 
 TEST_BOT_TOKEN=os.getenv("TEST_BOT_TOKEN")
 

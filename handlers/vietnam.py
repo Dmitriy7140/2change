@@ -1,6 +1,8 @@
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from typing import Callable
 
+from handlers.webapp import calc_button
+
 
 
 class VietnamHandlers:
@@ -43,7 +45,7 @@ class VietnamHandlers:
                "Пн-Сб 10:00 - 20:00 (Вс - выходной)")
 
         kb = InlineKeyboardMarkup()
-        kb.add(InlineKeyboardButton("✏️Сделать расчет", style="success",callback_data="calc_vn"))
+        kb.add(calc_button())
         kb.add(InlineKeyboardButton("📈Актуальный курс", callback_data="vn_currency_menu"))
         kb.add(InlineKeyboardButton("Зарубежная карта💳", callback_data="tr_card_menu"))
         kb.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))
@@ -55,7 +57,7 @@ class VietnamHandlers:
 
         msg = self.finstr.show_currency(country=7)
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Сделать расчет", style="success",callback_data="calc_vn"))
+        keyboard.add(calc_button())
 
         keyboard.add(InlineKeyboardButton("👩‍💻 Позвать оператора", callback_data="request/❔вопрос про курсы валют/7"))
         keyboard.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))

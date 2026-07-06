@@ -1,6 +1,8 @@
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from typing import Callable
 
+from handlers.webapp import calc_button
+
 
 class EuropeHandlers:
     def __init__(self, bot, fin_instr_class_obj, state_manager, track_user):
@@ -32,7 +34,7 @@ class EuropeHandlers:
 
         msg = self.finstr.show_currency(country=8)
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Сделать расчет", style="success", callback_data="calc_eu"))
+        keyboard.add(calc_button())
         keyboard.add(InlineKeyboardButton("👩‍💻 Позвать оператора", callback_data="request/❔вопрос про евро/8"))
         keyboard.add(InlineKeyboardButton("Меню📋", callback_data="main_menu"))
         self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
@@ -42,7 +44,7 @@ class EuropeHandlers:
 
         msg = self.finstr.show_currency(country=8)
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Сделать расчет", style="success", callback_data="calc_eu"))
+        keyboard.add(calc_button())
         keyboard.add(InlineKeyboardButton("👩‍💻 Позвать оператора", callback_data="request/❔вопрос про евро/8"))
         keyboard.add(InlineKeyboardButton("◀️Назад", callback_data="eu_menu"))
         self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)

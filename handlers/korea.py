@@ -1,6 +1,9 @@
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from typing import Callable
 
+from handlers.webapp import calc_button
+
+
 class KoreaHandlers:
     def __init__(self, bot, subscription_service, send_media, fin_instr_class_obj, state_manager, track_user):
         self.bot = bot
@@ -42,7 +45,7 @@ class KoreaHandlers:
                "Пн-Сб 10:00 - 20:00 (Вс - выходной)")
 
         kb = InlineKeyboardMarkup()
-        kb.add(InlineKeyboardButton("✏️Сделать расчет", style="success",callback_data="calc_kr"))
+        kb.add(calc_button())
         kb.add(InlineKeyboardButton("📈Актуальный курс", callback_data="kr_currency_menu"))
         kb.add(InlineKeyboardButton("🎁Бесплатная симкарта eSIM", callback_data="esim_kr"))
         kb.row(InlineKeyboardButton("Наличные воны🏧", callback_data="kr_cash_transactions_menu"),
@@ -57,7 +60,7 @@ class KoreaHandlers:
 
         msg = self.finstr.show_currency(country=5)
         keyboard = InlineKeyboardMarkup()
-        keyboard.add(InlineKeyboardButton("✏️Рассчитать сумму", callback_data="calc_kr"))
+        keyboard.add(calc_button("✏️Рассчитать сумму"))
         keyboard.add(InlineKeyboardButton("👩‍💻 Позвать оператора", callback_data="request/❔вопрос про курсы валют/5"))
         self.bot.send_message(chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
         return
@@ -81,7 +84,7 @@ class KoreaHandlers:
                "👇 Рассчитайте обмен или напишите менеджеру\n"
                " @ALEXANDRA_2CHANGE")
         kb = InlineKeyboardMarkup()
-        kb.add(InlineKeyboardButton("✏️Сделать расчет", style="success",callback_data="kr_currency_menu"))
+        kb.add(calc_button())
         kb.add(InlineKeyboardButton("🎁Бесплатная симкарта eSIM", callback_data="esim_kr"))
         kb.row(InlineKeyboardButton("◀️Назад", callback_data="kr_menu"),
                InlineKeyboardButton("📋Меню", callback_data="main_menu"))
