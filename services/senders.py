@@ -133,14 +133,14 @@ class SenderService:
                      f"▪️eSIM от 1300₽\n\n"
                      ""
                      f"<blockquote expandable>{EMOJI['golden_tick']}<b>Акция!</b> Индивидуальный курс от 100 000₽\n"
-                     f"{EMOJI['golden_tick']}<b>Акция!</b> Бесплатная симкарта на 1ГБ всем подписчикам. А при обмене от 20 000 лир <a href='https://t.me/turkey_2change/52581'>через QR</a> - <a href='https://t.me/turkey_2change/58134'>eSIM</a>  на 10ГБ в подарок!\n"
-                     f"{EMOJI['golden_tick']}<a href='https://t.me/turkey_2change/55039'>Оплата инвойсов (товары, обучение, лечение, недвижимость) - спец. курс!</a>\n"
-                     f"{EMOJI['golden_tick']}<b>Помощь с <a href='https://2pay.money/?utm_source=tg&utm_content=kurs'>оплатой сервисов/игр!</a></b>{EMOJI['apple']}{EMOJI['appstore']}{EMOJI['google_play']}{EMOJI['musically']}{EMOJI['netflix']}{EMOJI['playstation']}{EMOJI['xbox']}{EMOJI['steam']}{EMOJI['gpt']}{EMOJI['claude']}{EMOJI['photoshop']} для россиян (смена региона iCloud+, турецкий аккаунт PlayStation/Xbox и многое другое на сайте!\n"
+                     f"{EMOJI['golden_tick']}<b>Акция!</b> Бесплатная симкарта на 1ГБ всем подписчикам. А при обмене от 20 000 лир <a href='https://t.me/turkey_2change/52581'>через QR</a> - <a href='https://t.me/turkey_2change/58134'>eSIM</a> на 10ГБ в подарок!\n"
+                     f"{EMOJI['golden_tick']}<a href='https://t.me/turkey_2change/55039'>Оплата инвойсов</a> (товары, обучение, лечение, недвижимость) - спец. курс!\n"
+                     f"{EMOJI['golden_tick']}<b>Помощь с <a href='https://2pay.money/?utm_source=tg&utm_content=kurs'>оплатой сервисов/игр!</a></b>{EMOJI['apple']}{EMOJI['appstore']}{EMOJI['google_play']}{EMOJI['musically']}{EMOJI['netflix']}{EMOJI['playstation']}{EMOJI['xbox']}{EMOJI['steam']}{EMOJI['gpt']}{EMOJI['claude']}{EMOJI['photoshop']} для россиян (смена региона iCloud+, турецкий аккаунт PlayStation/Xbox и многое другое) на сайте!\n"
                      f"{EMOJI['golden_tick']}<b>Регистрация <a href='https://2change.pro/instrukcii/karty'>зарубежных карт</a> на загран паспорт РФ</b>"
                      f"</blockquote>\n\n"
                      ""
                      f"⚜️<a href='https://telegram.me/turkey_2change/56086'>Подробные условия</a>| <a href='https://t.me/review_2change'>Отзывы</a>|<a href='https://2change.pro/'>Сайт</a>\n\n"
-                     "✅Пишите  <a href='https://t.me/m/hdlFzYyAMmIy'>«ОБМЕН» @alexandra_2change</a> либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте-калькуляторе</a>")
+                     "✅Пишите <a href='https://t.me/m/keyYX7x7YWVi'>«ОБМЕН» @alexandra_2change</a> либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте-калькуляторе</a>")
 
         msg_thailand = (f"{title}"
                      f"▪️Рубли{EMOJI['bl_arrow_right']}Баты нал {r["cash_rub_thb"]:.2f}₽ (<a href='https://t.me/thailand_2change/4408'>QR банкомат</a>)\n"
@@ -153,38 +153,38 @@ class SenderService:
                      f"<blockquote expandable>{EMOJI['golden_tick']}<b>Акция!</b> Индивидуальный курс от 100 000₽\n"
                      f"{EMOJI['golden_tick']}<b>Акция!</b> Бесплатная симкарта при обмене от 20 000 бат через QR - eSIM на 3ГБ в подарок!\n"
                      f"{EMOJI['golden_tick']}<a href='https://t.me/thailand_2change/4411'>Оплата инвойсов (товары, недвижимость) - спец. курс!</a>\n"
-                     f"{EMOJI['golden_tick']}<b>Помощь с <a href='https://2pay.money/?utm_source=tg&utm_content=kurs'>оплатой сервисов/игр!</a></b>{EMOJI['apple']}{EMOJI['appstore']}{EMOJI['google_play']}{EMOJI['musically']}{EMOJI['netflix']}{EMOJI['playstation']}{EMOJI['xbox']}{EMOJI['steam']}{EMOJI['gpt']}{EMOJI['claude']}{EMOJI['photoshop']} для россиян (смена региона iCloud+, турецкий аккаунт PlayStation/Xbox и многое другое на сайте!\n"
+                     f"{EMOJI['golden_tick']}<b>Помощь с <a href='https://2pay.money/?utm_source=tg&utm_content=kurs'>оплатой сервисов/игр!</a></b>{EMOJI['apple']}{EMOJI['appstore']}{EMOJI['google_play']}{EMOJI['musically']}{EMOJI['netflix']}{EMOJI['playstation']}{EMOJI['xbox']}{EMOJI['steam']}{EMOJI['gpt']}{EMOJI['claude']}{EMOJI['photoshop']} для россиян (смена региона iCloud+, турецкий аккаунт PlayStation/Xbox и многое другое) на сайте!\n"
                      f"{EMOJI['golden_tick']}<b>Регистрация <a href='https://2change.pro/instrukcii/karty'>зарубежных карт</a> на загран паспорт РФ</b>"
                      f"</blockquote>\n\n"
                      ""
                      f"⚜️<a href='https://t.me/thailand_2change/4383'>Подробные условия</a>| <a href='https://t.me/review_2change'>Отзывы</a>|<a href='https://2change.pro/thailand'>Сайт</a>\n\n"
-                     "✅Пишите  <a href='https://t.me/m/hdlFzYyAMmIy'>«ОБМЕН» @alexandra_2change</a> либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте-калькуляторе</a>")
+                     "✅Пишите <a href='https://t.me/m/qx1PBbmPYmQy'>«ОБМЕН» @alexandra_2change</a> либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте-калькуляторе</a>")
 
         msg_china = (f"{title}"
                      f"▪️Рубль<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Юань {r["rub_cny"]:.2f} ₽ (<a href='https://t.me/china_2change/2163'>AliPay/WeChat</a>)\n"
-                     f"▪️USDT<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Юань {r["usd_cny"]:.2f}  ¥\n"
+                     f"▪️USDT<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Юань {r["usd_cny"]:.2f} ¥\n"
                      f"▪️Юань<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Рубль {r["cny_rub"]:.2f} ₽\n"
                      f"▪️Рубли<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>USDT {r["rub_usd"]:.2f}₽\n"
                      f"▪️USDT<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Рубли {r["usd_rub"]:.2f}₽\n"
                      "▪️Рубль<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Другие валюты по запросу\n\n"
                      ""
                      f"<blockquote expandable>{EMOJI['golden_tick']}<b>Акция!</b> Индивидуальный курс от 100 000₽\n"
-                     f"{EMOJI['golden_tick']}<a href='https://t.me/china_2change/2768'>Регистрация Alipay/WeChat</a>  + <a href='https://t.me/china_2change/2766'>оформление eSIM</a>\n"
+                     f"{EMOJI['golden_tick']}<a href='https://t.me/china_2change/2768'>Регистрация Alipay/WeChat</a> + <a href='https://t.me/china_2change/2766'>оформление eSIM</a>\n"
                      f"{EMOJI['golden_tick']}<a href='https://t.me/turkey_2change/55039'>Оплата инвойсов (товары, обучение, лечение, недвижимость) - спец. курс!</a>\n"
-                     f"{EMOJI['golden_tick']}<b>Помощь с <a href='https://2pay.money/?utm_source=tg&utm_content=kurs'>оплатой сервисов/игр!</a></b>{EMOJI['apple']}{EMOJI['appstore']}{EMOJI['google_play']}{EMOJI['musically']}{EMOJI['netflix']}{EMOJI['playstation']}{EMOJI['xbox']}{EMOJI['steam']}{EMOJI['gpt']}{EMOJI['claude']}{EMOJI['photoshop']} для россиян (смена региона iCloud+, турецкий аккаунт PlayStation/Xbox и многое другое на сайте!\n"
+                     f"{EMOJI['golden_tick']}<b>Помощь с <a href='https://2pay.money/?utm_source=tg&utm_content=kurs'>оплатой сервисов/игр!</a></b>{EMOJI['apple']}{EMOJI['appstore']}{EMOJI['google_play']}{EMOJI['musically']}{EMOJI['netflix']}{EMOJI['playstation']}{EMOJI['xbox']}{EMOJI['steam']}{EMOJI['gpt']}{EMOJI['claude']}{EMOJI['photoshop']} для россиян (смена региона iCloud+, турецкий аккаунт PlayStation/Xbox и многое другое) на сайте!\n"
                      f"{EMOJI['golden_tick']}<b>Регистрация <a href='https://2change.pro/instrukcii/karty'>зарубежных карт</a> на загран паспорт РФ</b>"
                      f"</blockquote>\n\n"
                      ""
                      f"⚜️<a href='https://telegram.me/china_2change/2129'>Подробные условия</a>| <a href='https://t.me/review_2change'>Отзывы</a>|<a href='https://2change.pro/china'>Сайт</a>\n\n"
-                     "✅Пишите  <a href='https://t.me/m/hdlFzYyAMmIy'>«ОБМЕН» @alexandra_2change</a> либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте-калькуляторе</a>")
+                     "✅Пишите <a href='https://t.me/m/QlKGlfKbY2Ey'>«ОБМЕН» @alexandra_2change</a> либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте-калькуляторе</a>")
 
 
 
         msg_korea = (f"{title}"
-                     f"▪️Рубль{EMOJI['bl_arrow_right']}Воны: {r["rub_krw"]:.2f}₩\n"
-                     f"▪️USDT{EMOJI['bl_arrow_right']}Воны: {r["usd_krw"]:.2f}₩\n"
-                     f"▪️Воны{EMOJI['bl_arrow_right']}Рубли: {r["krw_rub"]:.2f}₩\n"
-                     f"▪️Воны{EMOJI['bl_arrow_right']}USDT: {r["krw_usd"]:.2f}₩\n"
+                     f"▪️Рубли{EMOJI['bl_arrow_right']}Воны {r["rub_krw"]:.2f}₩ <a href='https://t.me/korea_obmen1/7871'>нал</a>/<a href='https://t.me/korea_obmen1/7886'>перевод</a>\n"
+                     f"▪️USDT{EMOJI['bl_arrow_right']}Воны {r["usd_krw"]:.2f}₩\n"
+                     f"▪️Воны{EMOJI['bl_arrow_right']}Рубли {r["krw_rub"]:.2f}₩\n"
+                     f"▪️Воны{EMOJI['bl_arrow_right']}USDT {r["krw_usd"]:.2f}₩\n"
                      f"▪️Рубли{EMOJI['bl_arrow_right']}USDT {r["rub_usd"]:.2f}₽\n"
                      f"▪️USDT{EMOJI['bl_arrow_right']}Рубли {r["usd_rub"]:.2f}₽\n\n"
                      f"▪️eSIM от 1 600₽\n\n"
@@ -192,33 +192,33 @@ class SenderService:
                      f"<blockquote expandable>{EMOJI['golden_tick']}<b>Акция!</b> При обмене от <b>1 000 000₩</b> - <a href='https://t.me/korea_obmen1/7844'>симкарта <b>eSIM</b></a> в подарок!\n"
                      f"{EMOJI['golden_tick']}<b><a href='https://t.me/korea_obmen1/7841'>Оплата инвойсов</a></b> (товары, авто, <a href='https://t.me/korea_obmen1/7875'>обучение</a>, лечение) — спец. курс!\n\n"
                      f""
-                     f"{EMOJI['golden_tick']}<b>Помощь с <a href='https://2pay.money/?utm_source=tg&utm_content=kurs'>оплатой сервисов/игр!</a></b>{EMOJI['apple']}{EMOJI['appstore']}{EMOJI['google_play']}{EMOJI['musically']}{EMOJI['netflix']}{EMOJI['playstation']}{EMOJI['xbox']}{EMOJI['steam']}{EMOJI['gpt']}{EMOJI['claude']}{EMOJI['photoshop']} для россиян (смена региона iCloud+, турецкий аккаунт PlayStation/Xbox и многое другое на сайте!\n"
+                     f"{EMOJI['golden_tick']}<b>Помощь с <a href='https://2pay.money/?utm_source=tg&utm_content=kurs'>оплатой сервисов/игр!</a></b>{EMOJI['apple']}{EMOJI['appstore']}{EMOJI['google_play']}{EMOJI['musically']}{EMOJI['netflix']}{EMOJI['playstation']}{EMOJI['xbox']}{EMOJI['steam']}{EMOJI['gpt']}{EMOJI['claude']}{EMOJI['photoshop']} для россиян (смена региона iCloud+, турецкий аккаунт PlayStation/Xbox и многое другое) на сайте!\n"
                      f"{EMOJI['golden_tick']}<b>Регистрация <a href='https://2change.pro/instrukcii/karty'>зарубежных карт</a> на загран паспорт РФ</b>"
                      f"</blockquote>\n\n"
                      ""
                      f"⚜️<a href='https://t.me/korea_obmen1/7402'>Подробные условия</a>| <a href='https://t.me/review_2change'>Отзывы</a>|<a href='https://2change.pro/korea'>Сайт</a>\n\n"
-                     "✅Пишите  <a href='https://t.me/m/hdlFzYyAMmIy'>«ОБМЕН» @alexandra_2change</a> либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте-калькуляторе</a>")
+                     "✅Пишите <a href='https://t.me/m/QZzRsmqnMzcy'>«ОБМЕН» @alexandra_2change</a> либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте-калькуляторе</a>")
 
         msg_vietnam = (f"{title}"
-                     f"▪️Рубль<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Донги нал {r["rub_vnd"]:.0f} VND\n"
-                     f"▪️Рубль<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Донги безнал {r["cash_rub_vnd"]:.0f} VND\n"
-                     f"▪️USDT<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Донги {r["usd_vnd"]:.0f} VND\n"
-                     f"▪️Донги<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Рубль {1/r["vnd_rub"]:.0f} VND\n"
-                     f"▪️Рубли<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>USDT Bybit Pay {r["rub_usd"]:.2f}₽\n"
-                     f"▪️USDT<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Рубли {r["usd_rub"]:.2f}₽\n"
-                     "▪️USDT<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Рубль, €$ и обратно по запросу\n"
-                     "▪️Рубль<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>Другие валюты по запросу\n\n"
+                     f"▪️Рубли{EMOJI['bl_arrow_right']}Донги {r["rub_vnd"]:.0f}₫ <a href='https://t.me/vietnam_2change/1998'> нал</a>\n"
+                     f"▪️Рубли{EMOJI['bl_arrow_right']}Донги {r["cash_rub_vnd"]:.0f}₫ <a href='https://t.me/vietnam_2change/2509'>переводом</a>\n"
+                     f"▪️USDT{EMOJI['bl_arrow_right']}Донги {r["usd_vnd"]:.0f}₫ <a href='https://t.me/vietnam_2change/1998'> нал</a>\n"
+                     f"▪️Донги{EMOJI['bl_arrow_right']}Рубли {1/r["vnd_rub"]:.0f}₫ <a href='https://t.me/vietnam_2change/2490'> переводом</a>\n"
+                     f"▪️Рубли{EMOJI['bl_arrow_right']}USDT {r["rub_usd"]:.2f}₽ <a href='https://t.me/vietnam_2change/2031'>BybitPay</a>\n"
+                     f"▪️USDT{EMOJI['bl_arrow_right']}Рубли {r["usd_rub"]:.2f}₽\n"
+                     f"▪️Рубли{EMOJI['bl_arrow_right']}Другие валюты по запросу\n"
+                     "▪️eSIM от 500₽\n\n"
                      ""
                      f"<blockquote expandable>{EMOJI['golden_tick']}<b>Акция!</b> Индивидуальный курс от 100 000₽\n"
                      f"{EMOJI['golden_tick']}<b>Акция!</b> Бесплатная eSIM на 10ГБ при обмене от 20 млн донгов через <a href='https://t.me/vietnam_2change/1998'>банкомат</a>!\n"
                      f"{EMOJI['golden_tick']}<b>Акция!</b> Бесплатно откроем вьетнамский счёт <a href='https://t.me/vietnam_2change/2031'>BybitPay</a> за 5 мин по РФ паспорту!\n"
                      f"{EMOJI['golden_tick']}<a href='https://t.me/vietnam_2change/1476'>Оплата инвойсов</a> (товары, недвижимость) - спец. курс!\n"
-                     f"{EMOJI['golden_tick']}<b>Помощь с <a href='https://2pay.money/?utm_source=tg&utm_content=kurs'>оплатой сервисов/игр!</a></b>{EMOJI['apple']}{EMOJI['appstore']}{EMOJI['google_play']}{EMOJI['musically']}{EMOJI['netflix']}{EMOJI['playstation']}{EMOJI['xbox']}{EMOJI['steam']}{EMOJI['gpt']}{EMOJI['claude']}{EMOJI['photoshop']} для россиян (смена региона iCloud+, турецкий аккаунт PlayStation/Xbox и многое другое на сайте!\n"
+                     f"{EMOJI['golden_tick']}<b>Помощь с <a href='https://2pay.money/?utm_source=tg&utm_content=kurs'>оплатой сервисов/игр!</a></b>{EMOJI['apple']}{EMOJI['appstore']}{EMOJI['google_play']}{EMOJI['musically']}{EMOJI['netflix']}{EMOJI['playstation']}{EMOJI['xbox']}{EMOJI['steam']}{EMOJI['gpt']}{EMOJI['claude']}{EMOJI['photoshop']} для россиян (смена региона iCloud+, турецкий аккаунт PlayStation/Xbox и многое другое) на сайте!\n"
                      f"{EMOJI['golden_tick']}<b>Регистрация <a href='https://2change.pro/instrukcii/karty'>зарубежных карт</a> на загран паспорт РФ</b>"
                      f"</blockquote>\n\n"
                      ""
                      f"⚜️<a href='https://telegram.me/vietnam_2change/1963'>Подробные условия</a>| <a href='https://t.me/review_2change'>Отзывы</a>|<a href='https://2change.pro/vietnam'>Сайт</a>\n\n"
-                     "✅Пишите  <a href='https://t.me/m/hdlFzYyAMmIy'>«ОБМЕН» @alexandra_2change</a> либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте-калькуляторе</a>")
+                     "✅Пишите <a href='https://t.me/m/o3KEc_KlMjIy'>«ОБМЕН» @alexandra_2change</a> либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте-калькуляторе</a>")
 
         return {
             "turkey" : msg_turkey,
