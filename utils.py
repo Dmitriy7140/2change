@@ -54,7 +54,7 @@ def start_scheduler(queue_service, sender_service, anal_sheets):
         'cron',
         day_of_week='mon-sat',
         hour='10,15',
-        minute=22,
+        minute=25,
         timezone=msk_tz
     )
     scheduler.add_job(
