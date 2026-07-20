@@ -18,18 +18,18 @@ CHANNELS = {
 EMOJI = {
     'green_light':"<tg-emoji emoji-id='5267229058659264159'></tg-emoji>",
     'bl_arrow_right' : "<tg-emoji emoji-id='5974140856939056410'>➡️</tg-emoji>",
-    'golden_tick' : "<tg-emoji emoji-id='5370638904640676079'></tg-emoji>",
+    'golden_tick' : "<tg-emoji emoji-id='5974362618985451139'></tg-emoji>",
     #compaines
     'apple': "<tg-emoji emoji-id='5318795767454923927'></tg-emoji>",
-    'appstore': "<tg-emoji emoji-id='5366400016732666411'></tg-emoji>",
-    'google_play':"<tg-emoji emoji-id='5366085865644768099'></tg-emoji>",
-    'musically':"<tg-emoji emoji-id='5318890501548570977'></tg-emoji>",
-    'netflix':"<tg-emoji emoji-id='5366477429223209600'></tg-emoji>",
-    'playstation':"<tg-emoji emoji-id='5363934885893389858'></tg-emoji>",
-    'xbox':"<tg-emoji emoji-id='5366104999724072406'></tg-emoji>",
-    'steam':"<tg-emoji emoji-id='5318801707394695066'></tg-emoji>",
-    'gpt':"<tg-emoji emoji-id='5310259124817134249'></tg-emoji>",
-    'claude':"<tg-emoji emoji-id='5321196473784773037'></tg-emoji>",
+    'appstore': "<tg-emoji emoji-id='5370722600668382252'></tg-emoji>",
+    'google_play':"<tg-emoji emoji-id='5373130604147654226'></tg-emoji>",
+    'musically':"<tg-emoji emoji-id='5346251367369425932'></tg-emoji>",
+    'netflix':"<tg-emoji emoji-id='5318911503938634641'></tg-emoji>",
+    'playstation':"<tg-emoji emoji-id='5373306783706137993'></tg-emoji>",
+    'xbox':"<tg-emoji emoji-id='5373019729566908647'></tg-emoji>",
+    'steam':"<tg-emoji emoji-id='5373144051690258848'></tg-emoji>",
+    'gpt':"<tg-emoji emoji-id='5359480394922082925'></tg-emoji>",
+    'claude':"<tg-emoji emoji-id='5359726582447487916'></tg-emoji>",
     'photoshop':"<tg-emoji emoji-id='5352556692892564574'></tg-emoji>"
 }
 
