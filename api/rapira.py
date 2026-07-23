@@ -2,7 +2,7 @@ import requests
 
 
 class RapiraAPI:
-    def __init__(self, url="https://api.rapira.net/open/market/rates"):
+    def __init__(self, url="https://rapira-api.pnator.ru/open/market/rates"):
         self.url = url
 
     def _fetch(self):
@@ -13,11 +13,4 @@ class RapiraAPI:
     def get_usdt_rub(self):
         data = self._fetch()
 
-        for item in data.get("data", []):
-            if item.get("symbol") == "USDT/RUB":
-                return {
-                    "askPrice": item.get("askPrice"),
-                    "bidPrice": item.get("bidPrice"),
-                }
-
-        return None
+        return data if data else None
