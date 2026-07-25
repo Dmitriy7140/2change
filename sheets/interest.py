@@ -58,6 +58,20 @@ class Interest:
         sheet = self.gc.open("interest").sheet1
         column_data = [[self._fmt_named(k, v)] for k, v in raw.items()]
         sheet.update("F2", column_data)# type: ignore
+
+        # Эти строки должны находиться в том же порядке, что и курсы в F/H:
+        # колонка K связывает процент из B с коэффициентом в БД.
+        gel_rows = {
+            "rub_gel": ("RUB - GEL", "rub_gel_c"),
+            "usdt_gel": ("USDT - GEL", "usdt_gel_c"),
+        }
+        raw_names = list(raw)
+        for rate_name, (label, coefficient_name) in gel_rows.items():
+            if rate_name not in raw:
+                continue
+            row = raw_names.index(rate_name) + 2
+            sheet.update(f"D{row}", [[label]])
+            sheet.update(f"K{row}", [[coefficient_name]])
         self.logger.info("Установили сырые курсы в гугл док")
         return
     def fetch_table(self):

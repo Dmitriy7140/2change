@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Any
 
 import coinoxr
@@ -9,10 +10,12 @@ from config import API_KEY
 from datetime import datetime, timedelta
 
 from api.rapira import RapiraAPI
+from api.binance import BinanceAPI
 from api.btcturk import get_usdt_try
 from api.bitkub import get_usdt_thb
 from api.kraken import KrakenAPI
 rapira = RapiraAPI()
+binance = BinanceAPI()
 kraken = KrakenAPI()
 
 
@@ -76,6 +79,8 @@ class QueueDB:
                 eur_rub REAL,
                 usd_eur REAL,
                 eur_usd REAL,
+                rub_gel REAL,
+                usdt_gel REAL,
                 updated_at TIMESTAMP)''')
             logger.info("Таблица с курсами загружена...")
 
@@ -113,6 +118,8 @@ class QueueDB:
                             eur_rub_c REAL,
                             usd_eur_c REAL,
                             eur_usd_c REAL,
+                            rub_gel_c REAL,
+                            usdt_gel_c REAL,
                             updated_at TEXT)''')
             logger.info("Таблица с наценкой загружена...")
 
@@ -122,6 +129,8 @@ class QueueDB:
             self._migrate_add_vnd_rub(c)
             # --- МИГРАЦИЯ: евро-курсы перед updated_at ---
             self._migrate_add_eur(c)
+            # --- МИГРАЦИЯ: курсы GEL перед updated_at ---
+            self._migrate_add_gel(c)
 
             c.execute("SELECT COUNT(*) FROM coef")
             count = c.fetchone()[0]
@@ -164,6 +173,8 @@ class QueueDB:
                 eur_rub_c,
                 usd_eur_c,
                 eur_usd_c,
+                rub_gel_c,
+                usdt_gel_c,
                 updated_at)
                  VALUES (0.04,
                      0.075,
@@ -193,6 +204,8 @@ class QueueDB:
                      0.10,
                      0.10,
                      0.04,
+                     0.01,
+                     0.01,
                      0.01,
                      0.01,
                      0.01,
@@ -331,6 +344,43 @@ class QueueDB:
             c.execute("CREATE TABLE currency (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                       + ", ".join(f"{n} REAL" for n in final) + ", updated_at TIMESTAMP)")
             logger.info("Миграция currency (евро) завершена")
+
+    def _migrate_add_gel(self, c):
+        """Добавляет курсы GEL и их наценки, не изменяя прежние значения."""
+        gel_coef = ["rub_gel_c", "usdt_gel_c"]
+        gel_cur = ["rub_gel", "usdt_gel"]
+
+        c.execute("PRAGMA table_info(coef)")
+        coef_cols = [row[1] for row in c.fetchall()]
+        if not all(name in coef_cols for name in gel_coef):
+            logger.info("Миграция coef: добавляем наценки GEL")
+            c.execute("SELECT * FROM coef LIMIT 1")
+            row = c.fetchone()
+            old = dict(zip(coef_cols, row)) if row else {}
+            base = [name for name in coef_cols if name not in ("id", "updated_at")]
+            final = base + [name for name in gel_coef if name not in base]
+            c.execute("DROP TABLE coef")
+            c.execute("CREATE TABLE coef (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                      + ", ".join(f"{name} REAL" for name in final)
+                      + ", updated_at TEXT)")
+            values = [old.get(name, 0.01) for name in final]
+            c.execute("INSERT INTO coef (id, " + ", ".join(final)
+                      + ", updated_at) VALUES (1, "
+                      + ", ".join("?" for _ in final) + ", ?)",
+                      (*values, old.get("updated_at", "migrated")))
+            logger.info("Миграция coef (GEL) завершена, наценки 0.01 по умолчанию")
+
+        c.execute("PRAGMA table_info(currency)")
+        cur_cols = [row[1] for row in c.fetchall()]
+        if not all(name in cur_cols for name in gel_cur):
+            logger.info("Миграция currency: добавляем курсы GEL")
+            base = [name for name in cur_cols if name not in ("id", "updated_at")]
+            final = base + [name for name in gel_cur if name not in base]
+            c.execute("DROP TABLE currency")
+            c.execute("CREATE TABLE currency (id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                      + ", ".join(f"{name} REAL" for name in final)
+                      + ", updated_at TIMESTAMP)")
+            logger.info("Миграция currency (GEL) завершена")
 
     @contextmanager
     def get_connection(self):
@@ -480,6 +530,9 @@ class QueueDB:
             vnd_courses = coinoxr.Latest().get(base="VND", show_alternative=True)
             api_vnd_rub = vnd_courses.body["rates"]["RUB"]
             api_usd_eur = kraken.get_usdt_eur()["last"]  # EUR за 1 USDT (~0.87), Kraken
+            api_usdt_gel = binance.get_second_best_usdt_gel_sell_price()
+            # RUB за 1 GEL: RUB за 1 USDT (Rapira) / GEL за 1 USDT (Binance P2P).
+            api_rub_gel = Decimal(str(api_rub_usd)) / api_usdt_gel
             logger.info("Подтянули доллар!")
 
 
@@ -523,6 +576,8 @@ class QueueDB:
                            "eur_rub": api_rub_usd / api_usd_eur,   # EUR→RUB: руб за 1 евро
                            "usd_eur": api_usd_eur,                 # USDT→EUR: EUR за 1 USDT
                            "eur_usd": api_usd_eur,                 # EUR→USDT: EUR за 1 USDT (делится)
+                           "rub_gel": float(api_rub_gel),           # RUB за 1 GEL
+                           "usdt_gel": float(api_usdt_gel),         # GEL за 1 USDT
                            }
 
             we_sell = {"id": rows[0],
@@ -557,6 +612,8 @@ class QueueDB:
                        "eur_rub_c": rows[25],
                        "usd_eur_c": rows[26],
                        "eur_usd_c": rows[27],
+                       "rub_gel_c": rows[28],
+                       "usdt_gel_c": rows[29],
 
                        }
 
@@ -608,6 +665,12 @@ class QueueDB:
             eur_usd = r["eur_usd"] * (1 + we_sell["eur_usd_c"])
             logger.info("Посчитали евро...")
 
+            # RUB→GEL хранится как RUB за 1 GEL: наценка увеличивает результат.
+            # USDT→GEL хранится как GEL за 1 USDT: наценка уменьшает результат.
+            rub_gel = r["rub_gel"] * (1 + we_sell["rub_gel_c"])
+            usdt_gel = r["usdt_gel"] * (1 - we_sell["usdt_gel_c"])
+            logger.info("Посчитали лари...")
+
 
 
             rates = (usd_rub,
@@ -636,7 +699,9 @@ class QueueDB:
                      rub_eur,
                      eur_rub,
                      usd_eur,
-                     eur_usd,)
+                     eur_usd,
+                     rub_gel,
+                     usdt_gel,)
         except Exception as e:
             logger.error(f"Ошибка с добавлением курса:{e}!!!")
             return None
@@ -649,8 +714,8 @@ class QueueDB:
             c = conn.cursor()
 
             c.execute('''INSERT INTO currency (usd_rub, rub_usd, usd_try,cash_usd_try, rub_try, cash_rub_try, try_rub,
-             usd_thb, cash_usd_thb, rub_thb, cash_rub_thb, rub_cny, usd_cny, cny_rub,krw_usd, krw_rub, usd_krw, rub_krw,usd_vnd, cash_usd_vnd, rub_vnd, cash_rub_vnd, vnd_rub, rub_eur, eur_rub, usd_eur, eur_usd, updated_at)
-             VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', (*rates, datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")))
+             usd_thb, cash_usd_thb, rub_thb, cash_rub_thb, rub_cny, usd_cny, cny_rub,krw_usd, krw_rub, usd_krw, rub_krw,usd_vnd, cash_usd_vnd, rub_vnd, cash_rub_vnd, vnd_rub, rub_eur, eur_rub, usd_eur, eur_usd, rub_gel, usdt_gel, updated_at)
+             VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', (*rates, datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")))
 
             conn.commit()
 
@@ -694,6 +759,8 @@ class QueueDB:
                 eur_rub,
                 usd_eur,
                 eur_usd,
+                rub_gel,
+                usdt_gel,
                 updated_at,
             ) = row
             return {
@@ -724,6 +791,8 @@ class QueueDB:
             "eur_rub": eur_rub,
             "usd_eur": usd_eur,
             "eur_usd": eur_usd,
+            "rub_gel": rub_gel,
+            "usdt_gel": usdt_gel,
             "updated_at": updated_at,
                                 }
         return row
