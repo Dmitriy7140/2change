@@ -520,8 +520,9 @@ class QueueDB:
 
             all_courses = coinoxr.Latest().get(base=f"USD", show_alternative=True)
             api_usd_try = get_usdt_try()
-            api_rub_usd = rapira.get_usdt_rub()["askPrice"]
-            api_usd_rub = rapira.get_usdt_rub()["bidPrice"]
+            rapira_usdt_rub = rapira.get_usdt_rub()
+            api_rub_usd = rapira_usdt_rub["askPrice"]
+            api_usd_rub = rapira_usdt_rub["bidPrice"]
             api_usd_thb = get_usdt_thb()
             api_vnd_usd = all_courses.body["rates"]["VND"]
             api_usd_cny = all_courses.body["rates"]["CNY"]
@@ -702,8 +703,8 @@ class QueueDB:
                      eur_usd,
                      rub_gel,
                      usdt_gel,)
-        except Exception as e:
-            logger.error(f"Ошибка с добавлением курса:{e}!!!")
+        except Exception:
+            logger.exception("Ошибка с добавлением курса")
             return None
         self.set_currency(rates)
 

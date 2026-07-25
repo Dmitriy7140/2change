@@ -24,21 +24,26 @@ class InterestService:
     def _get_interest(self) -> dict|None:
         try:
             res = self.sheets_interest.get_interest()
+            if not isinstance(res, dict):
+                self.logger.error("Таблица наценок вернула не словарь: %r", res)
+                return None
             self.logger.info("Получили словарь с наценками")
             return res
-        except ValueError:
-            self.logger.error("Не удалось получить словарь с наценками")
-
-
+        except Exception:
+            self.logger.exception("Не удалось получить словарь с наценками")
             return None
+
     def _set_interest(self, res:dict) -> bool:
+        if not isinstance(res, dict):
+            self.logger.error("Не удалось применить наценки: получено %r", res)
+            return False
         try:
             for name, value in res.items():
                 self.qdb.set_coef(name, value/100)
                 self.logger.info("Добавили наценки")
             return True
-        except ValueError:
-            self.logger.error("Не удалось добавить коэффициенты (VE)")
+        except Exception:
+            self.logger.exception("Не удалось добавить коэффициенты")
             return False
 
     def update_interest(self, message):
@@ -48,9 +53,16 @@ class InterestService:
             text = "⛔️При чтении таблицы ошибка со следующими данными:\n" + "\n".join(str(i) for i in res)
             self.bot.send_message(chat_id, text)
             return False
-        self._set_interest(res)
+        if res is None:
+            self.bot.send_message(chat_id, "⛔️Не удалось прочитать наценки из таблицы. Подробности записаны в лог.")
+            return False
+        if not self._set_interest(res):
+            self.bot.send_message(chat_id, "⛔️Не удалось сохранить наценки. Подробности записаны в лог.")
+            return False
         self.bot.send_message(chat_id, "Наценки получили, обновляем базу данных и данные в таблице🕓")
-        self.insert_currencies_into_table()
+        if not self.insert_currencies_into_table():
+            self.bot.send_message(chat_id, "⛔️Курсы не обновлены. Исходная ошибка записана в лог.")
+            return False
         self.bot.send_message(chat_id, "Наценки обновили✅\n"
                                        "Актуальные данные:")
         data = self.sheets_interest.fetch_table()
@@ -61,10 +73,20 @@ class InterestService:
     def insert_currencies_into_table(self):
         self.logger.info("Вставляем курсы в гугл таблицу...")
         raw_api_currencies = self.qdb.update_currency()
-        self.sheets_interest.set_raw_currencies(raw_api_currencies)
-        currencies = self.qdb.get_currencies()
-        self.sheets_interest.set_currencies_with_interest(currencies)
-        return
+        if not isinstance(raw_api_currencies, dict):
+            self.logger.error("Не получили сырые курсы от API: %r", raw_api_currencies)
+            return False
+        try:
+            self.sheets_interest.set_raw_currencies(raw_api_currencies)
+            currencies = self.qdb.get_currencies()
+            if not isinstance(currencies, dict):
+                self.logger.error("Не получили курсы с наценкой из БД: %r", currencies)
+                return False
+            self.sheets_interest.set_currencies_with_interest(currencies)
+        except Exception:
+            self.logger.exception("Не удалось записать курсы в Google-таблицу")
+            return False
+        return True
 
     @staticmethod
     def form_message(data):

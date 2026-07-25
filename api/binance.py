@@ -22,6 +22,7 @@ class BinanceAPI:
                 "tradeType": "SELL",
                 "limit": 20,
             },
+            headers={"clienttype": "web"},
             timeout=10,
         )
         response.raise_for_status()
