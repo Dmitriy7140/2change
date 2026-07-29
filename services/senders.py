@@ -3,7 +3,7 @@ from datetime import datetime
 
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from config import TEST_MODE, ADMIN_CHANNEL
+from config import ADMIN_CHANNEL, ADMIN_IDS, TEST_MODE
 from services.application_creator_service import ApplicationCreator
 
 CHANNELS = {
@@ -12,9 +12,18 @@ CHANNELS = {
     "china": -1003446339439,
     "korea" : -1001290060134,
     "vietnam":-1003683646201,
-    "georgia": 3877801550,
+    "georgia": -1003877801550,
 
 
+}
+
+DAILY_CHANNEL_LABELS = {
+    "turkey": "🇹🇷 Турция",
+    "thailand": "🇹🇭 Таиланд",
+    "china": "🇨🇳 Китай",
+    "korea": "🇰🇷 Корея",
+    "vietnam": "🇻🇳 Вьетнам",
+    "georgia": "🇬🇪 Грузия",
 }
 GEORGIA_CONTACT_URL = (
     "https://t.me/alexandra_2change?text="
@@ -51,6 +60,77 @@ class SenderService:
         self.manager_chat_id = manager_chat_id
         self.day_off = day_off_func
         self.img_cache = {}
+
+    def register_daily_send_handlers(self):
+        @self.bot.message_handler(
+            commands=["send_daily"],
+            func=lambda message: message.from_user.id in ADMIN_IDS,
+        )
+        def start_manual_daily_send(message):
+            self.start_manual_daily_send(message)
+
+        @self.bot.callback_query_handler(
+            func=lambda call: call.data.startswith("send_daily/")
+        )
+        def send_manual_daily(call):
+            self.send_manual_daily(call)
+
+    @staticmethod
+    def _daily_channel_keyboard():
+        keyboard = InlineKeyboardMarkup()
+        for country in CHANNELS:
+            keyboard.add(
+                InlineKeyboardButton(
+                    DAILY_CHANNEL_LABELS.get(country, country),
+                    callback_data=f"send_daily/{country}",
+                )
+            )
+        return keyboard
+
+    def start_manual_daily_send(self, message):
+        self.bot.send_message(
+            message.chat.id,
+            "В какой чат отправить предзаписанное ежедневное сообщение?",
+            reply_markup=self._daily_channel_keyboard(),
+        )
+
+    def send_manual_daily(self, call):
+        if call.from_user.id not in ADMIN_IDS:
+            self.bot.answer_callback_query(call.id, "Недостаточно прав", show_alert=True)
+            return
+
+        country = call.data.split("/", 1)[1]
+        if country not in CHANNELS:
+            self.bot.answer_callback_query(call.id, "Неизвестный чат", show_alert=True)
+            return
+
+        self.bot.answer_callback_query(call.id)
+        try:
+            self.bot.edit_message_reply_markup(
+                chat_id=call.message.chat.id,
+                message_id=call.message.message_id,
+                reply_markup=None,
+            )
+        except Exception:
+            self.logger.exception("Не удалось убрать кнопки ручной ежедневной рассылки")
+
+        try:
+            message = self._form_daily_messages()[country]
+            target_chat_id = CHANNELS[country] if not TEST_MODE else ADMIN_CHANNEL
+            self.bot.send_message(target_chat_id, message, parse_mode="HTML")
+        except Exception:
+            self.logger.exception("Не удалось вручную отправить ежедневное сообщение в %s", country)
+            self.bot.send_message(
+                call.message.chat.id,
+                "❌ Не удалось отправить ежедневное сообщение. Подробности записаны в лог.",
+            )
+            return
+
+        self.bot.send_message(
+            call.message.chat.id,
+            f"✅ Ежедневное сообщение отправлено в чат «{DAILY_CHANNEL_LABELS.get(country, country)}».",
+        )
+        self.logger.info("%s вручную отправил ежедневное сообщение в %s", call.from_user.id, country)
 
     def send_media(self,
                    path,

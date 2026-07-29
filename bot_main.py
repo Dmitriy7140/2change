@@ -73,6 +73,7 @@ subscription_service = SubscriptionService(bot, logger, TEST_MODE)
 
 
 sender_service = SenderService(bot, qdb, manager_chat_id, day_off, logger)
+sender_service.register_daily_send_handlers()
 
 state_manager = StateManager(logger)
 deeplink_router = DeepLinkRouter(logger)
