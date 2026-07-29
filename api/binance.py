@@ -8,11 +8,13 @@ class BinanceAPI:
 
     AD_LIST_URL = "https://www.binance.com/bapi/c2c/v1/public/c2c/agent/ad-list"
 
-    def get_second_best_usdt_gel_sell_price(self) -> Decimal:
-        """Return the second distinct P2P price for selling USDT for GEL.
+    def get_second_best_usdt_gel_sell_price(self) -> Decimal | None:
+        """Return the second distinct P2P price, or the only available price.
 
         The first several advertisements can have the same best price. We need
         the next price level, not simply the second item in Binance's response.
+        If Binance returns only one distinct level, it is still a usable price.
+        ``None`` means that Binance returned no prices at all.
         """
         response = requests.get(
             self.AD_LIST_URL,
@@ -36,9 +38,9 @@ class BinanceAPI:
             {Decimal(str(ad["price"])) for ad in items if "price" in ad},
             reverse=True,
         )
-        if len(prices) < 2:
-            raise ValueError(
-                "Binance P2P returned fewer than two distinct USDT/GEL prices"
-            )
+        if not prices:
+            return None
+        if len(prices) == 1:
+            return prices[0]
 
         return prices[1]

@@ -507,6 +507,18 @@ class QueueDB:
         else:
             logger.info("Курсы свежие — обновление не требуется")
 
+    def _get_latest_usdt_gel(self):
+        """Возвращает последний курс USDT/GEL после наценки, без обновления БД."""
+        with self.get_connection() as conn:
+            c = conn.cursor()
+            c.execute("""SELECT usdt_gel
+                         FROM currency
+                         WHERE usdt_gel IS NOT NULL
+                         ORDER BY id DESC
+                         LIMIT 1""")
+            row = c.fetchone()
+        return row[0] if row else None
+
     def update_currency(self):
 
         """:return api_courses= {"usd_try":api_usd_try,
@@ -532,13 +544,26 @@ class QueueDB:
             api_vnd_rub = vnd_courses.body["rates"]["RUB"]
             api_usd_eur = kraken.get_usdt_eur()["last"]  # EUR за 1 USDT (~0.87), Kraken
             api_usdt_gel = binance.get_second_best_usdt_gel_sell_price()
+            rows_list= self.get_coef()
+            rows = rows_list[0]
+
+            if api_usdt_gel is None:
+                previous_usdt_gel = self._get_latest_usdt_gel()
+                if previous_usdt_gel is None:
+                    raise ValueError("Binance P2P returned no USDT/GEL prices and no cached rate exists")
+
+                usdt_gel_multiplier = Decimal("1") - Decimal(str(rows[29]))
+                if usdt_gel_multiplier <= 0:
+                    raise ValueError("USDT/GEL markup must be less than 100% to restore cached rate")
+
+                # В БД хранится цена уже после наценки. Восстанавливаем сырую
+                # цену так, чтобы итоговая цена в рассылке осталась прежней.
+                api_usdt_gel = Decimal(str(previous_usdt_gel)) / usdt_gel_multiplier
+                logger.warning("Binance P2P returned no USDT/GEL prices; using cached rate")
+
             # RUB за 1 GEL: RUB за 1 USDT (Rapira) / GEL за 1 USDT (Binance P2P).
             api_rub_gel = Decimal(str(api_rub_usd)) / api_usdt_gel
             logger.info("Подтянули доллар!")
-
-
-            rows_list= self.get_coef()
-            rows = rows_list[0]
 
 
             r = {"usd_rub":api_usd_rub,
