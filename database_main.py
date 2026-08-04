@@ -81,6 +81,7 @@ class QueueDB:
                 eur_usd REAL,
                 rub_gel REAL,
                 usdt_gel REAL,
+                gel_rub REAL,
                 updated_at TIMESTAMP)''')
             logger.info("Таблица с курсами загружена...")
 
@@ -120,6 +121,7 @@ class QueueDB:
                             eur_usd_c REAL,
                             rub_gel_c REAL,
                             usdt_gel_c REAL,
+                            gel_rub_c REAL,
                             updated_at TEXT)''')
             logger.info("Таблица с наценкой загружена...")
 
@@ -175,6 +177,7 @@ class QueueDB:
                 eur_usd_c,
                 rub_gel_c,
                 usdt_gel_c,
+                gel_rub_c,
                 updated_at)
                  VALUES (0.04,
                      0.075,
@@ -210,7 +213,8 @@ class QueueDB:
                      0.01,
                      0.01,
                      0.01,
-                        ?)''', ("default",))
+                     0.01,
+                         ?)''', ("default",))
 
                 logger.info("Начальные коэффициенты добавлены")
             else:
@@ -347,8 +351,8 @@ class QueueDB:
 
     def _migrate_add_gel(self, c):
         """Добавляет курсы GEL и их наценки, не изменяя прежние значения."""
-        gel_coef = ["rub_gel_c", "usdt_gel_c"]
-        gel_cur = ["rub_gel", "usdt_gel"]
+        gel_coef = ["rub_gel_c", "usdt_gel_c", "gel_rub_c"]
+        gel_cur = ["rub_gel", "usdt_gel", "gel_rub"]
 
         c.execute("PRAGMA table_info(coef)")
         coef_cols = [row[1] for row in c.fetchall()]
@@ -374,12 +378,33 @@ class QueueDB:
         cur_cols = [row[1] for row in c.fetchall()]
         if not all(name in cur_cols for name in gel_cur):
             logger.info("Миграция currency: добавляем курсы GEL")
+            c.execute("SELECT * FROM currency")
+            old_rows = c.fetchall()
             base = [name for name in cur_cols if name not in ("id", "updated_at")]
             final = base + [name for name in gel_cur if name not in base]
             c.execute("DROP TABLE currency")
             c.execute("CREATE TABLE currency (id INTEGER PRIMARY KEY AUTOINCREMENT, "
                       + ", ".join(f"{name} REAL" for name in final)
                       + ", updated_at TIMESTAMP)")
+
+            # Сохраняем историю курсов при миграции. Для новой обратной пары
+            # восстанавливаем базовый курс из RUB→GEL и применяем наценку в
+            # противоположную сторону.
+            c.execute("SELECT rub_gel_c, gel_rub_c FROM coef WHERE id = 1")
+            rub_gel_c, gel_rub_c = c.fetchone()
+            for old_row in old_rows:
+                old = dict(zip(cur_cols, old_row))
+                values = []
+                for name in final:
+                    if name == "gel_rub" and old.get("rub_gel") is not None:
+                        raw_gel_rub = old["rub_gel"] / (1 + rub_gel_c)
+                        values.append(raw_gel_rub * (1 - gel_rub_c))
+                    else:
+                        values.append(old.get(name))
+                c.execute("INSERT INTO currency (id, " + ", ".join(final)
+                          + ", updated_at) VALUES (?, "
+                          + ", ".join("?" for _ in final) + ", ?)",
+                          (old["id"], *values, old.get("updated_at")))
             logger.info("Миграция currency (GEL) завершена")
 
     @contextmanager
@@ -604,6 +629,7 @@ class QueueDB:
                            "eur_usd": api_usd_eur,                 # EUR→USDT: EUR за 1 USDT (делится)
                            "rub_gel": float(api_rub_gel),           # RUB за 1 GEL
                            "usdt_gel": float(api_usdt_gel),         # GEL за 1 USDT
+                           "gel_rub": float(api_rub_gel),            # RUB за 1 GEL
                            }
 
             we_sell = {"id": rows[0],
@@ -640,6 +666,7 @@ class QueueDB:
                        "eur_usd_c": rows[27],
                        "rub_gel_c": rows[28],
                        "usdt_gel_c": rows[29],
+                       "gel_rub_c": rows[30],
 
                        }
 
@@ -691,10 +718,12 @@ class QueueDB:
             eur_usd = r["eur_usd"] * (1 + we_sell["eur_usd_c"])
             logger.info("Посчитали евро...")
 
-            # RUB→GEL хранится как RUB за 1 GEL: наценка увеличивает результат.
+            # RUB↔GEL хранится как RUB за 1 GEL. Для RUB→GEL наценка увеличивает
+            # цену лари, а для GEL→RUB — уменьшает сумму рублей для клиента.
             # USDT→GEL хранится как GEL за 1 USDT: наценка уменьшает результат.
             rub_gel = r["rub_gel"] * (1 + we_sell["rub_gel_c"])
             usdt_gel = r["usdt_gel"] * (1 - we_sell["usdt_gel_c"])
+            gel_rub = r["gel_rub"] * (1 - we_sell["gel_rub_c"])
             logger.info("Посчитали лари...")
 
 
@@ -725,9 +754,10 @@ class QueueDB:
                      rub_eur,
                      eur_rub,
                      usd_eur,
-                     eur_usd,
-                     rub_gel,
-                     usdt_gel,)
+                      eur_usd,
+                      rub_gel,
+                      usdt_gel,
+                      gel_rub,)
         except Exception:
             logger.exception("Ошибка с добавлением курса")
             return None
@@ -740,8 +770,8 @@ class QueueDB:
             c = conn.cursor()
 
             c.execute('''INSERT INTO currency (usd_rub, rub_usd, usd_try,cash_usd_try, rub_try, cash_rub_try, try_rub,
-             usd_thb, cash_usd_thb, rub_thb, cash_rub_thb, rub_cny, usd_cny, cny_rub,krw_usd, krw_rub, usd_krw, rub_krw,usd_vnd, cash_usd_vnd, rub_vnd, cash_rub_vnd, vnd_rub, rub_eur, eur_rub, usd_eur, eur_usd, rub_gel, usdt_gel, updated_at)
-             VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', (*rates, datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")))
+             usd_thb, cash_usd_thb, rub_thb, cash_rub_thb, rub_cny, usd_cny, cny_rub,krw_usd, krw_rub, usd_krw, rub_krw,usd_vnd, cash_usd_vnd, rub_vnd, cash_rub_vnd, vnd_rub, rub_eur, eur_rub, usd_eur, eur_usd, rub_gel, usdt_gel, gel_rub, updated_at)
+             VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', (*rates, datetime.now().strftime("%d-%m-%Y %H:%M:%S.%f")))
 
             conn.commit()
 
@@ -787,6 +817,7 @@ class QueueDB:
                 eur_usd,
                 rub_gel,
                 usdt_gel,
+                gel_rub,
                 updated_at,
             ) = row
             return {
@@ -819,6 +850,7 @@ class QueueDB:
             "eur_usd": eur_usd,
             "rub_gel": rub_gel,
             "usdt_gel": usdt_gel,
+            "gel_rub": gel_rub,
             "updated_at": updated_at,
                                 }
         return row

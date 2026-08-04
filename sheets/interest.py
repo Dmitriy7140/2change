@@ -64,6 +64,7 @@ class Interest:
         gel_rows = {
             "rub_gel": ("RUB - GEL", "rub_gel_c"),
             "usdt_gel": ("USDT - GEL", "usdt_gel_c"),
+            "gel_rub": ("GEL - RUB", "gel_rub_c"),
         }
         raw_names = list(raw)
         for rate_name, (label, coefficient_name) in gel_rows.items():

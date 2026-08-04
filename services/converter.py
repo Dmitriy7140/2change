@@ -221,12 +221,16 @@ class FinInstr:
             ("rub", "krw"): lambda: amount * r["rub_krw"],
             ("rub", "vnd"): lambda: amount * r["rub_vnd"],
             ("rub", "vnd_cash"): lambda: amount * r["cash_rub_vnd"],
+            ("rub", "gel"): lambda: amount / r["rub_gel"],
 
             # ===== CNY =====
             ("cny", "rub"): lambda: amount * r["cny_rub"],
 
             # ===== VND =====
             ("vnd", "rub"): lambda: amount * r["vnd_rub"],
+
+            # ===== GEL =====
+            ("gel", "rub"): lambda: amount * r["gel_rub"],
 
             # ===== EUR =====
             ("rub", "eur"): lambda: amount / r["rub_eur"],   # руб / (руб за евро) = евро

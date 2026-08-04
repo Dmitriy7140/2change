@@ -310,6 +310,7 @@ class SenderService:
 
         msg_georgia = (f"{title}"
                        f"▪️Рубли{EMOJI['bl_arrow_right']}Лари {r["rub_gel"]:.2f} ₽\n"
+                       f"▪️Лари{EMOJI['bl_arrow_right']}Рубли {r["gel_rub"]:.2f} ₽\n"
                        f"▪️USDT{EMOJI['bl_arrow_right']}Лари {r["usdt_gel"]:.2f} ₾\n"
                        f"▪️Рубли{EMOJI['bl_arrow_right']}USDT {r["rub_usd"]:.2f} ₽\n"
                        f"▪️USDT{EMOJI['bl_arrow_right']}Рубли {r["usd_rub"]:.2f} ₽\n"
