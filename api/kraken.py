@@ -18,3 +18,17 @@ class KrakenAPI:
             "bid": float(v["b"][0]),
             "ask": float(v["a"][0]),
         }
+
+    def get_usdt_usd(self):
+        """USDT/USD — долларов США за 1 USDT."""
+        response = requests.get(self.url, params={"pair": "USDTUSD"}, timeout=10)
+        response.raise_for_status()
+        result = response.json().get("result", {})
+        if not result:
+            return None
+        v = next(iter(result.values()))
+        return {
+            "last": float(v["c"][0]),
+            "bid": float(v["b"][0]),
+            "ask": float(v["a"][0]),
+        }

@@ -210,6 +210,9 @@ class FinInstr:
             ("usd", "krw"): lambda: amount * r["usd_krw"],
             ("usd", "vnd"): lambda: amount * r["usd_vnd"],
             ("usd", "vnd_cash"): lambda: amount * r["cash_usd_vnd"],
+            ("usd", "kzt"): lambda: amount * r["usd_kzt"],
+            ("usd", "amd"): lambda: amount * r["usd_amd"],
+            ("usd", "uzs"): lambda: amount * r["usd_uzs"],
 
             # ===== RUB =====
             ("rub", "usd"): lambda: amount / r["rub_usd"],
@@ -222,6 +225,9 @@ class FinInstr:
             ("rub", "vnd"): lambda: amount * r["rub_vnd"],
             ("rub", "vnd_cash"): lambda: amount * r["cash_rub_vnd"],
             ("rub", "gel"): lambda: amount / r["rub_gel"],
+            ("rub", "kzt"): lambda: amount * r["rub_kzt"],
+            ("rub", "amd"): lambda: amount * r["rub_amd"],
+            ("rub", "uzs"): lambda: amount * r["rub_uzs"],
 
             # ===== CNY =====
             ("cny", "rub"): lambda: amount * r["cny_rub"],
@@ -231,6 +237,9 @@ class FinInstr:
 
             # ===== GEL =====
             ("gel", "rub"): lambda: amount * r["gel_rub"],
+
+            # ===== KZT =====
+            ("kzt", "rub"): lambda: amount / r["kzt_rub"],
 
             # ===== EUR =====
             ("rub", "eur"): lambda: amount / r["rub_eur"],   # руб / (руб за евро) = евро
