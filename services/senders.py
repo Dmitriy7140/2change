@@ -13,6 +13,7 @@ CHANNELS = {
     "korea" : -1001290060134,
     "vietnam":-1003683646201,
     "georgia": -1003877801550,
+    "europe": -1002789026438,
 
 
 }
@@ -24,6 +25,7 @@ DAILY_CHANNEL_LABELS = {
     "korea": "🇰🇷 Корея",
     "vietnam": "🇻🇳 Вьетнам",
     "georgia": "🇬🇪 Грузия",
+    "europe": "🇪🇺 Европа",
 }
 GEORGIA_CONTACT_URL = (
     "https://t.me/alexandra_2change?text="
@@ -308,6 +310,21 @@ class SenderService:
                      f"⚜️<a href='https://telegram.me/vietnam_2change/1963'>Подробные условия</a>| <a href='https://t.me/review_2change'>Отзывы</a>|<a href='https://2change.pro/vietnam'>Сайт</a>\n\n"
                      "✅Пишите <a href='https://t.me/m/o3KEc_KlMjIy'>«ОБМЕН» @alexandra_2change</a> либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте-калькуляторе</a>")
 
+        msg_europe = (f"{title}"
+                      f"▪️Рубли{EMOJI['bl_arrow_right']}Евро {r["rub_eur"]:.2f}₽\n"
+                      f"▪️Евро{EMOJI['bl_arrow_right']}Рубли {r["eur_rub"]:.2f}₽\n"
+                      f"▪️USDT{EMOJI['bl_arrow_right']}Евро {r["usd_eur"]:.2f}€\n"
+                      f"▪️Евро{EMOJI['bl_arrow_right']}USDT {1 / r["eur_usd"]:.2f}€\n"
+                      f"▪️Рубли{EMOJI['bl_arrow_right']}USDT {r["rub_usd"]:.2f}₽\n"
+                      f"▪️USDT{EMOJI['bl_arrow_right']}Рубли {r["usd_rub"]:.2f}₽\n"
+                      f"▪️Рубли{EMOJI['bl_arrow_right']}Другие валюты по запросу\n\n"
+                      f"<blockquote expandable>{EMOJI['golden_tick']}<b>Акция!</b> Индивидуальный курс от 100 000₽\n"
+                      f"{EMOJI['golden_tick']}<b>Помощь с <a href='https://2pay.money/?utm_source=tg&utm_content=kurs'>оплатой сервисов/игр!</a></b>{EMOJI['apple']}{EMOJI['appstore']}{EMOJI['google_play']}{EMOJI['musically']}{EMOJI['netflix']}{EMOJI['playstation']}{EMOJI['xbox']}{EMOJI['steam']}{EMOJI['gpt']}{EMOJI['claude']}{EMOJI['photoshop']} для россиян (смена региона iCloud+, зарубежные аккаунты PlayStation/Xbox и многое другое) на сайте!\n"
+                      f"{EMOJI['golden_tick']}<b>Регистрация <a href='https://2change.pro/instrukcii/karty'>зарубежных карт</a> на загранпаспорт РФ</b>"
+                      f"</blockquote>\n\n"
+                      f"⚜️<a href='https://t.me/review_2change'>Отзывы</a>|<a href='https://2change.pro/'>Сайт</a>\n\n"
+                      "✅Пишите <a href='https://t.me/m/keyYX7x7YWVi'>«ОБМЕН» @alexandra_2change</a> либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте-калькуляторе</a>")
+
         msg_georgia = (f"{title}"
                        f"▪️Рубли{EMOJI['bl_arrow_right']}Лари {r["rub_gel"]:.2f} ₽\n"
                        f"▪️Лари{EMOJI['bl_arrow_right']}Рубли {r["gel_rub"]:.2f} ₽\n"
@@ -325,6 +342,7 @@ class SenderService:
             "china": msg_china,
             "korea": msg_korea,
             "vietnam" : msg_vietnam,
+            "europe": msg_europe,
             "georgia": msg_georgia,
         }
 
