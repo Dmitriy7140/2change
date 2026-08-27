@@ -311,7 +311,7 @@ class SenderService:
                      "✅Пишите <a href='https://t.me/m/o3KEc_KlMjIy'>«ОБМЕН» @alexandra_2change</a> либо оставьте заявку в <a href='https://t.me/official_2changebot'>боте-калькуляторе</a>")
 
         msg_europe = (f"{title}"
-                      f"▪️Рубли{EMOJI['bl_arrow_right']}Евро {r["rub_eur"]:.2f}₽\n"
+                      f"▪️Рубли{EMOJI['bl_arrow_right']}Евро {r["rub_eur"]:.2f}₽ (от 1000€)\n"
                       f"▪️Евро{EMOJI['bl_arrow_right']}Рубли {r["eur_rub"]:.2f}₽\n"
                       f"▪️USDT{EMOJI['bl_arrow_right']}Евро {r["usd_eur"]:.2f}€\n"
                       f"▪️Евро{EMOJI['bl_arrow_right']}USDT {1 / r["eur_usd"]:.2f}€\n"

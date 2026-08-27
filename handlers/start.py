@@ -21,7 +21,7 @@ class StartHandlers:
             self.clearstate(chat_id)
 
             keyboard = InlineKeyboardMarkup(row_width=2)
-            keyboard.add(calc_button("💱 Обменять"))
+            keyboard.add(calc_button("Открыть калькулятор"))
             keyboard.add(InlineKeyboardButton("💳 Зарубежная карта", callback_data="tr_card_menu"))
             keyboard.add(InlineKeyboardButton("🛡 Гарантии и отзывы", callback_data="comment_menu"))
             keyboard.row(
@@ -31,15 +31,13 @@ class StartHandlers:
             keyboard.add(InlineKeyboardButton("💬 Есть что сказать?", callback_data="survey_start"))
 
             msg = (
-        "<b>💎Калькулятор 2Change — выберите услугу по кнопке ниже</b>\n\n"
-        "<blockquote>🕒График работы ПН–СБ 10:00-20:00 (МСК)\n"
-        "🙏<a href='https://t.me/review_2change/1014'>Отзывы (Более 11 500 отзывов за 5 лет работы)</a>\n"
-        "🏦 Нам доверяют: МТС, VK, Ozon Банк, Яндекс.Плюс\n"
-        "👩‍💻<a href='https://t.me/ALEXANDRA_2CHANGE'>Поддержка</a>\n"
-        "⚡️<a href='https://2change.pro/'>Официальный сайт</a>\n"
-        "❤️<a href='https://www.youtube.com/@2change_obmen_official'>Youtube канал</a>"
-        "</blockquote>\n"
-    )
+                "<b>💎 Калькулятор 2Change — узнайте сумму обмена до заявки</b>\n"
+                "Нажмите <b>«Открыть калькулятор»</b>, выберите страну, валютную пару и сумму — сразу увидите расчёт. Перед переводом менеджер подтвердит итоговую сумму.\n"
+                "🕐 ПН–СБ 10:00–20:00 (МСК)\n"
+                "⭐️ 10 000+ отзывов — @review_2change\n"
+                "🌍 Работаем в 57+ странах\n"
+                "🚪 Поддержка · ⚡️ <a href='http://2change.pro/'>2change.pro</a>"
+            )
 
             self.send_media("img/intro.jpg", chat_id, msg, parse_mode="HTML", reply_markup=keyboard)
 
