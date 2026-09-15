@@ -1,4 +1,5 @@
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from html import escape
 import time
 from config import ADMIN_IDS
 
@@ -21,6 +22,33 @@ class SpamService:
                 return
 
             self.start_announce(message)
+
+        @self.bot.message_handler(commands=['allusers'])
+        def show_all_users(message):
+            if message.from_user.id not in ADMIN_IDS:
+                return
+
+            total, state_counts = self.user_db.get_user_counts_by_state()
+            state_labels = {
+                None: "Без сегмента",
+                "": "Без сегмента",
+                "turkey": "🇹🇷 Турция",
+                "iban": "🇹🇷 IBAN",
+                "vietnam": "🇻🇳 Вьетнам",
+                "korea": "🇰🇷 Корея",
+                "russia": "🇷🇺 Россия",
+                "china": "🇨🇳 Китай",
+                "thailand": "🇹🇭 Таиланд",
+            }
+
+            lines = [f"👥 <b>Всего пользователей: {total:,}</b>".replace(",", " ")]
+            if state_counts:
+                lines.extend(("", "<b>По сегментам:</b>"))
+                for state, count in state_counts:
+                    label = state_labels.get(state, escape(str(state)))
+                    lines.append(f"• {label}: <b>{count:,}</b>".replace(",", " "))
+
+            self.bot.send_message(message.chat.id, "\n".join(lines), parse_mode="HTML")
 
         @self.bot.message_handler(content_types=[
             'text', 'photo', 'video', 'document', 'animation',

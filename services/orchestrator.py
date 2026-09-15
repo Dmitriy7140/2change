@@ -31,20 +31,18 @@ class CurrencyOrchestrator:
     def _loop(self):
         while not self._stop_flag:
             try:
-                self.logger.info("Обновляем курсы...")
+                self.logger.info("Обновляем наценки и курсы...")
 
-                # 1. обновили курсы через API внутри qdb
+                # Сначала читаем наценки: update_currency использует их из БД.
+                if not self.interest_service.sync_interest():
+                    self.logger.error("Не удалось загрузить наценки; фоновое обновление пропущено")
+                elif self.interest_service.insert_currencies_into_table():
+                    self.logger.info("Наценки и курсы обновлены в БД и Google-таблице")
+                else:
+                    self.logger.error("Фоновое обновление курсов завершилось с ошибкой")
 
+            except Exception:
+                self.logger.exception("Ошибка обновления наценок и курсов")
 
-                # 2. записали в таблицу currency
-
-                self.interest_service.insert_currencies_into_table()
-                self.logger.info("Курсы обновлены и записаны в БД")
-
-
-
-            except Exception as e:
-                self.logger.error(f"Ошибка обновления курсов: {e}")
-
-            # ждём 3 часа
+            # Повторяем обновление через 20 минут, в том числе после ошибки.
             time.sleep(self.interval)

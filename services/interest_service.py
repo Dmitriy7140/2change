@@ -27,6 +27,9 @@ class InterestService:
             if not isinstance(res, dict):
                 self.logger.error("Таблица наценок вернула не словарь: %r", res)
                 return None
+            if not res:
+                self.logger.error("Таблица наценок не содержит коэффициентов")
+                return None
             self.logger.info("Получили словарь с наценками")
             return res
         except Exception:
@@ -45,6 +48,11 @@ class InterestService:
         except Exception:
             self.logger.exception("Не удалось добавить коэффициенты")
             return False
+
+    def sync_interest(self) -> bool:
+        """Загружает наценки из таблицы в БД без сообщений в Telegram."""
+        res = self._get_interest()
+        return res is not None and self._set_interest(res)
 
     def update_interest(self, message):
         chat_id = message.chat.id

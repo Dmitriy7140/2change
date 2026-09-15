@@ -56,6 +56,19 @@ class UserDB:
         logger.info(f"Получено пользователей: {len(rows)}")
         return rows
 
+    def get_user_counts_by_state(self):
+        """Возвращает общее число пользователей и разбивку по сегментам."""
+        cursor = self.conn.cursor()
+        total = cursor.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+        cursor.execute("""
+            SELECT state, COUNT(*) AS count
+            FROM users
+            GROUP BY state
+            ORDER BY count DESC, state
+        """)
+        state_counts = [(row["state"], row["count"]) for row in cursor.fetchall()]
+        return total, state_counts
+
     def get_users_by_source(self, source):
 
 
