@@ -2,6 +2,26 @@ from typing import Callable, Any
 
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+from config import ADMIN_IDS
+
+
+ADMIN_HELP = (
+    "📋 <b>Шпаргалка по командам</b>\n\n"
+    "<b>Общие команды</b>\n"
+    "/start — открыть главное меню.\n"
+    "/manager — оставить заявку на связь с менеджером.\n\n"
+    "<b>Команды администратора</b>\n"
+    "/help — показать эту шпаргалку.\n"
+    "/change_coef — загрузить наценки из Google-таблицы, пересчитать курсы "
+    "и обновить данные в базе и таблице.\n"
+    "/send_daily — выбрать чат и отправить в него предзаписанное ежедневное сообщение.\n"
+    "/announce — создать рассылку: выбрать сегмент или всех пользователей, "
+    "отправить боту сообщение и подтвердить рассылку.\n"
+    "/allusers — показать общее число пользователей и распределение по сегментам.\n"
+    "/menulink — создать ссылку на пункт меню: выбрать пункт и ввести метку "
+    "источника (например, <code>tgads</code>)."
+)
+
 
 class InfoHandlers:
     def __init__(self, bot, track_user):
@@ -11,6 +31,13 @@ class InfoHandlers:
             "comment_menu": self.comment_menu,
         }
     def register(self):
+
+        @self.bot.message_handler(commands=['help'])
+        def handle_help(message):
+            if not message.from_user or message.from_user.id not in ADMIN_IDS:
+                return
+
+            self.bot.send_message(message.chat.id, ADMIN_HELP, parse_mode="HTML")
 
         @self.bot.callback_query_handler(
             func=lambda c: c.data in self.routes
